@@ -115,3 +115,5 @@
 
 - Берегост и Нашкель — названия сверены с loca игры.
 - Какой флаг игры означает, что лютня Лихейлы у героя: `DEN_TieflingBard_Event_TransferInstrument` или `…PlayWithInstrument`.
+  **Ответ (сборка 0.5.0):** `…PlayWithInstrument` на герое; `TransferInstrument` — только событие передачи
+  предмета, его ставят и другие ветки (`docs/STAGE5.md` §2).

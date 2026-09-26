@@ -27,7 +27,7 @@ PLACES = [
     place("CRE_LiftStart", "Ясли Иллек: фуникулёр, начало подъёма",
           variant(say("Gith architecture: beautiful, terrifying, and not a single handrail.",
                       "Зодчество гитьянки: красиво, жутко и ни одного поручня.", emo="surprise>happy")),
-          act=1, custom="lift", source=GD + "Act1b_CRE_Exterior.txt:103-119,190-202 (PROC_CRE_Dungeon_ElevatorMove)"),
+          act=1, custom="lift", source=GD + "Act1b_CRE_Exterior.txt:103-130,194-198 (PROC_CRE_Dungeon_ElevatorMove)"),
     place("CRE_LiftMid", "Ясли Иллек: фуникулёр, середина пути",
           variant(say("Stand closer. For balance. *My* balance.", "Встань поближе. Для равновесия. *Моего* равновесия.",
                       emo="happy/2"), when=[ROMANCE]),
@@ -42,7 +42,7 @@ PLACES = [
     place("CRE_LiftTop", "Ясли Иллек: фуникулёр, наверху",
           variant(say("There's a verse in this. Wind, stone, and nobody saying a word. I'll find it.",
                       "Здесь есть куплет. Ветер, камень и тишина. Я его найду.", emo="thinking>happy")),
-          act=1, custom="lift", source=GD + "Act1b_CRE_Exterior.txt:204-211 (PlatformMovementFinished)"),
+          act=1, custom="lift", source=GD + "Act1b_CRE_Exterior.txt:200-207 (PlatformMovementFinished)"),
 
     place("MountainPass", "Горный перевал, вид на долину",
           variant(say("Is that - is that the whole Sword Coast? Lihala would've climbed that rock just to shout at it.",
@@ -253,8 +253,9 @@ GAPS = [
      "нет подрегиона и триггера бесед с этим местом; точечные триггеры путевых камней Подземья "
      "(_Gustav_Waypoints_Act1.txt) не подписаны местом — не угадываем"),
     ("GrymforgeLift", "Лифт Гримфорджа",
-     "лифт S_UND_Elevator_Fort_ToShadowlands — предмет перехода в акт 2 (Act1_UND_DuergarCamp_Elevator.txt:188): "
-     "по нажатию начинается смена уровня, реплика не успеет; своего триггера у кабины нет"),
+     "лифт — предмет S_UND_Elevator_Fort_ToShadowlands (Act1_UND_DuergarCamp_Elevator.txt:188, флаг "
+     "UND_ElevatorToScl_Used): по имени и флагу это переход к Оскверненным землям, а не поездка; своего "
+     "триггера у кабины в данных нет — [проверить в игре, есть ли поездка, на которой успеет реплика]"),
     ("ClearNight", "Ясная ночь в пути",
      "в данных нет события «ясная ночь»: смена дня и ночи есть только в лагере (GLO_CAMP_State_NightMode)"),
     ("WaukeensRest", "Приют Вокин (горит)",

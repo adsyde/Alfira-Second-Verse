@@ -3,7 +3,7 @@
 Сцена — это файл `scripts/dialogs/scenes/<имя>.py` с объектом `SCENE`. Из него
 `scripts/dialogs/build.py` собирает диалог, таймлайн с постановкой, сцену, записи
 банков, тексты EN/RU, реакции одобрения и новые флаги (подробно — `docs/STAGING.md`).
-Новую сцену нужно добавить в список `SCENES` в `build.py`; главы `scenes/chNN_*.py` подхватываются сами.
+Новую сцену нужно добавить в список `SCENES` в `build.py`; главы `scenes/chNN_*.py`, места (`scenes/places.py`) и фразы в пути (`scenes/travel.py`) подхватываются сами.
 
 Формат повторяет сценарий из `design/dialogs/*.md`: блоки реплик Альфиры, варианты
 героя, переходы. Пример — `scenes/recruitment.py` (сцена A, 13 вариантов, проверка,
@@ -169,6 +169,44 @@ opt("…", "…", set=[CH.done], go="…")        # где глава счита
 Порядок добавления главы: сценарий согласован → файл `scenes/chNN_*.py` → `build_pak.py` →
 `check_story.py` (goal глав изменился) → `validate.py` → `tree.py` → повысить версию мода
 (Osiris изменился) → проверка в игре.
+
+## Реплики над головой: места и путь (этап 5)
+
+Короткие реплики без остановки игры — AD (automated dialog): текст над головой Альфиры, у её
+озвученных реплик — голос игры. Механизм — `scripts/dialogs/ads.py`, подробности и схема —
+[docs/STAGING.md §5b](../../docs/STAGING.md#5b-реплики-над-головой-ad-этап-5).
+
+**Место** — запись в `scenes/places.py`:
+
+```python
+from ads import COLD, NOTCH, ROMANCE, SPARK, place, variant
+from dsl import say, voice
+
+place("Monastery", "Обитель Розиморн",                        # ключ (не менять: по нему «уже сказано») и название
+      variant(say("...", "...", emo="thinking"), when=[SPARK]),  # варианты по приоритету: 💞 ROMANCE, ✨ SPARK,
+      variant(say("...", "...")),                                # ❄️ COLD, 🔁 NOTCH; последний — обычный, без условий
+      act=1,
+      triggers=["S_CRE_Monastery_SUB_94be6628-ed02-4bdc-9173-5d1b06f26daa"],   # EnteredTrigger(Альфира, …)
+      source="…Act1b_Subregions.txt (CRE_Monastery_SUB)")      # откуда взят триггер — для проверки
+```
+
+- Запуск — одно из: `triggers=[…]` (любой из списка, что раньше), `flags=[…]` (глобальный флаг игры
+  поставлен), `levels=[…]` (начало уровня), `custom="lift"` (особый запуск в `ads.LIFT_BLOCK`).
+- Триггер — только тот, что игра сама держит зарегистрированным для отряда: подрегионы
+  (`DB_Subregion`/`DB_SubregionMarker` в `Act*_Subregions.txt`), триггеры бесед отряда
+  (`PROC_RegisterWorldGossipTrigger`). Свою регистрацию мод не делает.
+- Вариант — одна или несколько реплик подряд (`say`/`voice`); ремарки сценария («берёт за руку»)
+  над головой не показываются — их роль играет `emo`, текст остаётся в `note`.
+- Места без надёжного запуска — в `GAPS` того же файла, с причиной. В игру они не идут.
+
+**Фразы в пути** — `scenes/travel.py`: `travel((реплика, [условия]), …)`. Каждая звучит один раз
+(флаг `ALFSV_Travel_NN_Played`), игра берёт первую по порядку подходящую. Добавлять новые — в
+конец списка: номер фразы = её флаг в сохранениях.
+
+Build делает из каждого места и из набора фраз в пути AD (`Companions/ADs/ALFSV_AD_*`) и goal
+`ALFSV_World.txt`. Порядок: запись → `build_pak.py` → `check_story.py` → `validate.py` →
+`tree.py` (`build/dialogs/ALFSV_AD_*.md`) → проверка в игре. Отладка из консоли SE:
+`Osi.PROC_ALFSV_Debug_Place("Monastery")`, `Osi.PROC_ALFSV_Debug_Travel()`.
 
 ## Сборка и проверка
 

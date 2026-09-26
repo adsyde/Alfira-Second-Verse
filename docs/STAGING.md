@@ -1,6 +1,7 @@
 # Постановка диалогов: конвейер
 
-Статус: **собрано, в игре не проверено.** С 0.4.0 — главы разговоров (§5a) и ремарки рассказчика.
+Статус: **собрано, в игре не проверено.** С 0.4.0 — главы разговоров (§5a) и ремарки рассказчика; с 0.5.0 — реплики
+над головой: места и путь (§5b).
 
 Диалоги мода делаются с постановкой, как у Larian: камера, эмоции лица, взгляды, позы.
 Источник — описание сцены на Python (`scripts/dialogs/scenes/*.py`, формат —
@@ -73,7 +74,7 @@
 | В git (наше) | Не в git, собирается при каждой сборке |
 |---|---|
 | `scripts/dialogs/scenes/*.py` — источник | `mod/Public/_MOD_/Timeline/` — таймлайны и сцены (камеры, свет, постановка Larian) |
-| диалоги `Story/DialogsBinary/**/*.lsx`, банк диалогов, loca, реакции, флаги, goal `ALFSV_Chapters.txt` | `mod/Public/_MOD_/Content/Generated/` — банк таймлайнов |
+| диалоги `Story/DialogsBinary/**/*.lsx`, банк диалогов, loca, реакции, флаги, goals `ALFSV_Chapters.txt`, `ALFSV_World.txt` | `mod/Public/_MOD_/Content/Generated/` — банк таймлайнов |
 | | `mod/Mods/_MOD_/Globals/` — её персонаж из игры с `HasPlayerApprovalRating` |
 
 Файлы в `mod/`, которыми владеет генератор (`Story/DialogsBinary`, `Timeline`, `Content`,
@@ -162,6 +163,63 @@ Osiris (ALFSV_Chapters.txt, генерируется):
 Флаги `Available`/`Done` глобальные (одна Альфира на игру). Условия, которые зависят от
 собеседника (одобрение, пол, теги, флаги на герое), — в `when`/`approval`, они проверяются при
 каждом разговоре. Условия-события сюжета — в `story`, их проверяет Osiris в момент открытия.
+
+## 5b. Реплики над головой (AD, этап 5)
+
+Реплики на местах и фразы в пути — AD (automated dialog): игра показывает реплику над головой
+говорящего и не останавливает игру. Формат описаний — [scripts/dialogs/README.md](../scripts/dialogs/README.md#реплики-над-головой-места-и-путь-этап-5),
+код — `scripts/dialogs/ads.py`.
+
+Как это у Larian (по данным игры):
+- реакция спутника на место — AD категории «Voice bark» с одним спикером-спутником, запуск из
+  Osiris `PROC_TryStartAD(диалог, спутник)` (`IRN_IronThrone_AD_WyllSeesDeadRavengard`,
+  `Act3_OriginMoments_Wyll.txt`); `PROC_TryStartAD` требует у ресурса `automated = True`
+  (`__GLOBAL_Dialogs.txt`, `QRY_TryStartAD_CheckAutomated`);
+- у AD есть таймлайн: фаза на реплику, в ней `TLVoice` и эмоции, без сцены и камер
+  (`CAMP_Bard_AD`, `SCE_AD_Alfira`);
+- повторяемая болтовня — категория «Repeated automated NPC Dialog»: игра запускает тот же AD
+  снова, а корни с флагами выбирают следующую фразу (`CAMP_Bard_AD`).
+
+Как это у нас:
+
+```
+scenes/places.py: place(ключ, варианты…, triggers | flags | levels | custom)
+scenes/travel.py: travel((реплика, [условия]), …)
+      │ build.py
+      ├─ AD на каждое место: основа SCE_AD_Alfira (один спикер — Альфира), категория «Voice bark»,
+      │  корни = варианты по приоритету 💞 > ✨ > ❄️ > обычный (условия — флаги MOOD на Альфире)
+      ├─ AD фраз в пути: категория «Repeated automated NPC Dialog», корень на фразу, флаг «сказано»
+      └─ goal ALFSV_World.txt (генерируется)
+Osiris:
+  событие (EnteredTrigger(Альфира, триггер) | FlagSet | LevelGameplayStarted | фуникулёр)
+    → ожидание до 60 с (бой, разговор, катсцена) → PROC_ALFSV_AD_SetMood → PROC_TryStartAD
+    → AutomatedDialogStarted → «сказано» (DB_ALFSV_PlaceDone). Один AD за раз.
+  таймер 3–6 мин → фраза в пути, если она в отряде, не в лагере, свободна и мест в ожидании нет.
+```
+
+- **Настроение.** Флаги героя (искра, роман, зарубка) и одобрение AD проверить не может: у него один
+  спикер. Перед каждым запуском Osiris ставит на Альфиру флаги `ALFSV_AD_Romance / _Spark / _Cold /
+  _Warm / _NotchCity` по всем аватарам (`GetFlag` на герое, `DB_ApprovalRating`): роман — у кого-то
+  `ALFSV_Romance_Started`; искра — `ALFSV_Romance_Spark` или роман; холодно — одобрение ниже 0;
+  тепло — 40 и выше; зарубка — `ALFSV_Notch_City`.
+- **Триггеры.** Только те, что игра держит зарегистрированными для отряда сама: подрегионы
+  (`DB_Subregion` → `_GLOBAL_Subregions.txt`, `PROC_TriggerRegisterForParty`) и триггеры бесед отряда
+  (`PROC_RegisterWorldGossipTrigger` → `GLO_WorldGossip.txt`, не снимаются). Своя регистрация
+  запустила бы чужие правила `EnteredTrigger` на тех же триггерах, поэтому её нет.
+- **Данные — правилами.** Список мест вставляет `PROC_ALFSV_World_Data` в INIT и при каждом
+  `LevelGameplayStarted`: новые места доходят до начатых игр (INIT существующего goal не
+  перезапускается, как и у глав).
+- **Фуникулёр Яслей Иллек** — три AD по ходу рейса (`ads.LIFT_BLOCK`): начало — наше правило на
+  ванильный `PROC_CRE_Dungeon_ElevatorMove` платформы `S_LTN_PLT_CRE_RailLift_000`, если Альфира в
+  10 м от рычага кабины `S_CRE_ElevatorLever_000`; середина — опрос раз в секунду: до точки
+  назначения меньше половины начального расстояния; верх — `PlatformMovementFinished(…,
+  "CRE_Dungeon_ElevatorMoved")` (`Act1b_CRE_Exterior.txt`).
+- **Фаза AD** (`ADStager`): текстовая реплика — `TLVoice` без звука длиной по тексту (14 знаков/с
+  + 0,6 с, от 2,5 до 10 с) и эмоции из сценария; её озвученная реплика — `TLVoice` ванильной фазы,
+  длина по голосу, её эмоции оттуда же.
+- **Озвученная реплика из AD в главе** (глава 2, «I can't remember the last time I played like that» из
+  `SCE_AD_Alfira`): у AD нет сцены, поэтому фаза строится по длине голоса, с шаблонной постановкой
+  основы и стандартным планом (`staging.py`, `_voiced_from_ad`).
 
 ## 6. Известные ограничения
 
