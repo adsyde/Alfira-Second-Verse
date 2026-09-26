@@ -1,0 +1,405 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+// Alfira: Second Verse - stage 2 (recruitment). Top-level goal: initialised at story start
+// and, for an existing savegame, by Osiris story patching when the mod is added.
+// Nothing is changed in a game where Alfira is never recruited: every fact about her as a
+// companion is inserted by PROC_ALFSV_MakeCompanion() at the moment of recruitment.
+// See docs/STAGE2.md.
+KBSECTION
+//REGION Becoming a companion (once, at the first recruitment)
+
+PROC
+PROC_ALFSV_MakeCompanion()
+AND
+DB_GLO_PartyMembers_DefaultFaction((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Faction)
+THEN
+// Stale value from the Dark Urge murder-night setup (Act1_ORI_DarkUrge); Initialize writes ours.
+NOT DB_GLO_PartyMembers_DefaultFaction(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Faction);
+
+PROC
+PROC_ALFSV_MakeCompanion()
+THEN
+DB_ALFSV_IsCompanion(1);
+// DU murder-night leftovers must not compete with our in-party dialog
+NOT DB_OriginInPartyDialog((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (DIALOGRESOURCE)DEN_Bard_InParty_3c71c397-b378-340b-0da9-ef3d17d14423);
+NOT DB_GLO_PartyMembers_InPartyDialog((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (DIALOGRESOURCE)DEN_Bard_InParty_3c71c397-b378-340b-0da9-ef3d17d14423);
+// Companion13 and Companion14 are the only CompanionN factions nobody uses (Companion15 = Jaheira's placement faction)
+DB_CompanionOnlyFaction((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FACTION)Companion14_1ebdab21-fb0b-3dd8-a7b7-bfbc777d7a5d);
+DB_OriginNPCAlignment((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FACTION)ACT1_DEN_TieflingBard_082ce2e1-e636-4a56-817c-af798bdc59d8);
+DB_OriginInPartyDialog((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (DIALOGRESOURCE)ALFSV_Alfira_InParty_b2950129-fdd2-4cda-8182-cf41cfd5d809);
+// Vanilla flags of the DU "Alfira in the party" set-up: swap menus already offer "take Alfira's place"
+DB_OriginPartOfTheTeamFlag((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FLAG)NULL_00000000-0000-0000-0000-000000000000, (FLAG)NULL_00000000-0000-0000-0000-000000000000, (FLAG)ORI_Alfira_ControlledByUser_e7f05e38-3c03-4e6d-9649-936d7fdfd8e9);
+DB_OriginKickFromPartyFlags((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FLAG)ORI_Alfira_Event_KickCompanion_23496e30-47fd-47a2-aa6d-8f2e71820e84, (FLAG)ORI_Alfira_State_CanBeKicked_a6499b8c-0908-463e-a9b7-ca0350820f1c);
+// Like Minsc/Halsin/Minthara/Jaheira (_StartPostEA.txt). Gives Withers, origin tags (Origin "Alfira" in Origins.lsx), camp, epilogue.
+DB_Origins((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+DB_Origins_UnavailableForRandom((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+PROC_GLO_PartyMembers_Initialize((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+// Leave the Grove NPC roles (how Wyll leaves the Grove)
+PROC_DEN_RemoveFromDenNPCs((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+// Her own Anubis config (DEN_Bard) walks her back to the bard seat in the Grove
+PROC_SetAnubisConfig((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "DefaultCharacter");
+
+// Recruited in a dialog (our recruitment/in-party dialog or a vanilla swap dialog)
+IF
+FlagSet((FLAG)OriginAddToParty_4870b2cd-210c-0fdc-9c58-4d0142bdae29, (CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _)
+AND
+QRY_ALFSV_MayBecomeCompanion()
+THEN
+PROC_ALFSV_MakeCompanion();
+
+// Invited to camp from the full-party swap dialog
+IF
+FlagSet((FLAG)GLO_ORI_Event_InvitedToCamp_Walk_6dfae0e0-e6c4-4d4f-8979-df320356ea03, (CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _)
+AND
+QRY_ALFSV_MayBecomeCompanion()
+THEN
+PROC_ALFSV_MakeCompanion();
+
+// Not yet a companion, and not the Dark Urge murder victim (then the vanilla DU scene owns her)
+QRY
+QRY_ALFSV_MayBecomeCompanion()
+AND
+NOT DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_ORI_DarkUrge_AlfiraMurderVictim((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+DB_NOOP(1);
+
+// First time in the party: she becomes part of the team (camp member), like Halsin/Minsc
+PROC
+PROC_GLO_PartyMembers_AddHook((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (CHARACTER)_Player)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+QRY_OnlyOnce("ALFSV_RecruitedFirstTime")
+THEN
+PROC_ORI_SetupCamp((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+
+// Fix faction on every join (Halsin does the same): act scripts may have changed it
+PROC
+PROC_GLO_PartyMembers_AddHook((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (CHARACTER)_Player)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+SetFaction(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FACTION)Companion14_1ebdab21-fb0b-3dd8-a7b7-bfbc777d7a5d);
+
+//END_REGION
+
+//REGION Recruitment dialog (Act 1, after the song)
+
+QRY
+QRY_ALFSV_CanOfferRecruitment()
+AND
+NOT DB_ALFSV_IsCompanion(1)
+AND
+DB_CurrentLevel("WLD_Main_A")
+AND
+DB_GlobalFlag((FLAG)DEN_TieflingBard_State_FinishedSong_e8ab958f-015b-f97d-5da4-c599b67e5ba0)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_TieflingBard_State_ConvincedToQuit_43352c49-25c4-1e6c-4531-e6469a9e71c3)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_TieflingBard_State_SmashedLute_d9778e98-9f2e-e522-ba99-116b00fa3454)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_TieflingRefugees_State_LeftDen_003b304b-f058-4f8a-b9fa-a097e1b6b395)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_AttackOnDen_State_HostileTieflings_c5641caa-4409-4739-a1fe-8263b8271f4e)
+AND
+NOT DB_GlobalFlag((FLAG)GOB_DrowCommander_Event_RaidersLeftForAttack_ce12e8de-2922-4a2b-843b-0494833b8480)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_AttackOnDen_State_RaidersAtDen_29f372ac-f9f1-4d54-bc9e-7eb493fa09d8)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_AttackOnDen_State_RaidersInDen_5e839d5f-3e25-4b56-b758-81d25c9cbd33)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_AttackOnDen_State_RaiderVictory_abe1bce8-c234-4afe-a490-76210d98a078)
+AND
+NOT DB_Dead((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_ORI_DarkUrge_AlfiraMurderVictim((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_CAMP_GoblinHuntCelebration_SceneActors((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c) // the camp is in WLD_Main_A too: keep her celebration dialog
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_SelectCustomDialog(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player)
+AND
+DB_Avatars((CHARACTER)_Player)
+AND
+QRY_ALFSV_CanOfferRecruitment()
+THEN
+DB_SelectedDialog((DIALOGRESOURCE)ALFSV_Alfira_Recruitment_009896a5-580c-4135-98db-99234865b61d, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player);
+
+//END_REGION
+
+//REGION Debug recruitment (no conditions): TextEvent "alfsv_recruit" or, from the Script Extender console, Osi.PROC_ALFSV_Debug_Recruit()
+
+IF
+TextEvent("alfsv_recruit")
+THEN
+PROC_ALFSV_Debug_Recruit();
+
+PROC
+PROC_ALFSV_Debug_Recruit()
+AND
+GetHostCharacter(_Host)
+THEN
+PROC_ALFSV_Debug_Recruit((CHARACTER)_Host);
+
+PROC
+PROC_ALFSV_Debug_Recruit((CHARACTER)_Host)
+AND
+NOT DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_MakeCompanion();
+
+PROC
+PROC_ALFSV_Debug_Recruit((CHARACTER)_Host)
+AND
+NOT DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_Dead(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+SetOnStage(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 1);
+TeleportTo(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Host);
+PROC_GLO_PartyMembers_CheckAdd((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Host);
+
+// Party is full: straight to camp, as after "Meet me at camp" in the swap dialog
+PROC
+PROC_ALFSV_Debug_Recruit((CHARACTER)_Host)
+AND
+NOT DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_Dead(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+PROC_CheckFirstTimeRecruited((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+RegisterAsCompanion(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Host);
+PROC_ORI_SetupCamp((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 1);
+
+//END_REGION
+
+//REGION Keep our in-party dialog
+
+// Act1_ORI_DarkUrge.txt: PROC_GLO_PartyMembers_MakeNPCHook(Alfira) sets DEN_Bard_InParty in every game.
+// Same reactive pattern as GLO_Companion_Halsin.txt ("Prevent Halsin from getting his InParty assigned...").
+IF
+DB_Dialogs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, DEN_Bard_InParty_3c71c397-b378-340b-0da9-ef3d17d14423)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_ORI_DarkUrge_AlfiraMurderVictim((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+PROC_RemoveAllDialogEntriesForSpeaker(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+DB_Dialogs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, ALFSV_Alfira_InParty_b2950129-fdd2-4cda-8182-cf41cfd5d809);
+
+//END_REGION
+
+//REGION Act 1: keep her out of the Grove NPC scripts once she is a companion
+
+// Tieflings leaving the Grove: SetHasDialog 0 + SetOnStage 0 (Act1_DEN_TieflingRefugees.txt)
+IF
+DB_DEN_AttackOnDen_LeaveNPCs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_DEN_AttackOnDen_LeaveNPCs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+// Goblin victory: teleport and Die (Act1_DEN_Misc.txt, PROC_DEN_KillTieflings)
+IF
+DB_FOR_SlaughteredTieflingTriggers(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Trigger)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_FOR_SlaughteredTieflingTriggers(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Trigger);
+
+// Druid attack role "Cower": faction, dialog, swarm group (Act1_DEN_DruidAttack.txt)
+IF
+DB_DEN_DruidAttack_NonDruids(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Role, _Group, _Dialog)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_DEN_DruidAttack_NonDruids(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Role, _Group, _Dialog);
+
+// Tiefling celebration: sets her dialog, teleports her, then SetOnStage 0 at the sleep cutscene.
+// Her backup (S_CAMP_TieflingBackup_001) takes her place, exactly as when she is defeated.
+IF
+DB_CAMP_GoblinHuntCelebration_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Dialog, _Replacement, _Pos)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_CAMP_GoblinHuntCelebration_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Dialog, _Replacement, _Pos);
+DB_ALFSV_CelebrationReplacement((CHARACTER)_Replacement);
+
+// Recruited (debug) during the celebration night: do not hide her with the other scene actors at the sleep cutscene
+IF
+DB_CAMP_GoblinHuntCelebration_SceneActors(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_CAMP_GoblinHuntCelebration_SceneActors(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+PROC
+PROC_CAMP_GoblinHuntCelebration_SetupTieflings()
+AND
+DB_ALFSV_CelebrationReplacement(_Replacement)
+AND
+_Replacement != NULL_00000000-0000-0000-0000-000000000000
+THEN
+SetOnStage(_Replacement, 1);
+SetEntityEvent(_Replacement, "CAMP_GoblinHuntCelebration_Teleported");
+DB_CAMP_GoblinHuntCelebration_SceneActors(_Replacement);
+
+// Anubis configs per act (DEN_Bard, HAV_Bard, SCE_Alfira, LOW_Alfira)
+IF
+DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level, _Config)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level, _Config);
+
+//END_REGION
+
+//REGION Dark Urge
+
+// Recruited Alfira is never the murder victim: the game's own substitution brings Quil (S_DEN_Bard_Backup).
+QRY
+QRY_ORI_DarkUrge_ReplaceAlfira()
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+DB_NOOP(1);
+
+// She must not be picked as a random camp speaker of the murder-night scene.
+IF
+DB_ORI_DarkUrge_MurderOfAlfiraRandom(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_ORI_DarkUrge_MurderOfAlfiraRandom(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+// GUSX-11941 (BG3_Act3_SavegamePatches.txt) kills Alfira on EVERY load if she is in DB_Players and the
+// murder night is completed - it does not look at who the victim was. When the victim was Quil,
+// hide the "completed" fact while PROC_ApplySavegamePatches runs (BG3_SavegamePatchHelpers.txt wraps
+// it in DB_BG3_PatchingSavegame(1)) and put it back as soon as that fact is removed.
+IF
+DB_BG3_PatchingSavegame(1)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_ORI_DarkUrge_AlfiraMurderVictim((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_CampNight_Completed((FLAG)NIGHT_DarkUrge_MurderOfAlfira_b0e97b06-b2f8-4376-829f-23d4b4bcf78d)
+THEN
+NOT DB_CampNight_Completed((FLAG)NIGHT_DarkUrge_MurderOfAlfira_b0e97b06-b2f8-4376-829f-23d4b4bcf78d);
+DB_ALFSV_MurderNightHidden(1);
+
+IF
+DB_ALFSV_MurderNightHidden(1)
+AND
+NOT DB_BG3_PatchingSavegame(1)
+THEN
+NOT DB_ALFSV_MurderNightHidden(1);
+DB_CampNight_Completed((FLAG)NIGHT_DarkUrge_MurderOfAlfira_b0e97b06-b2f8-4376-829f-23d4b4bcf78d);
+
+//END_REGION
+
+//REGION Act 2: keep her in the party (scene replacements come later)
+
+// Last Light: faction, dialog, teleport, SetLevel(4) (Act2_HAV_TieflingSurvivors.txt)
+IF
+DB_HAV_TieflingSurvivors(_Category, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Trigger, _Dialog, _IsChild)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_HAV_TieflingSurvivors(_Category, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Trigger, _Dialog, _IsChild);
+
+IF
+DB_HAV_General_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_HAV_General_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+IF
+DB_HAV_Siege_NPCs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_HAV_Siege_NPCs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+IF
+DB_HAV_Siege_Undead_Swarms(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Swarm)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_HAV_Siege_Undead_Swarms(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Swarm);
+
+IF
+DB_HAV_TakingIsobel_KOParticipants(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_HAV_TakingIsobel_KOParticipants(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+// End of Act 2 debrief: MakeNPC from the party, teleport to S_SCE_AlfiraPoint (Act2_SCE_EndBrief.txt)
+IF
+DB_SCE_Debrief_Participant(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Point, _Dialog)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_SCE_Debrief_Participant(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Point, _Dialog);
+
+IF
+DB_SCE_Debrief_Participant_Config(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Config)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_SCE_Debrief_Participant_Config(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Config);
+
+IF
+DB_SCE_TieflingFollowUp_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _IsKid)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_SCE_TieflingFollowUp_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _IsKid);
+
+//END_REGION
+
+//REGION Act 3: PROC_LOW_AlfiraSetup cannot be cancelled - undo it right after
+
+// Act3b_LOW_ElfsongTavern.txt: TeleportTo rooftop, SetFaction(ACT3_LOW_ElfsongTavern), DB_Dialogs(LOW_Elfsong_Alfira)
+IF
+DB_Dialogs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, LOW_Elfsong_Alfira_a00f488d-09af-f1f0-35bb-908e08729142)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_RemoveAllDialogEntriesForSpeaker(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+DB_Dialogs(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, ALFSV_Alfira_InParty_b2950129-fdd2-4cda-8182-cf41cfd5d809);
+PROC_ALFSV_ReturnFromScriptedScene();
+
+PROC
+PROC_ALFSV_ReturnFromScriptedScene()
+AND
+DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+GetHostCharacter(_Host)
+THEN
+SetFaction(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FACTION)Companion14_1ebdab21-fb0b-3dd8-a7b7-bfbc777d7a5d);
+TeleportTo(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Host);
+
+PROC
+PROC_ALFSV_ReturnFromScriptedScene()
+AND
+NOT DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_PartOfTheTeam(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+SetFaction(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FACTION)ACT1_DEN_TieflingBard_082ce2e1-e636-4a56-817c-af798bdc59d8);
+PROC_ORI_SetupCamp((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 1);
+
+//END_REGION
+EXITSECTION
+
+ENDEXITSECTION
