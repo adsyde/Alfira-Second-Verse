@@ -19,3 +19,6 @@ dist/
 # --- Python ---
 __pycache__/
 *.pyc
+
+# --- Рабочие копии агентов Claude Code ---
+.claude/worktrees/
