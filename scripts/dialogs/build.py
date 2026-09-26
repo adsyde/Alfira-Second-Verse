@@ -15,6 +15,7 @@
   Mods/_MOD_/Globals/WLD_Main_A/Characters/<Альфира>.lsx             её глобальный персонаж с
                                                                      HasPlayerApprovalRating (в git не идёт)
   Mods/_MOD_/Localization/English|Russian/AlfiraSecondVerse_*.xml    тексты
+  Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt                 Osiris глав разговоров (этап 4)
   build/dialogs/manifest.json                                        ванильные handle (для build_pak)
 """
 from __future__ import annotations
@@ -38,11 +39,13 @@ import bg3lib  # noqa: E402
 import dsl  # noqa: E402
 from dsl import ALFIRA, PLAYER, Flag, FlagRef, Line, Option, has_gender, render  # noqa: E402
 from staging import Stager  # noqa: E402
-from vanilla import ALFIRA_ORIGIN, ALFIRA_TEMPLATE, PLAYER_SPEAKER, F  # noqa: E402
+from vanilla import ALFIRA_ORIGIN, ALFIRA_TEMPLATE, APPROVAL_SP1, NARRATOR_SPEAKER, PLAYER_SPEAKER, F  # noqa: E402
 
 enable_utf8_stdout()
 
-SCENES = ["recruitment", "inparty"]
+# Сцены: вербовка, разговор в отряде и все главы разговоров scenes/chNN_*.py (подхватываются сами).
+SCENES = ["recruitment", "inparty"] + sorted(p.stem for p in (HERE / "scenes").glob("ch[0-9][0-9]_*.py"))
+CHAPTERS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt"
 # Женские формы обращения к героине: отдельный файл <имя>_to_F.xml рядом с русским (как
 # russian_to_F.loca у игры). Проверить в игре; если игра не различает — выключить.
 FEMALE_VARIANTS = True
@@ -53,6 +56,7 @@ TL_BANK_DIR = "Public/_MOD_/Content/Generated/[PAK]_GeneratedDialogTimelines"
 OWNED = ["Mods/_MOD_/Story/DialogsBinary", "Public/_MOD_/Timeline", "Public/_MOD_/Content",
          "Public/_MOD_/ApprovalRatings", "Public/_MOD_/Flags", "Mods/_MOD_/Globals"]
 SPEAKER_UUID = {ALFIRA: ALFIRA_TEMPLATE, PLAYER: PLAYER_SPEAKER}
+NULL = "NULL_00000000-0000-0000-0000-000000000000"
 FLAG_USAGE = {"Global": 5, "Object": 4, "Dialog": 6}
 
 
@@ -76,9 +80,10 @@ class Ids:
 class Compiler:
     """Одна сцена → диалог, таймлайн, сцена, записи банков, тексты."""
 
-    def __init__(self, lib: bg3lib.Lib, scene: dsl.Scene, ids: Ids, voice_meta: set[str]):
+    def __init__(self, lib: bg3lib.Lib, scene: dsl.Scene, ids: Ids, voice_meta: set[str], chapters=()):
         self.lib, self.b, self.s, self.ids = lib, lib.b, scene, ids
         self.voice_meta = voice_meta
+        self.chapters = sorted(chapters, key=lambda c: c.chapter.number)   # сцены глав (для входов)
         self.loca = {}           # handle → (en, ru_m, ru_f | None)
         self.vanilla_handles = set()
         self.reactions = set()
@@ -86,6 +91,7 @@ class Compiler:
         self.npc = []            # (uuid, Line) в порядке появления — для фаз
         self.done_blocks = set()
         self.done_opts = {}
+        self.alt_ends = set()
         self.voices = {}         # handle → (диалог, узел, версия)
 
     def uid(self, key):
@@ -112,10 +118,10 @@ class Compiler:
 
     # --- тексты ---
 
-    def text(self, key, en, ru, line_key):
+    def text(self, key, en, ru, line_key, narrator=False):
         h = self.ids.handle(f"{self.s.name}/{key}")
-        female = render(ru, True) if has_gender(ru) else None
-        self.loca[h] = (render(en), render(ru), female)
+        female = render(ru, True, narrator) if has_gender(ru) else None
+        self.loca[h] = (render(en, narrator=narrator), render(ru, narrator=narrator), female)
         return self.b.text_content(h, 1, self.uid(f"{line_key}/line"))
 
     def line_text(self, key, line: Line):
@@ -127,7 +133,7 @@ class Compiler:
             _, _, version = self.voices[line.handle]
             self.vanilla_handles.add(line.handle)
             return self.b.text_content(line.handle, version, self.uid(f"{key}/line"))
-        return self.text(key, line.en, line.ru, key)
+        return self.text(key, line.en, line.ru, key, narrator=line.narrator)
 
     # --- узлы ---
 
@@ -139,10 +145,21 @@ class Compiler:
             return [self.option(o, f"{block_id}.o{i}") for i, o in enumerate(blk.next.choices)]
         if block_id not in self.done_blocks:
             self.done_blocks.add(block_id)
-            self.lines(block_id, blk.lines, blk.next)
+            self.lines(block_id, blk.lines, blk.next, when=blk.when)
         return [self.uid(f"{block_id}.0")]
 
     def after(self, nx, prefix):
+        if isinstance(nx.go, list):
+            # альтернативы: игра берёт первого ребёнка, чьи условия выполнены; если у последнего
+            # есть условия — в конце пустой узел «конец», как у Larian
+            out = [u for g in nx.go for u in self.entry(g)]
+            if self.s.blocks[nx.go[-1]].when:
+                end = self.uid(f"{prefix}.altend")
+                if end not in self.alt_ends:
+                    self.alt_ends.add(end)
+                    self.d.create_standard_dialog_node(end, ALFIRA_TEMPLATE, [], None, end_node=True)
+                out.append(end)
+            return out
         if nx.go:
             return self.entry(nx.go)
         if nx.choices:
@@ -159,9 +176,10 @@ class Compiler:
             children = self.after(nx, prefix) if last else [ids[i + 1]]
             sets = list(line.set) + (list(first_set) if i == 0 else []) + (list(nx.set) if last else [])
             self.d.create_standard_dialog_node(
-                nid, ALFIRA_TEMPLATE, children, self.line_text(f"{prefix}.{i}", line),
+                nid, NARRATOR_SPEAKER if line.narrator else ALFIRA_TEMPLATE, children,
+                self.line_text(f"{prefix}.{i}", line),
                 constructor=self.b.dialog_object.GREETING if root and i == 0 else self.b.dialog_object.ANSWER,
-                setflags=self.groups(sets), checkflags=self.groups(when) if root and i == 0 else [],
+                setflags=self.groups(sets), checkflags=self.groups(when) if i == 0 else [],
                 root=root and i == 0, end_node=last and nx.end,
                 approval_rating_uuid=self.approval(line.approve + (first_approve if i == 0 else 0)))
         return ids[0]
@@ -226,6 +244,29 @@ class Compiler:
             self.npc.append((add, reply))
         return [nested, add]
 
+    def chapter_entries(self):
+        """Входы в главы (Scene.chapter_entries): корень без текста → вложенный диалог главы → конец.
+
+        Так устроены главы Шэдоухарт: корень ShadowHeart_InParty2 с условиями темы и без текста,
+        под ним узел Nested Dialog на ShadowHeart_InParty2_Nested_*Chapter.
+        """
+        out = []
+        for sc in self.chapters:
+            ch, key = sc.chapter, f"@chapter{sc.chapter.number:02d}"
+            when = [ch.available_flag.on, ch.done_flag.off, *ch.when]
+            if ch.approval is not None:
+                if ch.approval not in APPROVAL_SP1:
+                    raise ValueError(f"глава {ch.number}: порога одобрения {ch.approval} у игры нет; есть {sorted(APPROVAL_SP1)}")
+                when.append(APPROVAL_SP1[ch.approval](ALFIRA))
+            entry, nested, end = self.uid(key), self.uid(f"{key}.nested"), self.uid(f"{key}.end")
+            self.d.create_standard_dialog_node(end, ALFIRA_TEMPLATE, [], None, end_node=True)
+            self.nested_node(nested, sc.dialog_id, [end], [])
+            self.d.create_standard_dialog_node(
+                entry, ALFIRA_TEMPLATE, [nested], None, constructor=self.b.dialog_object.GREETING,
+                checkflags=self.groups(when), root=True)
+            out.append(entry)
+        return out
+
     def nested_node(self, nid, nested, children, checkflags):
         n = et.fromstring(
             '<node id="node" key="UUID"><attribute id="constructor" type="FixedString" value="Nested Dialog" />'
@@ -276,6 +317,9 @@ class Compiler:
         for bid in s.roots:
             blk = s.blocks[bid]
             self.done_blocks.add(bid)
+            if blk.chapters:
+                roots.extend(self.chapter_entries())
+                continue
             roots.append(self.lines(bid, blk.lines, blk.next, root=True, when=blk.when))
         for r in roots:
             self.d.add_root_node(r)
@@ -289,6 +333,8 @@ class Compiler:
             if line.handle:
                 src, src_node, _ = self.voices[line.handle]
                 st.voiced_phase(nid, src, src_node)
+            elif line.narrator:
+                st.narrator_phase(nid, line)
             else:
                 st.text_phase(nid, line)
         # записи банков
@@ -299,7 +345,10 @@ class Compiler:
         ch = dres.find("./children")
         for old in ch.findall('./node[@id="childResources"]'):
             ch.remove(old)
-        for n in s.nested:
+        nested = list(s.nested)
+        if any(b.chapters for b in s.blocks.values()):
+            nested += [c.dialog_id for c in self.chapters]
+        for n in nested:
             et.SubElement(et.SubElement(ch, "node", {"id": "childResources"}), "attribute",
                           {"id": "Object", "type": "guid", "value": n})
         tres = lib.assets.get_timeline_resource(timeline_id)
@@ -424,13 +473,28 @@ def check_vanilla(lib, scenes):
                 roll = getattr(x, "roll", None)
                 if roll:
                     stack.extend([roll.success, roll.failure])
+        if s.chapter is not None:
+            for r in s.chapter.story + s.chapter.when:
+                used.add(r.flag)
+            if s.chapter.approval is not None:
+                used.add(APPROVAL_SP1[s.chapter.approval])
     for fl in [v for v in vars(F).values() if isinstance(v, Flag)]:
         used.add(fl)
     for fl in used:
         if fl.new:
             continue
         if fl.kind == "Tag":
-            t = lib.game_file(f"Public/Shared/Tags/{fl.uuid}.lsf")
+            for pack in ("Shared", "Gustav", "GustavDev"):     # REALLY_DARK_URGE — в GustavDev
+                path = f"Public/{pack}/Tags/{fl.uuid}.lsf"
+                try:
+                    lib.assets.index.get_pak_by_file(path)
+                    break
+                except RuntimeError:
+                    continue
+            else:
+                errors.append(f"тег {fl.name} ({fl.uuid}) не найден в Public/*/Tags игры")
+                continue
+            t = lib.game_file(path)
             name = t.root_node.find('.//attribute[@id="Name"]').get("value")
             if name != fl.name:
                 errors.append(f"тег {fl.uuid}: в игре {name}, у нас {fl.name}")
@@ -461,7 +525,67 @@ def load_scenes():
     for name in SCENES:
         mod = importlib.import_module(f"scenes.{name}")
         out.append(mod.SCENE)
+    chapters = [s for s in out if s.chapter is not None]
+    nums = sorted(s.chapter.number for s in chapters)
+    if nums != list(range(1, len(nums) + 1)):
+        sys.exit(f"Номера глав должны идти подряд с 1, сейчас {nums}")
+    hubs = [s.name for s in out if any(b.chapters for b in s.blocks.values())]
+    if chapters and len(hubs) != 1:
+        sys.exit(f"Входы в главы (Scene.chapter_entries) должны быть ровно в одной сцене, сейчас: {hubs}")
     return out
+
+
+# --- Osiris глав -------------------------------------------------------------------------------
+
+def chapters_goal(chapters, ids) -> str:
+    """Goal ALFSV_Chapters: когда глава становится доступной. Генерируется из chapter(...) сцен.
+
+    Правила, а не факты INIT: при обновлении мода Osiris заменяет правила в уже начатой игре
+    (story patching), а INIT существующего goal повторно не выполняет. Поэтому новые главы
+    доходят до старых сохранений. Единственный вызов в INIT — для сохранений, где goal новый.
+    """
+    def fl(f):
+        return f"(FLAG){f.name}_{ids.flag(f)}"
+
+    out = ["Version 1", "SubGoalCombiner SGC_AND", "INITSECTION",
+           "// GENERATED by scripts/dialogs/build.py from scripts/dialogs/scenes/ch*.py (chapter(...)).",
+           "// Do not edit: change the chapter declaration and rebuild. See scripts/dialogs/README.md.",
+           "// Alfira's conversation chapters (design/APPROVAL.md section 4): ordered, one new chapter at a time,",
+           "// ALFSV_ChapterNN_Available is set here, ALFSV_ChapterNN_Done by the chapter dialog itself.",
+           "// A save made before chapters existed (Alfira already recruited): the goal is new there, so this",
+           "// INIT runs on story patching and opens the chapters that do not wait for a rest.",
+           "PROC_ALFSV_Chapters_Unlock(0);",
+           "KBSECTION",
+           "//REGION When to look for a new chapter", "",
+           "// After every long rest (GLO_Camp.txt: PROC_Camp_EveryoneAwake -> PROC_LongRest)",
+           "PROC", "PROC_LongRest()", "AND", "DB_ALFSV_IsCompanion(1)", "THEN",
+           "PROC_ALFSV_Chapters_Unlock(1);", "",
+           "// Chapters that do not wait for a rest: at recruitment and when a chapter has been played",
+           "IF", "DB_ALFSV_IsCompanion(1)", "THEN", "PROC_ALFSV_Chapters_Unlock(0);", ""]
+    for sc in chapters:
+        out += ["IF", f"FlagSet({fl(sc.chapter.done_flag)}, {NULL}, _)", "AND", "DB_ALFSV_IsCompanion(1)",
+                "THEN", "PROC_ALFSV_Chapters_Unlock(0);", ""]
+    out += ["// Debug (Script Extender console): Osi.PROC_ALFSV_Debug_UnlockChapter() - as if a long rest had passed",
+            "PROC", "PROC_ALFSV_Debug_UnlockChapter()", "THEN", "PROC_ALFSV_Chapters_Unlock(1);", "",
+            "//END_REGION", "", "//REGION Chapters", ""]
+    prev = None
+    for sc in chapters:
+        ch = sc.chapter
+        when = "after a long rest" if ch.after_rest else "immediately"
+        out.append(f"// Chapter {ch.number}: {sc.name} - unlocks {when}"
+                   + (f", after chapter {prev.number}" if prev else ""))
+        cond = ["PROC", "PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)", "AND", "DB_ALFSV_IsCompanion(1)",
+                "AND", f"NOT DB_GlobalFlag({fl(ch.available_flag)})"]
+        if prev is not None:
+            cond += ["AND", f"DB_GlobalFlag({fl(prev.done_flag)})"]
+        if ch.after_rest:
+            cond += ["AND", "_AtRest == 1"]
+        for r in ch.story:
+            cond += ["AND", f"{'' if r.value else 'NOT '}DB_GlobalFlag((FLAG){r.flag.name}_{ids.flag(r.flag)})"]
+        out += cond + ["THEN", f"PROC_GlobalSetFlagAndCache({fl(ch.available_flag)});", ""]
+        prev = ch
+    out += ["//END_REGION", "EXITSECTION", "", "ENDEXITSECTION", ""]
+    return "\n".join(out)
 
 
 def generate(dump=False):
@@ -475,7 +599,8 @@ def generate(dump=False):
     if errors:
         sys.exit("Данные сцен не сходятся с игрой:\n  " + "\n  ".join(errors))
     vm = voice_meta_handles(lib)
-    results = [Compiler(lib, s, ids, vm).run() for s in scenes]
+    chapters = sorted((s for s in scenes if s.chapter is not None), key=lambda s: s.chapter.number)
+    results = [Compiler(lib, s, ids, vm, chapters).run() for s in scenes]
 
     for d in OWNED:
         p = src / d
@@ -517,6 +642,11 @@ def generate(dump=False):
     for f in sorted(flags, key=lambda x: x.name):
         write_xml(flag_xml(ids.flag(f), f), src / f"Public/_MOD_/Flags/{ids.flag(f)}.lsx")
     write_xml(character_override(lib), src / f"Mods/_MOD_/Globals/WLD_Main_A/Characters/{ALFIRA_TEMPLATE}.lsx")
+    goal = src / CHAPTERS_GOAL
+    if chapters:
+        goal.write_text(chapters_goal(chapters, ids), encoding="utf-8", newline="\n")
+    elif goal.exists():
+        goal.unlink()
     loc = src / "Mods/_MOD_/Localization"
     write_xml(loca_xml(loca_en), loc / "English" / f"{LOCA_NAME}_en.xml")
     write_xml(loca_xml(loca_ru), loc / "Russian" / f"{LOCA_NAME}_ru.xml")
@@ -530,6 +660,9 @@ def generate(dump=False):
         "scenes": {c.s.name: {"dialog": c.s.dialog_id, "timeline": c.tres.find('./attribute[@id="ID"]').get("value"),
                               "phases": len(c.stager.report), "nodes": len(c.d.get_dialog_nodes())}
                    for c in results},
+        "chapters": {s.chapter.number: {"scene": s.name, "dialog": s.dialog_id, "title": s.chapter.title,
+                                         "available": ids.flag(s.chapter.available_flag),
+                                         "done": ids.flag(s.chapter.done_flag)} for s in chapters},
         "female_variants": sorted(loca_ru_f) if FEMALE_VARIANTS else [],
         "bg3moddinglib": lib.commit,
     }

@@ -6,7 +6,9 @@
     choices=[...]  варианты ответа героя прямо здесь;
     end=True       конец диалога;
     join=JOIN      вступление в отряд (с меню замены при полном отряде).
-Формат описан в scripts/dialogs/README.md.
+go может быть списком блоков: игра берёт первый, чьи условия (block(..., when=...)) выполнены.
+Главы разговоров (этап 4) — chapter(...) в сцене главы; вход в них генерируется в разговоре в
+отряде (Scene.chapter_entries) и в Osiris (goal ALFSV_Chapters). Формат — scripts/dialogs/README.md.
 """
 from __future__ import annotations
 
@@ -84,6 +86,7 @@ class Line:
     set: list = field(default_factory=list)
     approve: int = 0
     note: str = ""                       # для людей: ремарка из сценария
+    narrator: bool = False               # ремарка рассказчика (narrate)
 
 
 def say(en: str, ru: str, *, emo="neutral", shot="alfira", set=(), approve=0, note="") -> Line:
@@ -99,6 +102,16 @@ def voice(handle: str, *, set=(), approve=0, note="") -> Line:
     return Line(handle=handle, set=list(set), approve=approve, note=note)
 
 
+def narrate(en: str, ru: str, *, emo="neutral", shot="alfira", set=(), approve=0, note="") -> Line:
+    """Ремарка рассказчика: действие без слов («Она смотрит на свои сапоги»).
+
+    Так игра показывает действия в диалоге: узел рассказчика (speaker -666), текст в звёздочках
+    (*...* — так в loca игры). Звёздочки build добавит сам; текст без озвучки. emo — лицо Альфиры,
+    shot — план камеры на время ремарки.
+    """
+    return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note, narrator=True)
+
+
 # --- переходы и варианты -----------------------------------------------------------------------
 
 @dataclass
@@ -112,7 +125,7 @@ class Join:
 
 @dataclass
 class Next:
-    go: str = ""
+    go: str | list = ""                  # блок или список блоков-альтернатив (первый подходящий)
     choices: list = field(default_factory=list)
     end: bool = False
     join: Join | None = None
@@ -125,7 +138,8 @@ class Next:
 
 
 def _next(where, go="", choices=(), end=False, join=None, set=()) -> Next:
-    nx = Next(go=go, choices=list(choices), end=end, join=join, set=list(set))
+    nx = Next(go=list(go) if isinstance(go, (list, tuple)) else go, choices=list(choices), end=end,
+              join=join, set=list(set))
     nx.check(where)
     return nx
 
@@ -194,6 +208,52 @@ class Block:
     next: Next | None
     when: list = field(default_factory=list)
     root: bool = False
+    chapters: bool = False               # место входов в главы (Scene.chapter_entries)
+
+
+# --- главы разговоров (этап 4) -----------------------------------------------------------------
+
+@dataclass
+class Chapter:
+    """Глава разговора с Альфирой (design/APPROVAL.md §4). Объявляется в файле сцены главы.
+
+    Жизнь главы — два глобальных флага мода, их uuid выдаёт build:
+      ALFSV_ChapterNN_Available — ставит Osiris (goal ALFSV_Chapters, генерируется), когда глава
+                                  открылась: предыдущая глава сыграна, выполнены условия story и
+                                  (если after_rest) только что был долгий отдых;
+      ALFSV_ChapterNN_Done      — ставит сама сцена главы (set=[CH.done]) там, где глава считается
+                                  сыгранной. До этого глава предлагается при каждом разговоре.
+    В разговоре в отряде вход в главу — корень без текста с условиями Available, !Done, when и
+    порогом одобрения, дальше — вложенный диалог главы (как ShadowHeart_InParty2 → *_Nested_*Chapter).
+    """
+    number: int
+    title: str
+    after_rest: bool = True              # открывается только после долгого отдыха (иначе — сразу)
+    story: list = field(default_factory=list)   # глобальные флаги: проверяет Osiris при открытии
+    when: list = field(default_factory=list)    # условия входа при каждом разговоре (флаги диалога)
+    approval: int | None = None          # мин. одобрение собеседника на входе (Approval_AtLeast_N_For_Sp1)
+
+    @property
+    def available_flag(self) -> Flag:
+        return Flag(f"ALFSV_Chapter{self.number:02d}_Available", "Global", new=True,
+                    description=f"Alfira chapter {self.number} is unlocked")
+
+    @property
+    def done_flag(self) -> Flag:
+        return Flag(f"ALFSV_Chapter{self.number:02d}_Done", "Global", new=True,
+                    description=f"Alfira chapter {self.number} has been played")
+
+    @property
+    def done(self) -> FlagRef:           # set=[CH.done] — глава сыграна
+        return self.done_flag.on
+
+
+def chapter(number: int, title: str, *, after_rest=True, story=(), when=(), approval=None) -> Chapter:
+    """Объявление главы: номер (порядок), название, условия открытия и входа. См. Chapter."""
+    for r in story:
+        if not isinstance(r, FlagRef) or r.flag.kind != "Global":
+            raise ValueError(f"глава {number}: в story только глобальные флаги (F.X.on / F.X.off), получено {r!r}")
+    return Chapter(number, title, after_rest, list(story), list(when), approval)
 
 
 @dataclass
@@ -205,6 +265,7 @@ class Scene:
     voice_from: list = field(default_factory=list)   # где искать озвученные реплики (по handle)
     nested: list = field(default_factory=list)       # ID вложенных диалогов (childResources банка)
     status: str = ""
+    chapter: Chapter | None = None                   # сцена — глава разговора (вложенный диалог)
     blocks: dict = field(default_factory=dict)
     roots: list = field(default_factory=list)
 
@@ -222,10 +283,19 @@ class Scene:
             raise ValueError(f"{id}: приветствию нужна реплика")
         return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set), list(when), root=True))
 
-    def block(self, id: str, *lines: Line, go="", choices=(), end=False, join=None, set=()):
+    def block(self, id: str, *lines: Line, when=(), go="", choices=(), end=False, join=None, set=()):
+        """Реплики подряд. when — условия (для альтернатив в go=[...]: берётся первый подходящий)."""
         if not lines:
             raise ValueError(f"{id}: блоку нужна реплика (для одних вариантов — menu())")
-        return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set)))
+        return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set), list(when)))
+
+    def chapter_entries(self):
+        """Здесь (между приветствиями, по приоритету) встают входы во все главы из scenes/ch*.py.
+
+        Для каждой главы build создаёт корень без текста с условиями главы и вложенный диалог главы.
+        После главы разговор заканчивается.
+        """
+        return self._add(Block("@chapters", [], None, root=True, chapters=True))
 
     def menu(self, id: str, *options: Option):
         """Меню вариантов без реплик: на него ведут go="id" из разных мест (общие узлы)."""
@@ -238,9 +308,11 @@ _GENDER = re.compile(r"\{([^{}|]*)\|([^{}|]*)\}")
 _ITALIC = re.compile(r"\*([^*]+)\*")
 
 
-def render(text: str, female: bool = False) -> str:
-    """{спел|спела} → нужный род; *курсив* → <i>курсив</i>."""
+def render(text: str, female: bool = False, narrator: bool = False) -> str:
+    """{спел|спела} → нужный род; *курсив* → <i>курсив</i>. Ремарка рассказчика — *в звёздочках*."""
     text = _GENDER.sub(lambda m: m.group(2 if female else 1), text)
+    if narrator:
+        return f"*{text}*"
     return _ITALIC.sub(r"<i>\1</i>", text)
 
 
