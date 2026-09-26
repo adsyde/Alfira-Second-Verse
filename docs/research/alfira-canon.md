@@ -35,14 +35,14 @@
 - **Линия Асмодея** видна только по имени корневого шаблона (`Tieflings_Female_Asmodeus_Civilian`). В репликах её родословная не упоминается.
 
 ### Лихейла (Lihala) — наставница
-- «apprenticed to a woman called Lihala» (синопсис `DEN_TieflingBard_Bard`). Для Альфиры она «Teacher... friend... everything to me» / «Наставница... друг... она всё для меня» (Разговор с мёртвыми).
-- **Погибла от гноллов по дороге в рощу.** «She was playing her lute. We... didn't hear the gnolls coming.» / «Она играла на лютне. Мы... не услышали гноллов.» Там же: «There was so much blood. I - I can still smell it.» Альфира спаслась бегством: «Run when they... shriek. They call... for others...» (Разговор с мёртвыми).
+- «apprenticed to a woman called Lihala» (синопсис `DEN_TieflingBard_Bard`). Для Альфиры она «Teacher... friend... everything to me» / «Наставница... друг... она всё для меня» (Разговор с мертвым).
+- **Погибла от гноллов по дороге в рощу.** «She was playing her lute. We... didn't hear the gnolls coming.» / «Она играла на лютне. Мы... не услышали гноллов.» Там же: «There was so much blood. I - I can still smell it.» Альфира спаслась бегством: «Run when they... shriek. They call... for others...» (Разговор с мертвым).
 - **Какой была Лихейла:** любила танцевать, хотя танцевала неуклюже: «She loved dancing. Had two left feet, mind.» / «Она любила танцевать. Хотя обе ноги у нее были левые». Была строгой: «She'd yell at me for that clunky verse. And make me play 'til my fingers were raw.» Не разрешала ученице пить вино (праздник в лагере). Её максимы Альфира постоянно цитирует (см. §4).
 - **После гибели Лихейлы Альфира не играла:** «I haven't finished a song since Lihala died. Haven't played at all, if I'm honest.» / «…По правде говоря, я всё это время вообще не играла». Пока игрок не помог ей, она не могла смотреть на лютню, не слыша криков наставницы.
 - **Лютни.** У Альфиры есть своя лютня и лютня Лихейлы («It was my teacher's. And it's - it's all I have left.»). В предметах есть строки «Lihala's Lute / Лютня Лихейлы» и «Alfira's Lute / Лютня Альфиры». В третьем акте она дарит игроку «my very first lute». Какой предмет-объект соответствует какой строке, в данных не проверено: предметы уровней не распакованы.
 
 ### Цель и мечта
-- В рощу она пришла с намерением петь в «Эльфийской песни»: «Elfsong Tavern... Baldur's Gate...» и «To perform there... to sing... for Lihala...» (Разговор с мёртвыми). Лакриссе говорит: «I've always wanted to sing at the Elfsong Tavern.» / «Я всегда хотела петь в таверне „Эльфийская песнь“.»
+- В рощу она пришла с намерением петь в «Эльфийской песни»: «Elfsong Tavern... Baldur's Gate...» и «To perform there... to sing... for Lihala...» (Разговор с мертвым). Лакриссе говорит: «I've always wanted to sing at the Elfsong Tavern.» / «Я всегда хотела петь в таверне „Эльфийская песнь“.»
 - В третьем акте цель меняется: **школа бардов**. «I'm going to open up a school of bards - the best in the Realms!» / «Я собираюсь открыть школу бардов – лучшую во всем свете!»
 
 ### Песня «The Weeping Dawn» / «Плач рассвета»
@@ -51,7 +51,7 @@
 ### Характер по ремаркам и синопсисам
 Ремарки для актрисы (`NodeContext`) почти прямо описывают персонажа:
 - «Music is what she loves the most in life. It inspires her and gives her hope.»
-- Синопсис Разговора с мёртвыми: «She is quiet and determined».
+- Синопсис Разговора с мертвым: «She is quiet and determined».
 - Альфира не боец и знает это: «Hardly going to be much use in a battle, am I?» / «В бою от меня проку мало, согласись» (ремарка: «knows her own strengths»). При нападении готова умереть за детей: «She isn't a fighter but is prepared to lay down her life to protect them.» (`DEN_DruidAttack_Bard`).
 - Она склонна к самоуничижению («I'm an <i>idiot</i>» / «Вот же я <i>дура</i>»; «Even animals think I'm terrible») и забегает вперёд («As usual, getting ahead of myself»; «Let's take it one note at a time, as my teacher would say»).
 - Не держит зла, но и не прощает сразу. Тому, кто разбил лютню, в третьем акте: «I've forgiven you for that - just about.» / «Я тебе это простила – хоть и с трудом.»
@@ -198,7 +198,7 @@ _Интерпретация:_ ядро образа — горе, которое
 
 **Праздник в лагере** (`CAMP_GoblinHuntCelebration`, ночь `NIGHT_GoblinHunt_TieflingCelebration`, после победы над вожаками гоблинов). Она пьяна от первого в жизни вина и хочет написать песню о герое. Реакции зависят от происхождения и класса игрока (Астарион, Лаэ'зель, Уилл, Гейл, Карлах, тифлинг, полудроу, дуэргар, бард, воин, варвар). С Лакриссой идёт флирт; если та мертва — AD с Зай.
 
-**Разговор с мёртвыми** (`DEN_TieflingBard_Dead`): «Alfira... apprentice... bard...». Убийце она не отвечает.
+**Разговор с мертвым** (`DEN_TieflingBard_Dead`): «Alfira... apprentice... bard...». Убийце она не отвечает.
 
 ### 6.3. Ночь убийства (только для Тёмного соблазна)
 - **Условия** (`Act1a_Camp_PostEA.txt`, `Act1_ORI_DarkUrge.txt`): игрок — Тёмный соблазн (тег `DARKURGE`), выставлен `ORI_DarkUrge_MurderOfAlfira_Requirement`. Ночь эксклюзивная, приоритет 6200. Отменяется, если уже наступила стадия Изобель (`ORI_DarkUrge_KilledIsobel/SparedIsobel_Requirement`). Может сработать в лагерях первого акта и во втором акте (SCLMAIN, SHARTEMPLE, MOONRISE, HAVEN). Принудительно включается при переходах `ToCreche…` / `ToSCLFromUnderdark` (`GLO_FallbackCamp_Gustav.txt`).
@@ -227,7 +227,7 @@ _Интерпретация:_ ядро образа — горе, которое
 - **Обычный вариант:** «We made it to <i>the</i> Elfsong Tavern.» Лакрисса пускает её репетировать на крыше. Альфира «отчитывает» игрока и объявляет о школе бардов «because of <i>you</i>», дарит лютню. Если игрок шутит «назови школу в мою честь»: «You and Lihala's names in bold? Hm - I like it. Deal.»
 - **При `ConvincedToQuit`:** она потеряна: «I'm not a bard - not anymore… I just feel more lost.» В AD думает о сменах в таверне, а не об уличных выступлениях.
 - С Лакриссой: AD на крыше («We made it, Lakrissa.» — «Only because I had you.»), общая сцена `LOW_Elfsong_Alfira_Lakrisssa` (планы на школу, Лакрисса её дразнит).
-- В лагере беженцев у Переправы Змея тифлинги говорят, что «Alfira made her way into the city».
+- В лагере беженцев у Драконьего перекрестка тифлинги говорят, что «Alfira made her way into the city».
 
 ### 6.6. Эпилог (`Act3c_EPI_Letters.txt`, `Act3c_EPI_Gazettes.txt`; хотфикс 9 переопределяет Gazettes, но строки про Альфиру не меняет)
 
@@ -242,7 +242,7 @@ _Интерпретация:_ ядро образа — горе, которое
 
 ### 6.7. Сводка судеб
 1. Погибает при налёте гоблинов, если игрок на стороне гоблинов (скрипт или бой).
-2. Убита игроком или в бою в первом акте. Разговор с мёртвыми.
+2. Убита игроком или в бою в первом акте. Разговор с мертвым.
 3. Убита Тёмным соблазном в ночь `NIGHT_DarkUrge_MurderOfAlfira` (первый акт или ранний второй).
 4. Выживает при Тёмном соблазне только через подмену Квил: письмо «DUSaved».
 5. Выживает до «Последнего света», но может погибнуть в осаде или при падении защиты.
@@ -267,7 +267,7 @@ _Интерпретация:_ ядро образа — горе, которое
 - `DEN_TieflingBard_AD_Dejected` (3): лютню украли или разбили.
 - `DEN_TieflingBard_AD_InstrumentStolen` (1), `…_InstrumentBroken` (2, включая рыдание «*Sob.*»).
 - `DEN_TieflingBard_Animals` (без её реплик): белки высмеивают её пение.
-- `DEN_SpeakWithDead/DEN_TieflingBard_Dead` (7): Разговор с мёртвыми.
+- `DEN_SpeakWithDead/DEN_TieflingBard_Dead` (7): Разговор с мертвым.
 - `DEN_DruidAttack_Bard` (5), `DEN_DruidAttack_AD_BardAndKidAfterAttack` (4, с Заки): атака друидов.
 - `DEN_AttackOnDen_Bard` (24), `DEN_AttackOnDen_AD_KidStory` (6, сказка о Балдуране), `DEN_AttackOnDen_AD_BardDefendsKids` (1): налёт гоблинов.
 
@@ -318,7 +318,7 @@ _Интерпретация:_ ядро образа — горе, которое
   - Декламация стихов внутри речи на празднике (`h8f83a60d…`, `had48b82b…`, `h894acf1e…`, `h59f26c5a…`, `h25c154c1…`): это речь, не пение.
   - Сама синематик-песня (узел `N4555`, «Cue cinematic of her singing») не содержит `TaggedText`. _Интерпретация:_ полная исполненная версия, вероятно, лежит в музыкальных ассетах, а не в её банке.
 - **Что пометить или исключить в датасете:**
-  - 7 строк Разговора с мёртвыми (50 с): «мёртвая» подача с паузами, в игре возможна обработка.
+  - 7 строк Разговора с мертвым (50 с): «мёртвая» подача с паузами, в игре возможна обработка.
   - Рыдание «*Sob.*» и короткие выкрики.
   - 9 повторяющихся текстов (10 лишних записей, около 50 с). Три из них с идентичной длиной — вероятно, копии одного аудио: две пары «Moon. Sun…» / «Faith. Care…» в FullSong и «No pressure, kin» в двух вариантах для Карлах.
 - Список «handle → файл/длина/пение» можно пересобрать скриптом по банку. Промежуточный результат лежал в scratchpad (`vo.json`); в репозиторий он не сохранён.

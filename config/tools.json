@@ -115,6 +115,19 @@
           "*Story/Dialogs/*.lsj"
         ],
         "_note": "~9200 файлов, 1.8 ГБ. Нужно для поиска всех сцен, где участвует Альфира, и реплик спутников о ней."
+      },
+      "approval": {
+        "paks": [
+          "Shared.pak",
+          "Gustav.pak",
+          "GustavX.pak",
+          "Patch8_HotFix9.pak"
+        ],
+        "expressions": [
+          "Public/*/ApprovalRatings/*"
+        ],
+        "convert": "lsx",
+        "_note": "Ресурсы реакций одобрения: какой узел диалога сколько даёт каждому спутнику."
       }
     }
   },
