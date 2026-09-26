@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="6" revision="0" build="1" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="dialog">
+		<node id="dialog">
+			<attribute id="automated" type="bool" value="True" />
+			<attribute id="category" type="LSString" value="Voice bark" />
+			<attribute id="UUID" type="FixedString" value="b478edd2-6983-42d5-9bdb-4b266817ba04" />
+			<attribute id="TimelineId" type="FixedString" value="59278ddf-9c70-5ed1-8529-146b33ced390" />
+			<children>
+				<node id="DefaultAddressedSpeakers">
+					<children>
+						<node id="Object" key="MapKey">
+							<attribute id="MapKey" type="int32" value="0" />
+							<attribute id="MapValue" type="int32" value="-1" />
+						</node>
+					</children>
+				</node>
+				<node id="speakerlist">
+					<children>
+						<node id="speaker" key="index">
+							<attribute id="index" type="FixedString" value="0" />
+							<attribute id="list" type="LSString" value="4a405fba-3000-4c63-97e5-a8001ebb883c" />
+							<attribute id="SpeakerMappingId" type="guid" value="c2d074fa-f42e-4cc2-b843-90a506f6a666" />
+						</node>
+					</children>
+				</node>
+				<node id="nodes">
+					<children>
+						<node id="node" key="UUID">
+							<attribute id="constructor" type="FixedString" value="TagGreeting" />
+							<attribute id="UUID" type="FixedString" value="f04aee68-2a79-5a7b-bb37-2bbbda18c7c1" />
+							<attribute id="speaker" type="int32" value="0" />
+							<attribute id="Root" type="bool" value="True" />
+							<children>
+								<node id="children">
+									<children>
+										<node id="child">
+											<attribute id="UUID" type="FixedString" value="84453263-cce2-5fea-8c74-61d494abb6a1" />
+										</node>
+									</children>
+								</node>
+								<node id="GameData">
+									<children>
+										<node id="AiPersonalities" key="AiPersonality" />
+										<node id="MusicInstrumentSounds" />
+										<node id="OriginSound" />
+									</children>
+								</node>
+								<node id="Tags" />
+								<node id="setflags" />
+								<node id="checkflags">
+									<children>
+										<node id="flaggroup" key="type">
+											<attribute id="type" type="FixedString" value="Object" />
+											<children>
+												<node id="flag" key="UUID">
+													<attribute id="UUID" type="FixedString" value="e0fd8c86-4bf4-5934-a8fc-12c77c9c8123" />
+													<attribute id="value" type="bool" value="True" />
+													<attribute id="paramval" type="int32" value="0" />
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+								<node id="TaggedTexts">
+									<children>
+										<node id="TaggedText">
+											<attribute id="HasTagRule" type="bool" value="True" />
+											<children>
+												<node id="TagTexts">
+													<children>
+														<node id="TagText">
+															<attribute id="TagText" type="TranslatedString" handle="h7484c43cg029fg52e2gbeceg41337a36d508" version="1" />
+															<attribute id="LineId" type="guid" value="c8ca3ca6-2ca9-558d-8340-4543dbeb89dc" />
+															<attribute id="stub" type="bool" value="True" />
+														</node>
+													</children>
+												</node>
+												<node id="RuleGroup">
+													<attribute id="TagCombineOp" type="uint8" value="0" />
+													<children>
+														<node id="Rules" />
+													</children>
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+							</children>
+						</node>
+						<node id="node" key="UUID">
+							<attribute id="constructor" type="FixedString" value="TagAnswer" />
+							<attribute id="UUID" type="FixedString" value="84453263-cce2-5fea-8c74-61d494abb6a1" />
+							<attribute id="speaker" type="int32" value="0" />
+							<attribute id="endnode" type="bool" value="True" />
+							<children>
+								<node id="children" />
+								<node id="GameData">
+									<children>
+										<node id="AiPersonalities" key="AiPersonality" />
+										<node id="MusicInstrumentSounds" />
+										<node id="OriginSound" />
+									</children>
+								</node>
+								<node id="Tags" />
+								<node id="setflags" />
+								<node id="checkflags" />
+								<node id="TaggedTexts">
+									<children>
+										<node id="TaggedText">
+											<attribute id="HasTagRule" type="bool" value="True" />
+											<children>
+												<node id="TagTexts">
+													<children>
+														<node id="TagText">
+															<attribute id="TagText" type="TranslatedString" handle="he74e8963g8e9dg5059g96a8ge7fa424aeb36" version="1" />
+															<attribute id="LineId" type="guid" value="44bca5a8-62e4-5d05-ada8-e73c8c5f07b0" />
+															<attribute id="stub" type="bool" value="True" />
+														</node>
+													</children>
+												</node>
+												<node id="RuleGroup">
+													<attribute id="TagCombineOp" type="uint8" value="0" />
+													<children>
+														<node id="Rules" />
+													</children>
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+							</children>
+						</node>
+						<node id="node" key="UUID">
+							<attribute id="constructor" type="FixedString" value="TagGreeting" />
+							<attribute id="UUID" type="FixedString" value="724d10a4-c5a7-5b09-8ee9-c0cb0fb68d4b" />
+							<attribute id="speaker" type="int32" value="0" />
+							<attribute id="Root" type="bool" value="True" />
+							<children>
+								<node id="children">
+									<children>
+										<node id="child">
+											<attribute id="UUID" type="FixedString" value="34043867-cda9-59e8-a764-d1d69f336cdb" />
+										</node>
+									</children>
+								</node>
+								<node id="GameData">
+									<children>
+										<node id="AiPersonalities" key="AiPersonality" />
+										<node id="MusicInstrumentSounds" />
+										<node id="OriginSound" />
+									</children>
+								</node>
+								<node id="Tags" />
+								<node id="setflags" />
+								<node id="checkflags">
+									<children>
+										<node id="flaggroup" key="type">
+											<attribute id="type" type="FixedString" value="Object" />
+											<children>
+												<node id="flag" key="UUID">
+													<attribute id="UUID" type="FixedString" value="4f2662d3-7635-505b-aaaa-83e744b2bfe6" />
+													<attribute id="value" type="bool" value="True" />
+													<attribute id="paramval" type="int32" value="0" />
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+								<node id="TaggedTexts">
+									<children>
+										<node id="TaggedText">
+											<attribute id="HasTagRule" type="bool" value="True" />
+											<children>
+												<node id="TagTexts">
+													<children>
+														<node id="TagText">
+															<attribute id="TagText" type="TranslatedString" handle="h146f54abg7ba4g5918g8092g9025e6575356" version="1" />
+															<attribute id="LineId" type="guid" value="2c7bc161-f7a7-56ee-81be-bd987314eb7c" />
+															<attribute id="stub" type="bool" value="True" />
+														</node>
+													</children>
+												</node>
+												<node id="RuleGroup">
+													<attribute id="TagCombineOp" type="uint8" value="0" />
+													<children>
+														<node id="Rules" />
+													</children>
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+							</children>
+						</node>
+						<node id="node" key="UUID">
+							<attribute id="constructor" type="FixedString" value="TagAnswer" />
+							<attribute id="UUID" type="FixedString" value="34043867-cda9-59e8-a764-d1d69f336cdb" />
+							<attribute id="speaker" type="int32" value="0" />
+							<attribute id="endnode" type="bool" value="True" />
+							<children>
+								<node id="children" />
+								<node id="GameData">
+									<children>
+										<node id="AiPersonalities" key="AiPersonality" />
+										<node id="MusicInstrumentSounds" />
+										<node id="OriginSound" />
+									</children>
+								</node>
+								<node id="Tags" />
+								<node id="setflags" />
+								<node id="checkflags" />
+								<node id="TaggedTexts">
+									<children>
+										<node id="TaggedText">
+											<attribute id="HasTagRule" type="bool" value="True" />
+											<children>
+												<node id="TagTexts">
+													<children>
+														<node id="TagText">
+															<attribute id="TagText" type="TranslatedString" handle="h33e51f47g80dag5b6cgab8ag19204963546f" version="1" />
+															<attribute id="LineId" type="guid" value="49f934cf-1c19-5205-b3b1-5fe8f904ad96" />
+															<attribute id="stub" type="bool" value="True" />
+														</node>
+													</children>
+												</node>
+												<node id="RuleGroup">
+													<attribute id="TagCombineOp" type="uint8" value="0" />
+													<children>
+														<node id="Rules" />
+													</children>
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+							</children>
+						</node>
+						<node id="node" key="UUID">
+							<attribute id="constructor" type="FixedString" value="TagGreeting" />
+							<attribute id="UUID" type="FixedString" value="bef41d81-6bed-54d1-b176-f008efd1ee10" />
+							<attribute id="speaker" type="int32" value="0" />
+							<attribute id="Root" type="bool" value="True" />
+							<attribute id="endnode" type="bool" value="True" />
+							<children>
+								<node id="children" />
+								<node id="GameData">
+									<children>
+										<node id="AiPersonalities" key="AiPersonality" />
+										<node id="MusicInstrumentSounds" />
+										<node id="OriginSound" />
+									</children>
+								</node>
+								<node id="Tags" />
+								<node id="setflags" />
+								<node id="checkflags" />
+								<node id="TaggedTexts">
+									<children>
+										<node id="TaggedText">
+											<attribute id="HasTagRule" type="bool" value="True" />
+											<children>
+												<node id="TagTexts">
+													<children>
+														<node id="TagText">
+															<attribute id="TagText" type="TranslatedString" handle="h7b9dfd5dg2117g5bddg8adag4ce1d175ac61" version="1" />
+															<attribute id="LineId" type="guid" value="dc88c59c-89b0-5e1a-8ca4-fb0cd7861486" />
+															<attribute id="stub" type="bool" value="True" />
+														</node>
+													</children>
+												</node>
+												<node id="RuleGroup">
+													<attribute id="TagCombineOp" type="uint8" value="0" />
+													<children>
+														<node id="Rules" />
+													</children>
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
+							</children>
+						</node>
+						<node id="RootNodes">
+							<attribute id="RootNodes" type="FixedString" value="f04aee68-2a79-5a7b-bb37-2bbbda18c7c1" />
+						</node>
+						<node id="RootNodes">
+							<attribute id="RootNodes" type="FixedString" value="724d10a4-c5a7-5b09-8ee9-c0cb0fb68d4b" />
+						</node>
+						<node id="RootNodes">
+							<attribute id="RootNodes" type="FixedString" value="bef41d81-6bed-54d1-b176-f008efd1ee10" />
+						</node>
+					</children>
+				</node>
+			</children>
+		</node>
+	</region>
+</save>

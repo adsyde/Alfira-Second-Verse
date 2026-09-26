@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="e0fd8c86-4bf4-5934-a8fc-12c77c9c8123" />
+			<attribute id="Name" type="FixedString" value="ALFSV_AD_Romance" />
+			<attribute id="Description" type="LSString" value="AD mood: a hero has started a romance with Alfira" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

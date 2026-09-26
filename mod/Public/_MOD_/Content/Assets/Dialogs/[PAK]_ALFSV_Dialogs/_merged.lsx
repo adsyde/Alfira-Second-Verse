@@ -108,6 +108,746 @@
 						</node>
 					</children>
 				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="8c34c5f6-7e21-57c3-b5f2-f113c83b265f" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_CRE_LiftStart" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_CRE_LiftStart.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="2381622c-f1da-5dcc-9c57-311f8dd27902" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_CRE_LiftMid" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_CRE_LiftMid.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="9f978edd-2dde-5a69-846b-486947c037de" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_CRE_LiftTop" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_CRE_LiftTop.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="37477503-9cc6-54ff-b49b-6649fe60be4f" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_MountainPass" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_MountainPass.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="1c35818b-260c-51ea-8cf6-10a1b3676391" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Monastery" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Monastery.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="6b9068d2-9692-5042-8ea3-6b9da17c4a4f" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_UnderdarkFirst" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_UnderdarkFirst.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="1466428e-25b8-5c9a-85bc-e47d34bfc3eb" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Myconids" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Myconids.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="1e7f78db-b183-5bf2-802d-0923a23074bb" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_AdamantineForge" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_AdamantineForge.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="86cb32bd-69d1-560a-ac45-8b2c8b46de67" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_SacredPool" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_SacredPool.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="0d26b4a5-584a-552b-b035-bdbfeedcb2eb" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_RisenRoad" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_RisenRoad.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="f5160284-2684-5620-adc4-0b6da781448f" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_BlightedVillage" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_BlightedVillage.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="f280674a-59c1-51e7-a304-59ff71b87eaa" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_CrashSite" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_CrashSite.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="9bdea1ab-243d-557a-9796-f632309cca12" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Teahouse" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Teahouse.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="be424106-6ed5-5a34-b130-291a5648585a" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_GoblinCamp" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_GoblinCamp.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="3610c54a-ce31-5eea-9b50-ffc0ff950ba3" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_DankCrypt" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_DankCrypt.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="1cdd2648-b6ec-5f39-a1b9-12ec1328be8c" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_OwlbearNest" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_OwlbearNest.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="e7da744d-d359-53c9-934a-b98b2ed8e113" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Sunrise" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Sunrise.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="8901821c-ae5b-5047-9163-a220980db9ad" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_SCLFirst" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_SCLFirst.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="0580dc08-6ca8-5a0e-a64a-d92d3c31a41f" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_LastLight" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_LastLight.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="0879240d-4d32-5fc4-9fdf-d95bdc62955b" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Gauntlet" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Gauntlet.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="173937ff-3025-557a-b057-0e748c7b777e" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_GauntletLift" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_GauntletLift.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="f2793bba-48c9-5b17-afc4-3227e9a71cce" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Nightsong" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Nightsong.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="1e1c7c1f-18b4-5fdb-8a03-1255fb9d73b6" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Moonrise" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Moonrise.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="ba71ecca-445e-5064-ab51-c11065ba3a52" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Mausoleum" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Mausoleum.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="24d8efd1-3fbf-51b0-9c0d-8656eab3ab44" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_HouseOfHealing" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_HouseOfHealing.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="7ce88088-8b1d-5265-aae5-0308ca5024b6" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_BaldursGateView" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_BaldursGateView.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="904fd579-ac8e-5725-8852-66b39a2f0531" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_WyrmsRockBridge" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_WyrmsRockBridge.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="42a63332-94bd-5c4c-8535-9c4724385141" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_GreyHarbour" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_GreyHarbour.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="7ad44c8e-ba30-5023-805b-547e126ea024" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_BloomridgePark" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_BloomridgePark.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="451c5198-1d2f-529f-bbcd-b68fea6a9e25" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Tabernacle" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Tabernacle.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="ba2cf6f6-67fa-5bd9-906c-177b17a85888" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_Circus" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_Circus.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="c7e034a4-a220-57a2-aa10-c167b4757cfa" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_SorcerousSundries" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_SorcerousSundries.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="f393635c-ea36-5b72-80f3-0bd5b2acae4a" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_SharessCaress" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_SharessCaress.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="3c819921-c6c5-5776-b407-400354265ea1" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_HouseOfHope" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_HouseOfHope.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="1da956a6-f09f-57cf-ad2b-996d5a50f8f4" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_MorphicPool" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_MorphicPool.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="5aaca661-be95-5a40-bf72-b8d296d2b4ed" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_AstralPlane" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_AstralPlane.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="b3006aa9-fc6d-5023-b11a-7d72b6b8602c" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Travel" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Travel.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
 			</children>
 		</node>
 	</region>
