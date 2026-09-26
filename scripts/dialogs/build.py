@@ -172,7 +172,12 @@ class Compiler:
             return self.done_opts[id(o)]
         nid = self.uid(key)
         self.done_opts[id(o)] = nid
-        text = self.text(key, o.en, o.ru, key)
+        if o.game_line:
+            handle, version = o.game_line
+            self.vanilla_handles.add(handle)
+            text = self.b.text_content(handle, version, self.uid(f"{key}/line"))
+        else:
+            text = self.text(key, o.en, o.ru, key)
         if o.roll:
             r = o.roll
             ok = self.lines(f"{key}.ok", r.success.reply, r.success.next, first_set=r.success.set,

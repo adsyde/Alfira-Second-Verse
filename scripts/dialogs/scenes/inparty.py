@@ -22,14 +22,15 @@ TALKED_1 = new_flag("ALFSV_InParty_Greeting1", "Dialog", "In-party greeting rota
 TALKED_2 = new_flag("ALFSV_InParty_Greeting2", "Dialog", "In-party greeting rotation: second greeting played")
 
 MENU = [
-    opt("Пойдём со мной.", "Come with me.", when=[F.Recruited(ALFIRA, False)],
+    opt("Пойдем со мной.", "Come with me.", game_line=("h5a66bcc9g765dg409cga6c7g4b710426b6ac", 1), when=[F.Recruited(ALFIRA, False)],
         join=Join(nested=NESTED.SwapCamp,
                   reply=say("Right behind you.", "Я за тобой.", emo="happy", note="черновик"))),
-    opt("Жди меня в лагере.", "Wait for me at camp.",
+    opt("Я прошу тебя оставаться пока в лагере.", "I need you to remain at camp for now.",
+        game_line=("h30e8c62bg3b77g4b4fg90beg6ee27760bc5a", 1),
         when=[F.BlockWaitInCamp(ALFIRA, False), F.Recruited(ALFIRA)],
         reply=[say("I'll keep the fire going.", "Буду поддерживать костёр.", emo="happy>thinking", note="черновик")],
         set=[F.RemoveFromParty(ALFIRA)], end=True),
-    opt("*Уйти.*", "*Leave.*", end=True),
+    opt("Уйти.", "Leave.", game_line=("h001ead64g9497g45c9g9176gf389ce24eb2e", 1), end=True),
 ]
 
 S.greeting("cold", voice("he46d9aaag48f9g4858ga58bg41dd1584a4b6"),          # N17: The sooner we go to sleep…

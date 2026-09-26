@@ -143,12 +143,14 @@ class Option:
     next: Next | None = None
     roll: "Roll | None" = None
     key: str = ""
+    game_line: tuple = ()                # (handle, version) реплики героя из игры: её текст и перевод Larian
 
 
 def opt(ru: str, en: str, *, when=(), once=False, approve=0, set=(), reply=(), key="",
-        go="", choices=(), end=False, join=None) -> Option:
+        go="", choices=(), end=False, join=None, game_line=()) -> Option:
+    """game_line=(handle, version) — взять готовую реплику героя из игры (ru/en тогда для чтения)."""
     o = Option(ru=ru, en=en, when=list(when), once=once, approve=approve, set=list(set),
-               reply=list(reply), key=key)
+               reply=list(reply), key=key, game_line=tuple(game_line))
     o.next = _next(f"вариант «{ru}»", go, choices, end, join)
     return o
 
