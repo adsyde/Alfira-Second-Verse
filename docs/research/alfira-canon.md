@@ -213,7 +213,7 @@ _Интерпретация:_ ядро образа — горе, которое
 ### 6.4. Акт 2: «Последний свет» и эпилог акта
 - Появляется в `HAV_TieflingSurvivors` (категория «Base», точка `S_HAV_EnteringHaven_AlfiraPoint`), если тифлинги ушли из рощи живыми.
 - **Засада сектантов по дороге** (`HAV_AlfiraTale_Bard`, 80 реплик). Их окружили, выстроили «like dogs», Ашарака или Икарона ослепили и лишили языка. Альфира сбежала: «All I could do was run.» Её спас Ролан, если остался в роще. Остальных увели в Лунные Башни. Она просит игрока их спасти: «If they're not dead, they're in Moonrise. And gods have mercy on anyone in that hellspit.» Этот разговор открывает журнал `HAV_SaveTieflingPrisoners`.
-- Пока лагерь «на взводе» (после истории с Огненным Кулаком-предателем): «Can't we trust anyone?». После освобождения Ночной песни: «I'd forgotten what light, true blazing light, felt like.»
+- Пока лагерь «на взводе» (после истории с Огненным Кулаком-предателем): «Can't we trust anyone?». После освобождения Песни Ночи: «I'd forgotten what light, true blazing light, felt like.»
 - **Итог спасения:**
   - все спасены — «You actually did it», большая награда;
   - часть спасена — «Our group grows smaller and smaller», малая награда;
