@@ -52,7 +52,7 @@ Public/AlfiraSecondVerse_<uuid>/Content/Assets/Dialogs/[PAK]_ALFSV_Dialogs/_merg
 - `DB_ALFSV_IsCompanion(1)` — наш признак «она спутница»;
 - `DB_CompanionOnlyFaction(Alfira, Companion14)` и `DB_OriginNPCAlignment(Alfira, ACT1_DEN_TieflingBard)`;
 - `DB_OriginInPartyDialog(Alfira, ALFSV_Alfira_InParty)`;
-- ванильные флаги из заготовки Тёмного Соблазна: `DB_OriginPartOfTheTeamFlag(…, ORI_Alfira_ControlledByUser)`
+- ванильные флаги из заготовки Темного Соблазна: `DB_OriginPartOfTheTeamFlag(…, ORI_Alfira_ControlledByUser)`
   и `DB_OriginKickFromPartyFlags(…, ORI_Alfira_Event_KickCompanion, ORI_Alfira_State_CanBeKicked)`.
   Поэтому ванильные меню обмена показывают «Ты можешь занять место Альфиры»;
 - `DB_Origins` и `DB_Origins_UnavailableForRandom`, как у Минска и Хальсина в `_StartPostEA.txt`;
@@ -73,7 +73,7 @@ Public/AlfiraSecondVerse_<uuid>/Content/Assets/Dialogs/[PAK]_ALFSV_Dialogs/_merg
 уровень `WLD_Main_A`, `DEN_TieflingBard_State_FinishedSong`. Вербовка закрыта, если выполнено любое из условий:
 `ConvincedToQuit`, `SmashedLute`, тифлинги ушли (`DEN_TieflingRefugees_State_LeftDen`),
 враждебность тифлингов, поход рейдеров (`GOB_DrowCommander_Event_RaidersLeftForAttack`,
-`RaidersAtDen`, `RaidersInDen`, `RaiderVictory`), она мертва, она — жертва ночи Тёмного Соблазна,
+`RaidersAtDen`, `RaidersInDen`, `RaiderVictory`), она мертва, она — жертва ночи Темного Соблазна,
 она сейчас на празднике тифлингов. Пока условие выполнено, по клику аватара вместо её
 ванильного диалога открывается `ALFSV_Alfira_Recruitment` (`QRY_SelectCustomDialog`).
 
@@ -134,7 +134,7 @@ reflection dialogs), а в движке есть путь без таймлай�
 | `Act2_SCE_EndBrief.txt`, `Act2_SCE_TieflingFollowUp.txt` | выводит из отряда на «дебриф» | убираем из `DB_SCE_Debrief_Participant(_Config)`, `DB_SCE_TieflingFollowUp_Tieflings` |
 | `Act3b_LOW_ElfsongTavern.txt`, `PROC_LOW_AlfiraSetup` | телепорт на крышу, фракция, диалог | отменить нельзя: по вставке `DB_Dialogs(…LOW_Elfsong_Alfira)` возвращаем диалог, фракцию и место (в отряде — к хосту, в лагере — `PROC_ORI_SetupCamp`) |
 
-### 2.5 Тёмный Соблазн
+### 2.5 Темный Соблазн
 
 - Завербованная Альфира никогда не становится жертвой. Наша ветка `QRY_ORI_DarkUrge_ReplaceAlfira`
   срабатывает при `DB_ALFSV_IsCompanion(1)`, и игра сама подставляет Квил (`S_DEN_Bard_Backup`).
@@ -189,7 +189,7 @@ python scripts/install.py
 8. **Сохранение и загрузка** в отряде и в лагере: состояние сохраняется, диалог наш.
 9. **Праздник тифлингов** (если успели завербовать до него): вместо Альфиры играет
    дублёр, сама она после ночи на месте и в отряде.
-10. **Тёмный Соблазн** (отдельное прохождение): завербовать до ночи убийства → ночью приходит
+10. **Темный Соблазн** (отдельное прохождение): завербовать до ночи убийства → ночью приходит
     Квил → утром Альфира жива → сохранить, загрузить — жива.
 
 ## 4. Компилируются ли goals мода и выполняется ли INITSECTION на старом сейве
@@ -253,7 +253,7 @@ python scripts/install.py
 - [ ] конфиг Anubis `DefaultCharacter` в лагере (стоит на месте, не уходит в Рощу);
 - [ ] фракция `Companion14` в отряде, `ACT1_DEN_TieflingBard` в лагере, нет враждебности тифлингов;
 - [ ] праздник тифлингов с дублёром;
-- [ ] Тёмный Соблазн: Квил вместо неё, после загрузки Альфира жива;
+- [ ] Темный Соблазн: Квил вместо неё, после загрузки Альфира жива;
 - [ ] срабатывают ли правила-охранники на факты из INIT актовых goals (акт 2);
 - [ ] отладка из консоли SE: `Osi.PROC_ALFSV_Debug_Recruit()`.
 
