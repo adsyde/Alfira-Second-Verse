@@ -6,20 +6,31 @@
 Альфира (`S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c`) становится
 «поздней спутницей» по схеме Хальсина и Минтары (см. [ARCHITECTURE.md](ARCHITECTURE.md)).
 Мод работает сам, без Script Extender. SE нужен только как отладочная консоль.
-Все реплики — заглушки с пометкой `[PH]`, финальные тексты пишутся отдельно.
+
+**Версия 0.3.0: диалоги с постановкой.** Заглушки `[PH]` без таймлайна заменены
+сгенерированными диалогами с таймлайном, камерой, эмоциями и взглядами (конвейер —
+[STAGING.md](STAGING.md)): вербовка — сцена A «Ученица без наставницы» из
+`design/dialogs/01_recruitment.md` (черновик v3), разговор в отряде — её озвученные реплики
+из игры. Включено одобрение Альфиры (§2.6).
 
 ## 1. Файлы
 
 | Файл | Что это |
 |------|---------|
 | `mod/Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Companion.txt` | Сценарий Osiris: вербовка, защита от сюжетных скриптов, отладка |
-| `mod/Mods/_MOD_/Story/DialogsBinary/Companions/ALFSV_Alfira_Recruitment.lsx` | Диалог вербовки (в пак идёт как `.lsf`) |
-| `mod/Mods/_MOD_/Story/DialogsBinary/Companions/ALFSV_Alfira_InParty.lsx` | Диалог в отряде и в лагере |
+| `scripts/dialogs/scenes/recruitment.py`, `…/inparty.py` | Источник двух диалогов (формат — `scripts/dialogs/README.md`) |
+| `scripts/dialogs/*.py` | Генератор: диалог, таймлайн, сцена, банки, тексты, реакции, флаги ([STAGING.md](STAGING.md)) |
+| `mod/Mods/_MOD_/Story/DialogsBinary/Companions/ALFSV_Alfira_Recruitment.lsx`, `…_InParty.lsx` | Диалоги (генерируются; в пак — `.lsf`) |
+| `mod/Public/_MOD_/Timeline/Generated/*` | Таймлайны и сцены (генерируются при сборке, в git не идут) |
 | `mod/Public/_MOD_/Content/Assets/Dialogs/[PAK]_ALFSV_Dialogs/_merged.lsx` | Банк диалогов: два ресурса и ссылки на вложенные диалоги обмена |
-| `mod/Mods/_MOD_/Localization/English/AlfiraSecondVerse_en.xml`, `…/Russian/AlfiraSecondVerse_ru.xml` | Тексты-заглушки |
-| `scripts/build_pak.py` | Подстановка `_MOD_` внутри ресурсов, `.lsj`→`DialogsBinary/.lsf`, проверка текстов диалогов, проверка списка файлов пака |
+| `mod/Public/_MOD_/Content/Generated/[PAK]_GeneratedDialogTimelines/_merged.lsx` | Банк таймлайнов (генерируется при сборке) |
+| `mod/Public/_MOD_/ApprovalRatings/Reactions/*.lsx` | Реакции одобрения Альфиры: +1, +2, +3, −1 |
+| `mod/Public/_MOD_/Flags/*.lsx` | Новые флаги: `ALFSV_Recruitment_Postponed/Refused`, `ALFSV_Romance_Spark`, `ALFSV_HeroMotive_*`, ротация приветствий |
+| `mod/Mods/_MOD_/Globals/WLD_Main_A/Characters/4a405fba-….lsx` | Её глобальный персонаж с `HasPlayerApprovalRating` (генерируется, в git не идёт) |
+| `mod/Mods/_MOD_/Localization/English/AlfiraSecondVerse_en.xml`, `…/Russian/AlfiraSecondVerse_ru.xml`, `…_ru_to_F.xml` | Новые тексты; женские формы обращения |
+| `scripts/build_pak.py` | Генератор диалогов, подстановка `_MOD_`, `.lsf.lsx`→`.lsf`, проверка текстов диалогов, проверка списка файлов пака |
 | `scripts/check_story.py`, `scripts/osiheader/` | Проверка goals мода компилятором LSLib вместе с ванильными |
-| `config/tools.json` | Версия мода 0.2.0 (см. §4) |
+| `config/tools.json` | Версия мода 0.3.0 (см. §4) |
 
 Идентификаторы ресурсов (на них ссылается Osiris, в сохранениях они остаются —
 **не менять**):
@@ -29,16 +40,27 @@
 | `ALFSV_Alfira_Recruitment` | `009896a5-580c-4135-98db-99234865b61d` |
 | `ALFSV_Alfira_InParty` | `b2950129-fdd2-4cda-8182-cf41cfd5d809` |
 
-Пак 0.2.0 (7 файлов):
+Пак 0.3.0 (29 файлов, 221 КБ):
 
 ```
+Mods/AlfiraSecondVerse_<uuid>/Globals/WLD_Main_A/Characters/4a405fba-3000-4c63-97e5-a8001ebb883c.lsf
 Mods/AlfiraSecondVerse_<uuid>/Localization/English/AlfiraSecondVerse_en.xml
 Mods/AlfiraSecondVerse_<uuid>/Localization/Russian/AlfiraSecondVerse_ru.xml
+Mods/AlfiraSecondVerse_<uuid>/Localization/Russian/AlfiraSecondVerse_ru_to_F.xml
 Mods/AlfiraSecondVerse_<uuid>/meta.lsx
 Mods/AlfiraSecondVerse_<uuid>/Story/DialogsBinary/Companions/ALFSV_Alfira_InParty.lsf
 Mods/AlfiraSecondVerse_<uuid>/Story/DialogsBinary/Companions/ALFSV_Alfira_Recruitment.lsf
 Mods/AlfiraSecondVerse_<uuid>/Story/RawFiles/Goals/ALFSV_Companion.txt
+Public/AlfiraSecondVerse_<uuid>/ApprovalRatings/Reactions/<uuid>.lsx          (4 файла)
 Public/AlfiraSecondVerse_<uuid>/Content/Assets/Dialogs/[PAK]_ALFSV_Dialogs/_merged.lsf
+Public/AlfiraSecondVerse_<uuid>/Content/Generated/[PAK]_GeneratedDialogTimelines/_merged.lsf
+Public/AlfiraSecondVerse_<uuid>/Flags/<uuid>.lsf                               (9 файлов)
+Public/AlfiraSecondVerse_<uuid>/Timeline/Generated/ALFSV_Alfira_InParty.lsf
+Public/AlfiraSecondVerse_<uuid>/Timeline/Generated/ALFSV_Alfira_InParty_Scene.lsf
+Public/AlfiraSecondVerse_<uuid>/Timeline/Generated/ALFSV_Alfira_InParty_Scene.lsx
+Public/AlfiraSecondVerse_<uuid>/Timeline/Generated/ALFSV_Alfira_Recruitment.lsf
+Public/AlfiraSecondVerse_<uuid>/Timeline/Generated/ALFSV_Alfira_Recruitment_Scene.lsf
+Public/AlfiraSecondVerse_<uuid>/Timeline/Generated/ALFSV_Alfira_Recruitment_Scene.lsx
 ```
 
 ## 2. Как устроено
@@ -95,6 +117,9 @@ Origin «Halsin») и Минтара (`GOB_DrowCommander`, Origin «Minthara»):
 
 ### 2.3 Диалоги: минимальный набор файлов
 
+> 0.3.0: диалоги теперь с таймлайном, сценой и записью в `GeneratedDialogTimelines`, как у
+> игры; всё генерируется ([STAGING.md](STAGING.md)). Ниже — как было в 0.2.0.
+
 Новому диалогу нужны:
 1. `Story/DialogsBinary/**/<Имя>.lsf` — узлы. Пишем в `.lsx`, сборка конвертирует в `.lsf`.
    Файл `Story/Dialogs/*.lsj` не нужен (руководство Milo Magnetuning на wiki.bg3.community).
@@ -134,6 +159,33 @@ reflection dialogs), а в движке есть путь без таймлай�
 | `Act2_SCE_EndBrief.txt`, `Act2_SCE_TieflingFollowUp.txt` | выводит из отряда на «дебриф» | убираем из `DB_SCE_Debrief_Participant(_Config)`, `DB_SCE_TieflingFollowUp_Tieflings` |
 | `Act3b_LOW_ElfsongTavern.txt`, `PROC_LOW_AlfiraSetup` | телепорт на крышу, фракция, диалог | отменить нельзя: по вставке `DB_Dialogs(…LOW_Elfsong_Alfira)` возвращаем диалог, фракцию и место (в отряде — к хосту, в лагере — `PROC_ORI_SetupCamp`) |
 
+### 2.4a Вербовка: сцена A (0.3.0)
+
+Дерево — `python scripts/dialogs/tree.py` → `build/dialogs/ALFSV_Alfira_Recruitment.md`.
+74 узла, 46 фаз (21 — её озвученные реплики игры, 25 — новые тексты), ~5 минут всех фаз.
+
+- **Приветствие** (первое подходящее): после «Нет» — «Changed your mind?…»; после «Не сейчас» —
+  её озвученная «I want to join you…» и сразу выбор; лютню крали и вернули
+  (`DEN_TieflingBard_State_ReturnedInstrument`) — холодное; был дуэт
+  (`DEN_TieflingBard_Event_GiveProficiency` на герое) — «аккомпаниатор»; герой-бард (тег `BARD`)
+  — «ты спел ту строку»; иначе — «что бы я ей сказала».
+- A2 → A3 (две её озвученные реплики) → A4: 13 вариантов. «Узнать о ней» и «Сомнение» —
+  один раз (`ShowOnce`), возвращают к выбору; проверка Проницательности `Act1_Medium` (10).
+- «Не сейчас» / «Нет» ставят `ALFSV_Recruitment_Postponed` / `…_Refused` (флаги на ней) и
+  закрывают диалог; позвать можно снова, пока выполнено условие вербовки.
+- A5: её вопрос «зачем ты это делаешь» → флаг мотива на герое (`ALFSV_HeroMotive_Duty /
+  Modesty / Honesty / Profit`) → «придётся о тебе песню сложить» → Маттис → вступление:
+  при полном отряде `GLO_CompanionSwap_Recruitment`, иначе `OriginAddToParty`.
+- Искра ✨ — `ALFSV_Romance_Spark` на герое (тёплый ответ в A2, «Почему именно со мной?»,
+  честный мотив).
+
+### 2.4b Разговор в отряде (0.3.0)
+
+Приветствия — её озвученные реплики из `DEN_Bard_InParty` по кругу (N5→N9, N18, N13);
+холодная N17 — только при одобрении ниже 0. Варианты: «Пойдём со мной» (с меню замены
+`GLO_CompanionSwap_Camp`), «Жди меня в лагере», «Уйти». Новые тексты — только два её
+коротких ответа (черновик).
+
 ### 2.5 Темный Соблазн
 
 - Завербованная Альфира никогда не становится жертвой. Наша ветка `QRY_ORI_DarkUrge_ReplaceAlfira`
@@ -151,13 +203,24 @@ reflection dialogs), а в движке есть путь без таймлай�
   работает ванильный сценарий. Сценарий «Квил в первую ночь, Альфира во вторую» из
   решений автора — работа этапа сценария.
 
+### 2.6 Одобрение (0.3.0)
+
+- `HasPlayerApprovalRating` — переопределение её глобального персонажа (у Хальсина и
+  Минтары атрибут стоит в их персонажах). Точка конфликта с другими модами на Альфиру.
+- Стартовое одобрение +20, если песня закончена и лютню не крали — при первой вербовке
+  (`PROC_ALFSV_MakeCompanion`, по образцу Джахейры), один раз на аватара.
+- Реакции в диалоге вербовки: A2 +1/+1/+1/0/0; A4: «Пойдём» +2, бард +3, тифлинг +2,
+  «Попроси» +1, «Почему со мной» +2, Лихейла +1, «Там опасно» +1, Проницательность (успех) +2,
+  «Лишний рот» −1, «Нет» −1; мотив: долг +1, честность +2.
+
 ## 3. Как проверить в игре
 
 Подготовка (игра и BG3 Mod Manager закрыты):
 
 ```
-python scripts/check_story.py    # ошибок в goal мода быть не должно
-python scripts/build_pak.py      # 7 файлов, версия 0.2.0
+python scripts/check_story.py        # ошибок в goal мода быть не должно
+python scripts/build_pak.py          # генератор диалогов + пак: 29 файлов, версия 0.3.0
+python scripts/dialogs/validate.py   # «Проверка пройдена.»
 python scripts/install.py
 ```
 
@@ -172,14 +235,33 @@ python scripts/install.py
 1. **Загрузка.** Возьмите сейв, сделанный до установки мода (акт 1, тифлинги ещё в Роще).
    Игра загружается, в журнале нет ошибок сюжета. Вербовка (шаг 2) работает — значит, goal
    добавился к сохранению (§4).
-2. **Вербовка.** Штатно: закончить песню с Альфирой, затем щёлкнуть по ней аватаром →
-   «[PH] Lihala's song is finished…» → «[PH] Come with me.» Или отладкой.
-   Проверить: портрет в отряде, управление, **класс Бард (Коллегия знаний)** в листе
-   персонажа, **уровень = уровню отряда**.
-3. **Разговор в отряде.** Щёлкнуть по ней → «[PH] Need something?», варианты «Жди меня в
-   лагере» и «Уйти».
-4. **Лагерь.** «[PH] Wait for me at camp.» → уходит. В лагере стоит на своём месте
-   (`S_ORI_DarkUrge_AlfiraPosition_*` для WLDMAIN), с ней можно поговорить → «[PH] Come with me.» → снова в отряде.
+2. **Вербовка — диалог открывается с постановкой.** Закончить песню с Альфирой, щёлкнуть по
+   ней аватаром. Проверить:
+   - диалог вообще открылся (главный риск 0.2.0) и не остался «пустым окном»;
+   - **камера**: планы меняются — из-за плеча героя на неё, крупный план, на героя; камера
+     не в стене и не внутри персонажей (она сидит у камня, основа — сцена «стоя»);
+   - **эмоции и взгляды**: лицо меняется по ходу реплики (улыбка, испуг, грусть), она и
+     герой смотрят друг на друга; в озвученных репликах — её голос и губы;
+   - **текстовые реплики**: субтитр держится достаточно, чтобы прочесть, потом диалог идёт
+     дальше сам; губы не двигаются (ожидаемо);
+   - **приветствие по исходу песни**: дуэт / бард / разговор о наставнице / лютня украдена
+     и возвращена (разные сохранения);
+   - **варианты**: бард и тифлинг видят свои; «Узнать о ней» и «Сомнение» исчезают после
+     выбора; бросок Проницательности (успех и провал ведут в разные ответы);
+   - **«Не сейчас» и «Нет»**: диалог закрывается; при следующем щелчке — повторная просьба;
+   - **героиня**: русские реплики с родом обращения — в женском роде (A1 «бард», «разговор
+     о наставнице», «лютня», ответ про Лихейлу, «Передумала?»); у героя — в мужском;
+   - **одобрение**: всплывающие «Альфира одобряет» на вариантах с реакциями; после вступления
+     она есть в листе отношений, одобрение около +20 плюс ответы;
+   - портрет в отряде, управление, **класс Бард (Коллегия знаний)**, **уровень = уровню отряда**.
+   Отладкой (`Osi.PROC_ALFSV_Debug_Recruit()`) диалог не открывается и стартового +20 нет,
+   если песня не закончена.
+3. **Разговор в отряде.** Щёлкнуть по ней → одна из её озвученных реплик («I can't wait to hit
+   the road…», «We should probably hit the hay…», «…Thank you again for letting me stay»), по
+   кругу; варианты «Жди меня в лагере» и «Уйти». Холодная «The sooner we go to sleep…» — только
+   при одобрении ниже 0.
+4. **Лагерь.** «Жди меня в лагере» → «I'll keep the fire going.» → уходит. В лагере стоит на своём месте
+   (`S_ORI_DarkUrge_AlfiraPosition_*` для WLDMAIN), с ней можно поговорить → «Пойдём со мной» → снова в отряде.
 5. **Полный отряд.** С четырьмя в отряде позвать её из лагеря → вложенный ванильный диалог
    обмена → выбрать, кого отправить. Обратно: позвать другого спутника → вариант «Ты можешь
    занять место Альфиры». Отдельно: вербовка из Рощи при полном отряде → «Встретимся в лагере» → она в лагере.
@@ -206,16 +288,15 @@ python scripts/install.py
   инициализируются, их INITSECTION выполняется. `ALFSV_Companion` — goal верхнего уровня.
   INIT у него пустой, вся логика в KB и срабатывает на события.
 - **Правило для нас:** любое изменение Osiris — с повышением версии мода в `config/tools.json`.
-  Иначе на уже начатом сохранении останутся старые правила. Поэтому версия сейчас 0.2.0
-  (0.0.1 был пустой мод).
+  Иначе на уже начатом сохранении останутся старые правила. Поэтому версия сейчас 0.3.0
+  (0.0.1 — пустой мод, 0.2.0 — заглушки, 0.3.0 — стартовое одобрение в goal).
 - **[проверить в игре]** что BG3 делает story patching так же, как DOS2 (документ Larian —
   про Divinity Engine); проверяется шагом 1.
 
 ## 5. Известные пробелы и риски
 
-1. **Диалог без таймлайна** (§2.3). Если по клику ничего не открывается, открывается пустое
-   окно или игра падает: сначала попробовать `EnableTimeline=False` в банке, затем делать
-   таймлайн.
+1. ~~**Диалог без таймлайна** (§2.3).~~ В 0.3.0 у диалогов есть таймлайн и сцена. Риски
+   постановки — [STAGING.md §6](STAGING.md#6-известные-ограничения).
 2. **Путь гоблинов после вербовки.** `PROC_DEN_AttackOnDen_KillKids` безусловно вызывает
    `Die(S_DEN_Bard)`. Если игрок завербовал её, а потом пошёл с рейдерами на Рощу, она умрёт
    и в отряде. Отменить PROC нельзя. Решение за сценарием (например, она уходит при переходе
@@ -226,8 +307,9 @@ python scripts/install.py
 5. Иссохший не воскрешает её, если она умерла **вне отряда**. Для этого нужны флаги
    `DB_GLO_Jergal_CompanionResurrectionFlags` и опция в `CAMP_Jergal`, то есть переопределение
    чужого диалога (точка конфликта).
-6. Одобрения нет. В данных персонажа нет `HasPlayerApprovalRating` (у Хальсина и Минтары есть),
-   стартового бонуса и диалогов предупреждения/ухода тоже нет. Это этап 4.
+6. Одобрение (0.3.0) держится на переопределении её глобального персонажа. Работает ли оно
+   на сохранении, где она уже загружена без атрибута, — проверить (возможно, нужна новая
+   игра). Диалогов предупреждения/ухода при низком одобрении нет — это этап 4.
 7. Побочные ветки `DB_Origins`: её могут выбрать случайным спикером в CFM, inclusion-узлах и
    «признании Дейзи», где у неё нет реплик. `PROC_LOW_BhaalTemple_KillVictim` для `DB_Origins`
    ведёт к `CompanionLeavePermanently` (жертвы Орин выбираются из фиксированного списка,
@@ -239,12 +321,19 @@ python scripts/install.py
    `Act1_DEN_TieflingBard`) — неизвестно.
 10. Удаление мода посреди прохождения: в сохранении остаются `DB_Players(Alfira)` и наши факты.
     Процедуры «отпустить навсегда» перед удалением пока нет.
-11. Несовместим с Alfira Joins The Party: оба мода делают её спутницей.
+11. Несовместим с Alfira Joins The Party: оба мода делают её спутницей. С Alfira Redone —
+    оба переопределяют её глобального персонажа: чей мод ниже в порядке загрузки, того и
+    персонаж (у нас — одобрение, у Redone — внешность).
+12. Одобрение из диалога вербовки начисляется до вступления в отряд. Засчитывает ли игра
+    реакции спутнику не из отряда — проверить по всплывающим сообщениям.
 
 ## 6. [проверить в игре]
 
 - [ ] goal добавляется к старому сейву (story patching), игра грузится без ошибок сюжета;
-- [ ] диалоги без таймлайна открываются и показывают варианты ответа;
+- [ ] диалоги с таймлайном открываются: камера, эмоции, взгляды, её голос в озвученных репликах;
+- [ ] текстовые реплики держатся достаточно долго и не «застревают»;
+- [ ] женские формы (`…_ru_to_F.xml`) у героини, мужские у героя;
+- [ ] одобрение: всплывающие реакции, стартовые +20, она в листе отношений;
 - [ ] класс Бард (Коллегия знаний) и уровень отряда после `RequestInitialLevel`;
 - [ ] повышение уровня и респек у Иссохшего;
 - [ ] «Жди в лагере» / возврат, место в лагере WLDMAIN;
