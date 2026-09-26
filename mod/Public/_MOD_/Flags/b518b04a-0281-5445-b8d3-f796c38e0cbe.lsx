@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="b518b04a-0281-5445-b8d3-f796c38e0cbe" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Recruitment_Refused" />
+			<attribute id="Description" type="LSString" value="Hero refused Alfira's request to join" />
+			<attribute id="Usage" type="uint8" value="6" />
+		</node>
+	</region>
+</save>

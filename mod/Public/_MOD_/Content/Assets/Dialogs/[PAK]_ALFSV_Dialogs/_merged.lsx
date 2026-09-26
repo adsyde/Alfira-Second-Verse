@@ -12,6 +12,7 @@
 					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
 					<attribute id="Name" type="LSString" value="ALFSV_Alfira_Recruitment" />
 					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ALFSV_Alfira_Recruitment.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
 					<attribute id="automated" type="bool" value="False" />
 					<attribute id="isBehaviour" type="bool" value="False" />
 					<attribute id="isPrivateDialog" type="bool" value="False" />
@@ -37,6 +38,7 @@
 					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
 					<attribute id="Name" type="LSString" value="ALFSV_Alfira_InParty" />
 					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ALFSV_Alfira_InParty.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
 					<attribute id="automated" type="bool" value="False" />
 					<attribute id="isBehaviour" type="bool" value="False" />
 					<attribute id="isPrivateDialog" type="bool" value="False" />
