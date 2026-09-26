@@ -21,6 +21,7 @@
     "sets": {
       "goals": {
         "paks": [
+          "Shared.pak",
           "Gustav.pak",
           "GustavX.pak",
           "Patch8_HotFix9.pak"

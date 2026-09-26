@@ -61,7 +61,8 @@ def load(path):
     speakers = {}
     for sl in dlg.get("speakerlist", []):
         for s in sl.get("speaker", []):
-            guids = [g for g in s["list"]["value"].split(";") if g]
+            # У слотов без привязанного персонажа (например, слот игрока) поля list нет
+            guids = [g for g in s.get("list", {}).get("value", "").split(";") if g]
             speakers[int(s["index"]["value"])] = ", ".join(name(g) for g in guids) or "?"
     nodes = {n["UUID"]["value"]: n for n in dlg["nodes"][0].get("node", [])}
     roots = [r["RootNodes"]["value"] for r in dlg["nodes"][0].get("RootNodes", [])]
