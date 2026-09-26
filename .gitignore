@@ -15,6 +15,11 @@ config/*.local.json
 # --- Производные артефакты сборки ---
 build/
 dist/
+# Генератор диалогов (scripts/dialogs/build.py) собирает это из данных игры при каждой сборке:
+# постановка (таймлайны, сцены, камеры Larian) и её банк, переопределение персонажа Альфиры.
+mod/Public/_MOD_/Timeline/
+mod/Public/_MOD_/Content/Generated/
+mod/Mods/_MOD_/Globals/
 
 # --- Python ---
 __pycache__/

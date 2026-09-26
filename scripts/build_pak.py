@@ -8,19 +8,24 @@ mod/ повторяет раскладку пака:
 настоящее имя папки (name_uuid), чтобы оно было записано ровно в одном месте.
 
 Шаги:
+  0. генератор диалогов scripts/dialogs/build.py пишет в mod/ диалоги, таймлайны, сцены, банки,
+     тексты, реакции и флаги (--no-generate — собрать из того, что уже лежит в mod/);
   1. копия mod/ → build/ с подстановкой _MOD_ в путях и в тексте ресурсов
      (SourceFile в банке диалогов ссылается на папку модуля);
-  2. *.lsf.lsx и *.lsx, у которых игра ждёт бинарный формат, → .lsf (Divine);
+  2. *.lsf.lsx и *.lsx, у которых игра ждёт бинарный формат, → .lsf (Divine); если рядом лежит
+     X.lsf.lsx, то X.lsx — настоящий lsx пака (так игра хранит _Scene.lsx) и идёт как есть;
      диалог в формате редактора (Story/Dialogs/**/*.lsj) → Story/DialogsBinary/**/*.lsf;
   3. meta.lsx из config/tools.json;
   4. проверки: нет XML-комментариев в локализации (игра падает при запуске),
-     у каждой реплики диалога есть текст во всех xml локализации;
+     у каждой реплики диалога есть текст во всех xml локализации (кроме озвученных реплик
+     игры из build/dialogs/manifest.json — их тексты в локализации игры);
   5. Divine create-package → dist/.
 
   python scripts/build_pak.py            # версия из config
   python scripts/build_pak.py --version 0.1.0
 """
 import argparse
+import json
 import re
 import shutil
 import sys
@@ -40,14 +45,15 @@ HANDLE = re.compile(rb'handle="(h[0-9a-g]{36})"')
 CONTENTUID = re.compile(rb'contentuid="(h[0-9a-g]{36})"')
 
 
-def check_loca(build, folder):
-    """Каждый handle из DialogsBinary должен быть во всех языках локализации мода."""
+def check_loca(build, folder, vanilla=frozenset()):
+    """Каждый handle из DialogsBinary должен быть во всех языках локализации мода (кроме озвученных
+    реплик игры: их текст и голос берутся из игры)."""
     loca = {}
     for x in (build / "Mods" / folder / "Localization").glob("*/*.xml"):
         loca.setdefault(x.parent.name, set()).update(CONTENTUID.findall(x.read_bytes()))
     errors = []
     for dlg in (build / "Mods" / folder / "Story" / "DialogsBinary").rglob("*.lsx"):
-        for h in sorted(set(HANDLE.findall(dlg.read_bytes()))):
+        for h in sorted(set(HANDLE.findall(dlg.read_bytes())) - {v.encode() for v in vanilla}):
             missing = [lang for lang, handles in loca.items() if h not in handles]
             if missing or not loca:
                 errors.append(f"{dlg.name}: нет текста {h.decode()} в {missing or 'локализации'}")
@@ -105,7 +111,18 @@ def main():
     mod = cfg["mod"]
     ap = argparse.ArgumentParser()
     ap.add_argument("--version", default=mod["version"])
+    ap.add_argument("--no-generate", action="store_true", help="не запускать генератор диалогов")
     args = ap.parse_args()
+
+    if not args.no_generate:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "dialogs"))
+        import build as dialogs_build  # scripts/dialogs/build.py
+        print("Генератор диалогов (scripts/dialogs/build.py):")
+        dialogs_build.generate()
+    manifest = resolve(cfg["paths"]["build"]) / "dialogs" / "manifest.json"
+    if not manifest.exists():
+        sys.exit("Нет build/dialogs/manifest.json: запустите сборку без --no-generate.")
+    vanilla = set(json.loads(manifest.read_text(encoding="utf-8"))["vanilla_handles"])
 
     folder = f'{mod["name"]}_{mod["uuid"]}'
     src = resolve(cfg["paths"]["mod_src"])
@@ -113,6 +130,7 @@ def main():
     dist = resolve(cfg["paths"]["dist"])
     if build.exists():
         shutil.rmtree(build)
+    twins = set()   # X.lsx рядом с X.lsf.lsx: настоящий lsx (например, _Scene.lsx таймлайна)
 
     files = [p for p in src.rglob("*") if p.is_file() and p.name not in (".gitkeep", "README.md")]
     if not files:
@@ -129,9 +147,13 @@ def main():
             data = data.replace(b"_MOD_", folder.encode())
         out.write_bytes(data)
     # Конвертация — после копирования: проверка локализации читает текстовые .lsx диалогов.
-    errors += check_loca(build, folder)
+    errors += check_loca(build, folder, vanilla)
+    for out in build.rglob("*.lsf.lsx"):
+        twins.add(out.with_name(out.name[:-len(".lsf.lsx")] + ".lsx"))
     for out in sorted(build.rglob("*.ls[xj]")):
         rel = out.relative_to(build).as_posix()
+        if out in twins:
+            continue
         if out.suffix == ".lsj" and "/Story/Dialogs/" in rel:
             lsf = build / rel.replace("/Story/Dialogs/", "/Story/DialogsBinary/", 1)
             lsf = lsf.with_suffix(".lsf")

@@ -40,6 +40,34 @@ PROC_DEN_RemoveFromDenNPCs((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001eb
 // Her own Anubis config (DEN_Bard) walks her back to the bard seat in the Grove
 PROC_SetAnubisConfig((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "DefaultCharacter");
 
+// Starting approval (design/APPROVAL.md §3): she finished the song with the hero -> "good" (+20);
+// the lute was stolen and returned -> "neutral" (no bonus). Once per avatar, the way Jaheira gets hers
+// (GLO_Companion_Jaheira.txt: ChangeApprovalRating(..., 1, 20, _) + DB_ORI_Jaheira_AlreadyInitializedApproval).
+// Needs HasPlayerApprovalRating on her character (Globals override written by scripts/dialogs/build.py).
+PROC
+PROC_ALFSV_MakeCompanion()
+AND
+DB_Avatars(_Avatar)
+AND
+NOT DB_ALFSV_ApprovalInitialized(_Avatar)
+AND
+DB_GlobalFlag((FLAG)DEN_TieflingBard_State_FinishedSong_e8ab958f-015b-f97d-5da4-c599b67e5ba0)
+AND
+NOT DB_GlobalFlag((FLAG)DEN_TieflingBard_State_ReturnedInstrument_03c9168b-079b-eff1-fbe4-9dcb4425c529)
+AND
+ChangeApprovalRating((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Avatar, 1, 20, _)
+THEN
+DB_ALFSV_ApprovalInitialized(_Avatar);
+
+PROC
+PROC_ALFSV_MakeCompanion()
+AND
+DB_Avatars(_Avatar)
+AND
+NOT DB_ALFSV_ApprovalInitialized(_Avatar)
+THEN
+DB_ALFSV_ApprovalInitialized(_Avatar);
+
 // Recruited in a dialog (our recruitment/in-party dialog or a vanilla swap dialog)
 IF
 FlagSet((FLAG)OriginAddToParty_4870b2cd-210c-0fdc-9c58-4d0142bdae29, (CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _)
