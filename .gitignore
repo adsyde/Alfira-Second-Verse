@@ -1,0 +1,21 @@
+# --- Данные игры (права Larian): только локально ---
+game-data/
+# Распечатки диалогов игры: полный текст Larian
+reports/dialogs/
+
+# --- Голос: записи актрисы, модели и сгенерированное аудио ---
+voice-work/
+
+# --- Машинно-зависимые настройки ---
+config/*.local.json
+!config/*.local.example.json
+.claude/settings.local.json
+.env
+
+# --- Производные артефакты сборки ---
+build/
+dist/
+
+# --- Python ---
+__pycache__/
+*.pyc
