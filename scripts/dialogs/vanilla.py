@@ -8,6 +8,8 @@ from dsl import Flag
 ALFIRA_TEMPLATE = "4a405fba-3000-4c63-97e5-a8001ebb883c"   # S_DEN_Bard, глобальный персонаж
 PLAYER_SPEAKER = "e0d1ff71-04a8-4340-ae64-9684d846eb83"    # группа спикеров «игрок»
 ALFIRA_ORIGIN = "38357c93-b437-4f03-88d0-a67bd4c0e3e9"     # Origin «Alfira» (GustavDev/Origins/Origins.lsx)
+# рассказчик: speaker -666 в диалоге, актёр таймлайна с этим uuid (как в DEN_TieflingBard_Bard)
+NARRATOR_SPEAKER = "a346318f-15b3-49ad-ab97-ddf8283dc339"
 
 
 class F:
@@ -26,12 +28,34 @@ class F:
     # порог одобрения ≥ 0 для героя-спикера 1; ставит на спутнике _GLO_Shared_Origins.txt
     # (PROC_ApprovalRating_SetThresholdEvents, DB_OriginRelationThresholdEventsPerSpeaker)
     ApprovalAtLeast0_Sp1 = Flag("Approval_AtLeast_0_For_Sp1", "Object", "80966819-5946-2be4-645c-809ecb253ed6")
+    # вечер в лагере (после «Завершить день», до сна): GLO_Camp.txt, PROC_Camp_SetModeToNight/ToDay
+    CampNight = Flag("GLO_CAMP_State_NightMode", "Global", "fb53edc2-9a89-4ad2-af83-20b5fe425cdd")
+    # Астарион в лагере и он спутник, а не аватар (DB_OriginCampFlags, GLO_CampNights.txt «Camp Flags»)
+    AstarionCompanionInCamp = Flag("ASTARIONCOMPANION", "Global", "9fa6b609-3ba0-43ed-a95b-82304f7b8dac")
+
+
+# Пороги одобрения для героя-спикера 1: Approval_AtLeast_N_For_Sp1 на спутнике
+# (_GLO_Shared_Origins.txt, DB_OriginRelationThresholdEventsPerSpeaker). Uuid — Gustav/Public/Gustav/Flags.
+APPROVAL_SP1 = {n: Flag(f"Approval_AtLeast_{n}_For_Sp1", "Object", u) for n, u in {
+    -40: "b5ab9ca2-f6cd-aefc-5a2d-7d64f5d3f705", -30: "8f9363d0-7072-bbac-3615-7ede8167786e",
+    -20: "209202b4-2d23-0c5f-9437-8cae49ef1a36", -10: "487684c1-c443-51f9-2b5a-605e1d744164",
+    0: "80966819-5946-2be4-645c-809ecb253ed6", 5: "7468e995-931a-454f-9b2d-0facc6e81ee1",
+    10: "2a7380a2-da28-7741-a065-fd118fdd9a92", 20: "f262956a-153c-91bd-4d7c-9a8e5e11119e",
+    30: "55081005-8df3-62e5-60d9-971a0439947e", 35: "662a12ed-c01d-4af2-9510-d18bf5005c29",
+    40: "50cd7894-b71c-adf0-7476-48b94c42be43", 50: "31d32c7a-52bc-62fc-38a7-15277f3b46fb",
+    60: "4445984d-56f3-0e7c-25d5-cf5cca2a5642", 70: "2fb2abfb-5445-5419-6de4-77380dbf6265",
+    80: "c014f892-8450-7821-8936-f862cc67654e", 90: "1b98e5dd-064f-a93b-fcb0-23cd1c55671f",
+    100: "20293b72-864b-f8c7-605b-500e5a9fffd1"}.items()}
 
 
 class T:
-    """Теги (Shared/Public/Shared/Tags)."""
+    """Теги (Public/<Shared|Gustav|GustavDev>/Tags)."""
     BARD = Flag("BARD", "Tag", "d93434bd-6b71-4789-b128-ee24156057cc")
     TIEFLING = Flag("TIEFLING", "Tag", "aaef5d43-c6f3-434d-b11e-c763290dbe0c")
+    FEMALE = Flag("FEMALE", "Tag", "3806477c-65a7-4100-9f92-be4c12c4fa4f")
+    # герой — Темный Соблазн (GustavDev/Tags; в диалогах игры 327 проверок против 34 у DARK_URGE).
+    # Не путать с глобальным флагом лагеря DARKURGE («Соблазн в отряде»).
+    REALLY_DARK_URGE = Flag("REALLY_DARK_URGE", "Tag", "cd611d7d-b67d-42b4-a75c-a0c6091ef8a2")
 
 
 class DC:

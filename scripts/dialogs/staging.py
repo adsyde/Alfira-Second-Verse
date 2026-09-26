@@ -11,7 +11,8 @@
   сцены заменяются стандартным планом;
 * текстовая реплика (say) — фаза строится по шаблонной фазе основы (позы, взгляды,
   оружие, физика, эмоции «зрителей»), голос без звука длиной по объёму текста, эмоции из
-  сценария, план камеры по shot.
+  сценария, план камеры по shot;
+* ремарка рассказчика (narrate) — как текстовая, но голос у актёра рассказчика (Speaker −666).
 Фразы героя (варианты ответа) фаз не имеют — как в игре.
 """
 from __future__ import annotations
@@ -37,6 +38,7 @@ CAMERAS = {
     "player": ("788e3996-fcf7-4113-9dc0-e4b971935c06", ALFIRA, PLAYER),        # на героя
 }
 SHARED_SCENE = "Public/Shared/Timeline/Scenes/Default/bnz_standing_Px1_Shipping.lsf"
+NARRATOR_ACTOR = "a346318f-15b3-49ad-ab97-ddf8283dc339"   # актёр рассказчика у Larian (vanilla.NARRATOR_SPEAKER)
 KEYED = ("TLEmotionEvent", "TLLookAtEvent", "TLAttitudeEvent")
 TC = './region[@id="TimelineContent"]/node[@id="TimelineContent"]/children'
 
@@ -292,19 +294,28 @@ class Stager:
             set_attr(e.find('./children/node[@id="Actor"]'), "UUID", speaker_actor, "guid")
         self.tl.insert_new_tl_node(e)
 
-    def text_phase(self, node_uuid, line):
-        """Фаза текстовой реплики Альфиры."""
+    def narrator_phase(self, node_uuid, line):
+        """Фаза ремарки рассказчика: как текстовая, но TLVoice у актёра-рассказчика (Speaker −666).
+
+        Актёра рассказчика в таймлайне основы нет — добавляется один раз, как у Larian
+        (DEN_TieflingBard_Bard: тот же uuid, ActorTypeId narrator). Лицо и камера — на Альфире.
+        """
+        self.tl.create_narrator_timeline_actor_data()
+        self.text_phase(node_uuid, line, speaker_actor=NARRATOR_ACTOR)
+
+    def text_phase(self, node_uuid, line, speaker_actor=None):
+        """Фаза текстовой реплики Альфиры (или ремарки рассказчика — speaker_actor)."""
         chars = max(len(render(line.en)), len(render(line.ru)))
         dur = D(min(MAX_TEXT_PHASE, max(MIN_TEXT_PHASE, chars / READ_CPS + TAIL)))
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
         self._template_parts(start, dur, phase, {(ALFIRA, "TLEmotionEvent")})
-        self._voice(node_uuid, start, start + dur, phase, self.me.actor[ALFIRA])
+        self._voice(node_uuid, start, start + dur, phase, speaker_actor or self.me.actor[ALFIRA])
         keys = [self.tl.create_emotion_key(t, code, variation=var) for t, code, var in emotion_keys(line.emo, float(dur))]
         self.tl.create_tl_actor_node("TLEmotionEvent", self.me.actor[ALFIRA], "0", dur, keys,
                                      node_uuid=self.uid(f"tl/{phase}/emo"), is_snapped_to_end=True)
         self._shot(self.named_camera(line.shot), start, start + dur, phase, "main", True)
-        self.report.append((node_uuid, "текст", float(dur)))
+        self.report.append((node_uuid, "ремарка" if speaker_actor else "текст", float(dur)))
 
     def voiced_phase(self, node_uuid, src_name, src_node, fallback_shot="alfira"):
         """Фаза озвученной реплики: окно вокруг её TLVoice в ванильном таймлайне."""

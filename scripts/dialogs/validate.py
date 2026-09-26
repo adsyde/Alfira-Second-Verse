@@ -24,6 +24,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from common import config, divine, enable_utf8_stdout, resolve  # noqa: E402
+sys.path.insert(0, str(HERE))
+from vanilla import NESTED  # noqa: E402
+
+VANILLA_NESTED = {v for k, v in vars(NESTED).items() if not k.startswith("_")}
 
 enable_utf8_stdout()
 
@@ -52,7 +56,7 @@ class Report:
         self.notes.append(m)
 
 
-def check_scene(name, dlg_path, tl_path, bank_res, tl_res, loca, vanilla, reactions, new_flags, rep):
+def check_scene(name, dlg_path, tl_path, bank_res, tl_res, loca, vanilla, reactions, new_flags, rep, ours=()):
     d = load(dlg_path)
     nodes = {A(n, "UUID"): n for n in d.iter("node") if n.get("id") == "node"}
     roots = [A(r, "RootNodes") for r in d.iter("node") if r.get("id") == "RootNodes"]
@@ -70,6 +74,8 @@ def check_scene(name, dlg_path, tl_path, bank_res, tl_res, loca, vanilla, reacti
         nd = A(n, "NestedDialogNodeUUID")
         if nd and nd not in nested_ok:
             rep.err(f"{name}: вложенный диалог {nd} не указан в childResources банка")
+        if nd and nd not in VANILLA_NESTED and nd not in ours:
+            rep.err(f"{name}: вложенный диалог {nd} — не ванильный обмен и не наш ресурс из банка")
         ar = A(n, "ApprovalRatingID")
         if ar and ar not in reactions:
             rep.err(f"{name}: реакция {ar} не найдена")
@@ -144,7 +150,7 @@ def check_scene(name, dlg_path, tl_path, bank_res, tl_res, loca, vanilla, reacti
                 rep.err(f"{name}: TLVoice для несуществующего узла")
     for u, n in nodes.items():
         has_text = any(t.get("id") == "TagText" for t in n.iter("node"))
-        if A(n, "speaker") == "0" and has_text:
+        if A(n, "speaker") in ("0", "-666") and has_text:     # Альфира и ремарки рассказчика
             if u not in pmap:
                 rep.err(f"{name}: у реплики {u} нет фазы")
             if u not in voiced:
@@ -245,10 +251,22 @@ def main():
     dres = {A(r, "Name"): r for r in dbank.iter("node") if r.get("id") == "Resource"}
     tres = {A(r, "Name"): r for r in tbank.iter("node") if r.get("id") == "Resource"}
     vanilla = set(man["vanilla_handles"])
+    ours = {A(r, "ID") for r in dres.values()}
+    for num, ch in man.get("chapters", {}).items():
+        if ch["dialog"] not in ours:
+            rep.err(f"глава {num}: диалога {ch['dialog']} нет в банке")
+        if ch["available"] not in new_flags or ch["done"] not in new_flags:
+            rep.err(f"глава {num}: нет файлов флагов Available/Done")
+    goal = src / "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt"
+    if man.get("chapters"):
+        text = goal.read_text(encoding="utf-8") if goal.exists() else ""
+        for num, ch in man["chapters"].items():
+            if ch["available"] not in text:
+                rep.err(f"глава {num}: флаг Available не открывается в {goal.name} (перегенерируйте)")
     for name in man["scenes"]:
         dlg = next((src / "Mods/_MOD_/Story/DialogsBinary").rglob(f"{name}.lsx"))
         tl = src / "Public/_MOD_/Timeline/Generated" / f"{name}.lsf.lsx"
-        check_scene(name, dlg, tl, dres[name], tres[name], loca, vanilla, reactions, new_flags, rep)
+        check_scene(name, dlg, tl, dres[name], tres[name], loca, vanilla, reactions, new_flags, rep, ours)
     # круг через Divine
     # _Scene.lsx игра хранит в формате редактора (mat4x4 текстом): LSLib его не конвертирует даже
     # у ванильных файлов. Такие файлы сверяем с ванильным оригиналом: отличаться может только Identifier.

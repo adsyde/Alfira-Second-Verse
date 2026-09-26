@@ -54,6 +54,7 @@ def main():
         top = [n for n in r.iter("node") if n.get("id") == "Reaction" and A(n, "Scope") is not None][0]
         val = [A(n, "value") for n in r.iter("node") if n.get("id") == "Reaction" and A(n, "value") is not None][0]
         react[A(top, "UUID")] = int(val)
+    ours = {m["dialog"]: name for name, m in man["scenes"].items()}
     only = sys.argv[1:] or list(man["scenes"])
     for scene in only:
         dlg = next((src / "Mods/_MOD_/Story/DialogsBinary").rglob(f"{scene}.lsx"))
@@ -97,7 +98,7 @@ def main():
                 return
             num[u] = len(num) + 1
             con = A(n, "constructor")
-            who = {"0": "**Альфира**", "1": "**Герой**"}.get(A(n, "speaker") or "", "")
+            who = {"0": "**Альфира**", "1": "**Герой**", "-666": "*Рассказчик*"}.get(A(n, "speaker") or "", "")
             head = f"{pad}- N{num[u]} {con}"
             tx = text(n)
             if tx:
@@ -107,7 +108,8 @@ def main():
                 lines.append(f"{pad}  _{ru}_" + (f" / жен.: _{ruf}_" if ruf else ""))
             else:
                 if con == "Nested Dialog":
-                    head += f" → {gname(A(n, 'NestedDialogNodeUUID'))}"
+                    nd = A(n, "NestedDialogNodeUUID")
+                    head += f" → {ours.get(nd) or gname(nd)}"
                 elif con == "ActiveRoll":
                     head += f" 🎲 {A(n, 'Skill')}"
                 elif con == "RollResult":

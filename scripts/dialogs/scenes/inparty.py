@@ -1,9 +1,11 @@
-"""Разговор с Альфирой в отряде и в лагере (минимальный, до глав этапа 4).
+"""Разговор с Альфирой в отряде и в лагере. С этапа 4 — ещё и вход в главы разговоров.
 
 Приветствия — её озвученные реплики из ванильного DEN_Bard_InParty (там она спутница
 Темного Соблазна на одну ночь): голос и постановка Larian. Холодная реплика — только при
 одобрении ниже 0 (флаг порога игры Approval_AtLeast_0_For_Sp1). Остальные идут по кругу.
 Новые тексты — только ответы на «пойдём» и «жди в лагере» (черновик).
+Если открыта новая глава (scripts/dialogs/scenes/chNN_*.py), после холодной реплики и до ротации
+стоит вход в неё (S.chapter_entries()); ротация играет, пока новой главы нет.
 """
 from dsl import ALFIRA, Join, Scene, new_flag, opt, say, voice
 from vanilla import F, NESTED
@@ -35,6 +37,9 @@ MENU = [
 
 S.greeting("cold", voice("he46d9aaag48f9g4858ga58bg41dd1584a4b6"),          # N17: The sooner we go to sleep…
            when=[F.ApprovalAtLeast0_Sp1(ALFIRA, False)], choices=MENU)
+# Главы разговоров (scenes/chNN_*.py): новая глава важнее ротации, но не холодной реплики —
+# при одобрении ниже 0 глава ждёт. Вход — корень без текста и вложенный диалог главы.
+S.chapter_entries()
 S.greeting("first", voice("h8e9d685age2bdg4858g8c9bg8b45545d804f"),          # N5: I can't wait to hit the road…
            voice("h78247de5g47f4g491cga023g280acd8ebba5"),                     # N9: Hah, sorry - I'm getting ahead…
            when=[TALKED_1(ALFIRA, False)], set=[TALKED_1(ALFIRA)], choices=MENU)
