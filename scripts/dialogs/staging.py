@@ -154,11 +154,50 @@ class Stager:
         return {attr(c, "MapKey") for c in top.findall('./children/node[@id="TLCameras"]/children/node')}
 
     def source(self, name):
+        """(TimelineView, dialog) ванильного диалога-источника; у AD (один спикер, без героя) — (timeline, None)."""
         if name not in self.sources:
             d = self.lib.assets.get_dialog_object(name)
             t = self.lib.assets.get_timeline_object(name)
-            self.sources[name] = (TimelineView(t, d, self.alfira_template, self.player_speaker), d)
+            if self.alfira_template in d.get_speakers() and len(d.get_speakers()) == 1:
+                self.sources[name] = (t, None)
+            else:
+                self.sources[name] = (TimelineView(t, d, self.alfira_template, self.player_speaker), d)
         return self.sources[name]
+
+    def voice_window(self, src_name, src_node):
+        """(TLVoice, эмоции Альфиры в её фазе) реплики из таймлайна автоматического диалога (AD)."""
+        tl, _ = self.source(src_name)
+        voices = [c for c in tl.all_effect_components if attr(c, "Type") == "TLVoice"
+                  and src_node in (attr(c, "DialogNodeId"), attr(c, "ReferenceId"))]
+        if not voices:
+            raise RuntimeError(f"{src_name}: нет TLVoice для узла {src_node}")
+        v = voices[0]
+        actor = actor_of(v)
+        pidx = int(attr(v, "PhaseIndex", 0))
+        emo = []
+        for c in tl.all_effect_components:
+            if attr(c, "Type") == "TLEmotionEvent" and int(attr(c, "PhaseIndex", 0)) == pidx and actor_of(c) == actor:
+                for k in keys_of(c):
+                    e = attr(k, "Emotion")
+                    t = fattr(k, "Time", fattr(c, "StartTime")) - fattr(v, "StartTime")
+                    emo.append((max(D(0), t), int(e or 1), int(attr(k, "Variation", 0) or 0)))
+        return v, sorted(emo) or [(D(0), 1, 0)]
+
+    def _voiced_from_ad(self, node_uuid, src_name, src_node):
+        """Её озвученная реплика из AD (у AD нет сцены и камер): голос, длина по голосу, её эмоции из AD,
+        остальное — шаблонная фаза основы и стандартный план."""
+        v, emo = self.voice_window(src_name, src_node)
+        vdur = fattr(v, "EndTime") - fattr(v, "StartTime")
+        dur = vdur + D(TAIL)
+        phase = self.tl.create_new_phase(node_uuid, dur)
+        start = self.tl.get_phase_start_time(phase)
+        self._template_parts(start, dur, phase, {(ALFIRA, "TLEmotionEvent")})
+        self._voice(node_uuid, start, start + vdur, phase, self.me.actor[ALFIRA], proto=v)
+        keys = [self.tl.create_emotion_key(float(t), code, variation=var) for t, code, var in emo]
+        self.tl.create_tl_actor_node("TLEmotionEvent", self.me.actor[ALFIRA], "0", dur, keys,
+                                     node_uuid=self.uid(f"tl/{phase}/emo"), is_snapped_to_end=True)
+        self._shot(self.named_camera("alfira"), start, start + dur, phase, "main", True)
+        self.report.append((node_uuid, f"{src_name} (AD, голос)", float(dur)))
 
     # --- камеры ---
 
@@ -319,7 +358,9 @@ class Stager:
 
     def voiced_phase(self, node_uuid, src_name, src_node, fallback_shot="alfira"):
         """Фаза озвученной реплики: окно вокруг её TLVoice в ванильном таймлайне."""
-        view, _ = self.source(src_name)
+        view, d = self.source(src_name)
+        if d is None:
+            return self._voiced_from_ad(node_uuid, src_name, src_node)
         tl = view.tl
         voices = [c for c in tl.all_effect_components if attr(c, "Type") == "TLVoice"
                   and src_node in (attr(c, "DialogNodeId"), attr(c, "ReferenceId"))]

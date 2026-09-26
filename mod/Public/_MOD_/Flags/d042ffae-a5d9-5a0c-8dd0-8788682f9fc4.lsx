@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="d042ffae-a5d9-5a0c-8dd0-8788682f9fc4" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Durge_UrgeNear" />
+			<attribute id="Description" type="LSString" value="Dark Urge felt the urge near Alfira and said nothing (chapter 2)" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>
