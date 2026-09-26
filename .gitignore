@@ -20,5 +20,9 @@ dist/
 __pycache__/
 *.pyc
 
+# --- .NET (scripts/osiheader) ---
+bin/
+obj/
+
 # --- Рабочие копии агентов Claude Code ---
 .claude/worktrees/

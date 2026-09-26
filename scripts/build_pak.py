@@ -8,10 +8,13 @@ mod/ повторяет раскладку пака:
 настоящее имя папки (name_uuid), чтобы оно было записано ровно в одном месте.
 
 Шаги:
-  1. копия mod/ → build/ с подстановкой _MOD_;
+  1. копия mod/ → build/ с подстановкой _MOD_ в путях и в тексте ресурсов
+     (SourceFile в банке диалогов ссылается на папку модуля);
   2. *.lsf.lsx и *.lsx, у которых игра ждёт бинарный формат, → .lsf (Divine);
+     диалог в формате редактора (Story/Dialogs/**/*.lsj) → Story/DialogsBinary/**/*.lsf;
   3. meta.lsx из config/tools.json;
-  4. проверки (нет XML-комментариев в локализации: игра падает при запуске);
+  4. проверки: нет XML-комментариев в локализации (игра падает при запуске),
+     у каждой реплики диалога есть текст во всех xml локализации;
   5. Divine create-package → dist/.
 
   python scripts/build_pak.py            # версия из config
@@ -21,6 +24,8 @@ import argparse
 import re
 import shutil
 import sys
+import tempfile
+from pathlib import Path
 
 from common import config, divine, enable_utf8_stdout, resolve
 
@@ -29,6 +34,24 @@ enable_utf8_stdout()
 # Каталоги, файлы в которых игра читает только в бинарном виде (.lsf).
 # Остальные .lsx (meta.lsx, Story/*.txt, Localization/*.xml) кладутся как есть.
 BINARY_DIRS = ("RootTemplates", "Flags", "Tags", "DialogsBinary", "Timeline", "Globals", "Levels", "Content")
+# Текстовые ресурсы, в которых _MOD_ заменяется на имя папки модуля.
+TEXT_SUFFIXES = (".lsx", ".lsj", ".xml")
+HANDLE = re.compile(rb'handle="(h[0-9a-g]{36})"')
+CONTENTUID = re.compile(rb'contentuid="(h[0-9a-g]{36})"')
+
+
+def check_loca(build, folder):
+    """Каждый handle из DialogsBinary должен быть во всех языках локализации мода."""
+    loca = {}
+    for x in (build / "Mods" / folder / "Localization").glob("*/*.xml"):
+        loca.setdefault(x.parent.name, set()).update(CONTENTUID.findall(x.read_bytes()))
+    errors = []
+    for dlg in (build / "Mods" / folder / "Story" / "DialogsBinary").rglob("*.lsx"):
+        for h in sorted(set(HANDLE.findall(dlg.read_bytes()))):
+            missing = [lang for lang, handles in loca.items() if h not in handles]
+            if missing or not loca:
+                errors.append(f"{dlg.name}: нет текста {h.decode()} в {missing or 'локализации'}")
+    return errors
 
 
 def version64(text):
@@ -102,11 +125,23 @@ def main():
         data = p.read_bytes()
         if p.suffix == ".xml" and "/Localization/" in rel and b"<!--" in data:
             errors.append(f"{rel}: XML-комментарий в локализации роняет игру при запуске")
-        shutil.copyfile(p, out)
-        if p.suffix == ".lsx" and any(f"/{d}/" in f"/{rel}" for d in BINARY_DIRS):
+        if p.suffix in TEXT_SUFFIXES:
+            data = data.replace(b"_MOD_", folder.encode())
+        out.write_bytes(data)
+    # Конвертация — после копирования: проверка локализации читает текстовые .lsx диалогов.
+    errors += check_loca(build, folder)
+    for out in sorted(build.rglob("*.ls[xj]")):
+        rel = out.relative_to(build).as_posix()
+        if out.suffix == ".lsj" and "/Story/Dialogs/" in rel:
+            lsf = build / rel.replace("/Story/Dialogs/", "/Story/DialogsBinary/", 1)
+            lsf = lsf.with_suffix(".lsf")
+        elif out.suffix == ".lsx" and any(f"/{d}/" in f"/{rel}" for d in BINARY_DIRS):
             lsf = out.with_suffix(".lsf") if not out.name.endswith(".lsf.lsx") else out.with_suffix("")
-            divine("-a", "convert-resource", "-s", out, "-d", lsf)
-            out.unlink()
+        else:
+            continue
+        lsf.parent.mkdir(parents=True, exist_ok=True)
+        divine("-a", "convert-resource", "-s", out, "-d", lsf)
+        out.unlink()
     if errors:
         sys.exit("Сборка остановлена:\n  " + "\n  ".join(errors))
 
@@ -120,8 +155,22 @@ def main():
 
     dist.mkdir(parents=True, exist_ok=True)
     pak = dist / f'{mod["name"]}.pak'
-    divine("-a", "create-package", "-s", build, "-d", pak)
-    print(f"{pak}  ({pak.stat().st_size // 1024} КБ, версия {args.version})")
+    # Divine молча пропускает файлы, если в пути есть папка на «.» (например, .claude/worktrees):
+    # тогда пакуем из временной копии.
+    staged = build
+    if any(part.startswith(".") for part in build.parts):
+        staged = Path(tempfile.mkdtemp(prefix="alfsv_pak_")) / "pak"
+        shutil.copytree(build, staged)
+    divine("-a", "create-package", "-s", staged, "-d", pak)
+    if staged is not build:
+        shutil.rmtree(staged.parent)
+    listed = [l for l in divine("-a", "list-package", "-s", pak).splitlines() if "\t" in l]
+    packed = sum(1 for p in build.rglob("*") if p.is_file())
+    if len(listed) != packed:
+        sys.exit(f"В паке {len(listed)} файлов из {packed}: Divine что-то пропустил.")
+    for line in listed:
+        print("  " + line.split("\t")[0])
+    print(f"{pak}  ({pak.stat().st_size // 1024} КБ, {len(listed)} файлов, версия {args.version})")
 
 
 if __name__ == "__main__":

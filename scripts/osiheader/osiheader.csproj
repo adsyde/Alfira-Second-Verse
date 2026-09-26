@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Генератор story_header.div из скомпилированного story.div.osi (нужен StoryCompiler из LSLib).
+       Собирается и запускается из scripts/check_story.py: dotnet run -p:LSLibDir=<папка Divine.exe> -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="LSLib">
+      <HintPath>$(LSLibDir)\LSLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
