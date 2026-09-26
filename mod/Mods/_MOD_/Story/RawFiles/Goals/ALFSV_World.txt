@@ -29,16 +29,22 @@ DB_ALFSV_Place("UnderdarkFirst", (DIALOGRESOURCE)ALFSV_AD_Place_UnderdarkFirst_6
 DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_Underdark_SUB_b379a862-a59f-4e52-9166-23fbe0e8976e, "UnderdarkFirst");
 DB_ALFSV_Place("Myconids", (DIALOGRESOURCE)ALFSV_AD_Place_Myconids_1466428e-25b8-5c9a-85bc-e47d34bfc3eb);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_MyconidCircle_SUB_4b5cc8fc-88f4-465e-bf82-4c20b055c019, "Myconids");
+DB_ALFSV_Place("SeluneOutpost", (DIALOGRESOURCE)ALFSV_AD_Place_SeluneOutpost_a690a920-99a0-5c2b-9727-9714ceeb4e1d);
+DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_SharFortBox_3419cfbf-5ad0-473b-bfa6-f10cb1e4a415, "SeluneOutpost");
 DB_ALFSV_Place("AdamantineForge", (DIALOGRESOURCE)ALFSV_AD_Place_AdamantineForge_1e7f78db-b183-5bf2-802d-0923a23074bb);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_AdamantineForge_SUB_5fd81ed1-b91b-413e-91de-360715aba962, "AdamantineForge");
+DB_ALFSV_Place("GrymforgeLift", (DIALOGRESOURCE)ALFSV_AD_Place_GrymforgeLift_2b1e5cfa-8c51-546d-a1a4-17b032805b09);
 DB_ALFSV_Place("SacredPool", (DIALOGRESOURCE)ALFSV_AD_Place_SacredPool_86cb32bd-69d1-560a-ac45-8b2c8b46de67);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_DEN_SacredPond_SUB_2303e19f-549f-434f-bee0-b886fb34c46a, "SacredPool");
+DB_ALFSV_Place("ClearNight", (DIALOGRESOURCE)ALFSV_AD_Place_ClearNight_705f1325-2936-566b-bcc1-66de00411232);
 DB_ALFSV_Place("RisenRoad", (DIALOGRESOURCE)ALFSV_AD_Place_RisenRoad_0d26b4a5-584a-552b-b035-bdbfeedcb2eb);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_PLA_Plains_SUB_bcc3efa5-bfe1-4224-9df1-6758cac764cd, "RisenRoad");
 DB_ALFSV_Place("BlightedVillage", (DIALOGRESOURCE)ALFSV_AD_Place_BlightedVillage_f5160284-2684-5620-adc4-0b6da781448f);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_FOR_ForestVillage_SUB_21e6bfbf-c5c9-4e99-97f8-2df7143967c4, "BlightedVillage");
 DB_ALFSV_Place("CrashSite", (DIALOGRESOURCE)ALFSV_AD_Place_CrashSite_f280674a-59c1-51e7-a304-59ff71b87eaa);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_CRA_Beach_SUB_a78bd6f2-9c61-4866-a6d7-74a46ebd82b0, "CrashSite");
+DB_ALFSV_Place("WaukeensRest", (DIALOGRESOURCE)ALFSV_AD_Place_WaukeensRest_9edec833-733c-5cb9-b6ae-93b5effc699e);
+DB_ALFSV_PlaceFlag((FLAG)PLA_Tavern_Knows_Burning_f1d6e5cf-e8d4-4095-a6ef-17dfcd4521b0, "WaukeensRest");
 DB_ALFSV_Place("Teahouse", (DIALOGRESOURCE)ALFSV_AD_Place_Teahouse_9bdea1ab-243d-557a-9796-f632309cca12);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_HAG_House_SUB_a54033ab-fc50-476b-99c6-5d6ad01bcf18, "Teahouse");
 DB_ALFSV_Place("GoblinCamp", (DIALOGRESOURCE)ALFSV_AD_Place_GoblinCamp_be424106-6ed5-5a34-b130-291a5648585a);
@@ -54,6 +60,8 @@ DB_ALFSV_Place("SCLFirst", (DIALOGRESOURCE)ALFSV_AD_Place_SCLFirst_8901821c-ae5b
 DB_ALFSV_PlaceLevel("SCL_Main_A", "SCLFirst");
 DB_ALFSV_Place("LastLight", (DIALOGRESOURCE)ALFSV_AD_Place_LastLight_0580dc08-6ca8-5a0e-a64a-d92d3c31a41f);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_HAV_Haven_SUB_6ac001f4-9c56-4a1b-963d-a509e158ffab, "LastLight");
+DB_ALFSV_Place("Reithwin", (DIALOGRESOURCE)ALFSV_AD_Place_Reithwin_d0ff03c8-cd80-509a-aae2-8897f5b6af5e);
+DB_ALFSV_PlaceTrigger((TRIGGER)S_TWN_MainSub_169edf4a-bd51-4964-adb0-4d47956d5fae, "Reithwin");
 DB_ALFSV_Place("Gauntlet", (DIALOGRESOURCE)ALFSV_AD_Place_Gauntlet_0879240d-4d32-5fc4-9fdf-d95bdc62955b);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_SHA_Temple_SUB_348b76ee-33d8-471b-a95d-7ded0d6cdfd5, "Gauntlet");
 DB_ALFSV_Place("GauntletLift", (DIALOGRESOURCE)ALFSV_AD_Place_GauntletLift_173937ff-3025-557a-b057-0e748c7b777e);
@@ -92,6 +100,27 @@ DB_ALFSV_Place("AstralPlane", (DIALOGRESOURCE)ALFSV_AD_Place_AstralPlane_5aaca66
 DB_ALFSV_PlaceTrigger((TRIGGER)S_END_AstralPrism_SUB_adf44e33-ae27-4186-aff7-84d61dbedcae, "AstralPlane");
 DB_ALFSV_PlaceTrigger((TRIGGER)S_INT_AstralPlane_SUB_98791ae8-8cac-489f-8451-9f1a3d85cb19, "AstralPlane");
 DB_ALFSV_TravelAD((DIALOGRESOURCE)ALFSV_AD_Travel_b3006aa9-fc6d-5023-b11a-7d72b6b8602c);
+
+//END_REGION
+
+//REGION Grymforge lift: line on arrival after the level swap (the ride is behind the loading screen)
+PROC
+PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToSCLFromUnderdark")
+THEN
+DB_ALFSV_LiftArrival("SCL_Main_A");
+
+PROC
+PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToWLDFromSCL")
+THEN
+DB_ALFSV_LiftArrival("WLD_Main_A");
+
+IF
+LevelGameplayStarted(_Level, _)
+AND
+DB_ALFSV_LiftArrival(_Level)
+THEN
+NOT DB_ALFSV_LiftArrival(_Level);
+PROC_ALFSV_Place_Request("GrymforgeLift");
 
 //END_REGION
 
@@ -375,6 +404,59 @@ AND
 DB_ALFSV_Lift_Ride(_X, _Y, _Z, _Half)
 THEN
 NOT DB_ALFSV_Lift_Ride(_X, _Y, _Z, _Half);
+
+//END_REGION
+
+//REGION Clear night: the first free evening in the forest camp (open sky, act 1)
+IF
+FlagSet(GLO_CAMP_State_NightMode_fb53edc2-9a89-4ad2-af83-20b5fe425cdd, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+QRY_ALFSV_Place_Wanted("ClearNight")
+THEN
+DB_ALFSV_ClearNight_Wait(1);
+TimerCancel("ALFSV_ClearNight");
+TimerLaunch("ALFSV_ClearNight", 5000);
+
+QRY
+QRY_ALFSV_AvatarInDialog()
+AND
+DB_Avatars(_Avatar)
+AND
+DB_InteractiveDialogSpeaker(_, _Avatar)
+THEN
+DB_NOOP(1);
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+AND
+NOT DB_Camp_NightMode(1)
+THEN
+NOT DB_ALFSV_ClearNight_Wait(1);
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+AND
+DB_ActiveCamp("WLDMAIN")
+AND
+DB_InCamp(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_Camp_Faded(_, _)
+AND
+NOT QRY_ALFSV_AvatarInDialog()
+THEN
+NOT DB_ALFSV_ClearNight_Wait(1);
+PROC_ALFSV_Place_Request("ClearNight");
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+THEN
+TimerLaunch("ALFSV_ClearNight", 5000);
 
 //END_REGION
 

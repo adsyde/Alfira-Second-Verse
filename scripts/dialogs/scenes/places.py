@@ -12,7 +12,9 @@ ads.MOOD). Механизм — scripts/dialogs/ads.py и goal ALFSV_World.txt (
     мод не делает: иначе у чужих правил EnteredTrigger на тех же триггерах появились бы события,
     которых игра не ждёт;
   * flags — глобальный флаг игры (FlagSet); levels — начало уровня (LevelGameplayStarted);
-  * custom — особый запуск (фуникулёр Яслей: три реплики по ходу рейса, ads.LIFT_BLOCK).
+  * custom — особый запуск: фуникулёр Яслей (три реплики по ходу рейса, ads.LIFT_BLOCK), лифт Гримфорджа
+    (по прибытии после смены уровня, ads.GRYMFORGE_LIFT_BLOCK), ясная ночь (первый свободный вечер в лесном
+    лагере акта 1, ads.CLEAR_NIGHT_BLOCK).
 Места без надёжного триггера — в GAPS (реплики остаются в сценарии, в игру не идут).
 """
 from ads import COLD, NOTCH, ROMANCE, SPARK, place, variant
@@ -66,16 +68,38 @@ PLACES = [
                       "Будто вся пещера тянет ноту, которую я никак не расслышу.", emo="thinking")),
           act=1, triggers=["S_UND_MyconidCircle_SUB_4b5cc8fc-88f4-465e-bf82-4c20b055c019"],
           source=G1 + "Act1_Subregions.txt:54 (UND_MyconidCircle_SUB)"),
+    place("SeluneOutpost", "Селунитский аванпост (Подземье)",
+          variant(say("Someone built a lighthouse down here. In the dark. For whom, I wonder?",
+                      "Кто-то построил маяк здесь, в темноте. Интересно, для кого?", emo="surprise>thinking")),
+          act=1, triggers=["S_UND_SharFortBox_3419cfbf-5ad0-473b-bfa6-f10cb1e4a415"],
+          source=G1 + "Act1_UND_SharFort.txt:4 (PROC_TriggerRegisterForParty, не снимается; статуи Селуны, "
+                      "Act1_GLO_Backgrounds_Goals.txt:646 «Act1_Acolyte_SeluneGem») — [проверить в игре: приезд лифтом из Оскверненного храма]"),
     place("AdamantineForge", "Адамантиновая кузня",
           variant(say("Listen. The whole forge keeps time. *Boom* - two, three - *boom*.",
                       "Слушай. Вся кузня держит ритм. *Бум* — два, три — *бум*.", emo="surprise>happy")),
           act=1, triggers=["S_UND_AdamantineForge_SUB_5fd81ed1-b91b-413e-91de-360715aba962"],
           source=G1 + "Act1_Subregions.txt (UND_AdamantineForge_SUB)"),
+    place("GrymforgeLift", "Лифт Гримфорджа",
+          variant(say("If this rope snaps, I want it on record that I was *very* brave.",
+                      "Если трос оборвётся, прошу занести в летопись: я была *очень* храброй.", emo="fear>happy"),
+                  say("...Loose strap.", "…Ремень ослаб.", emo="fear>happy/1",
+                      note="(хватается за руку героя)"), when=[SPARK]),
+          variant(say("If this rope snaps, I want it on record that I was *very* brave.",
+                      "Если трос оборвётся, прошу занести в летопись: я была *очень* храброй.", emo="fear>happy")),
+          act=1, custom="grymforge_lift",
+          source=GD + "GLO_LevelSwap_PostEA.txt:9,13 (лифт S_UND_Elevator_Fort_ToShadowlands = переход "
+                      "ReadyCheck_ToSCLFromUnderdark, обратно ReadyCheck_ToWLDFromSCL); "
+                      "Gustav/…/GLO_LevelSwap.txt (PROC_GLO_LevelSwap_LeavingFromTo) — по прибытии, ads.GRYMFORGE_LIFT_BLOCK"),
     place("SacredPool", "Изумрудная роща, Священный пруд",
           variant(say("The only place in the Grove that doesn't sound afraid.",
                       "Единственное место в Роще, которое не звучит испуганно.", emo="thinking>happy")),
           act=1, triggers=["S_DEN_SacredPond_SUB_2303e19f-549f-434f-bee0-b886fb34c46a"],
           source=G1 + "Act1_Subregions.txt:18 (DEN_SacredPond_SUB)"),
+    place("ClearNight", "Ясная ночь в пути",
+          variant(say("Stars are out. She'd be dancing.", "Звёзды высыпали. Она бы танцевала.", emo="happy>sad")),
+          act=1, custom="clear_night",
+          source="Shared/…/GLO_Camp.txt (PROC_Camp_SetModeToNight: GLO_CAMP_State_NightMode), "
+                 + G1 + "Act1a_Camp.txt:7 (WLDMAIN — лесной лагерь) — первый свободный вечер, ads.CLEAR_NIGHT_BLOCK"),
     place("RisenRoad", "Всхожая дорога",
           variant(say("We came this way. ...Can we walk a bit faster?", "Мы шли этой дорогой. …Можно чуть быстрее?",
                       emo="sad>fear", note="(тихо)")),
@@ -91,6 +115,13 @@ PLACES = [
                       "Так вот что упало с неба. Я писала песни и о меньшем.", emo="surprise>happy")),
           act=1, triggers=["S_CRA_Beach_SUB_a78bd6f2-9c61-4866-a6d7-74a46ebd82b0"],
           source=G1 + "Act1_Subregions.txt:85 (CRA_Beach_SUB)"),
+    place("WaukeensRest", "Приют Вокин (горит)",
+          variant(say("An inn! A real inn! ...Oh. It's on fire. Of course it is.",
+                      "Таверна! Настоящая! …А. Горит. Ну конечно.", emo="happy/2>surprise>sad")),
+          act=1, flags=["PLA_Tavern_Knows_Burning_f1d6e5cf-e8d4-4095-a6ef-17dfcd4521b0"],
+          source=G1 + "Act1_PLA_TavernInvestigation_Surroundings.txt:19,912-916 (первый вход отряда в "
+                      "S_PLA_TavernInvestigation_BurnDownTrigger_Inner, пока трактир горит; после PROC_PLA_BurnDownTavern "
+                      "флага нет — Act1_PLA_TavernInvestigation.txt:711)"),
     place("Teahouse", "Чайный домик у реки",
           variant(say("Nobody sets out that many cakes without wanting something.",
                       "Никто не выставляет столько пирожных просто так.", emo="thinking")),
@@ -138,6 +169,12 @@ PLACES = [
                       "Пузырь света посреди такой тьмы. Кто-то здесь *очень* упрямый. Он мне уже нравится.", emo="surprise>happy")),
           act=2, triggers=["S_HAV_Haven_SUB_6ac001f4-9c56-4a1b-963d-a509e158ffab"],
           source=GD + "Act2_Subregions.txt (HAV_Haven_SUB)"),
+    place("Reithwin", "Рейтвин",
+          variant(say("Empty streets and doors left open. The saddest songs are the ones nobody finished.",
+                      "Пустые улицы и незапертые двери. Самые грустные песни — те, что никто не допел.", emo="thinking>sad")),
+          act=2, triggers=["S_TWN_MainSub_169edf4a-bd51-4964-adb0-4d47956d5fae"],
+          source=GD + "Act2_TWN_General.txt:49 (PROC_TriggerRegisterForPlayers, не снимается), "
+                      "Act2_TWN_Misc.txt:80 (он же — «впервые в городе», TWN_State_EverEnteredBefore)"),
     place("Gauntlet", "Вызов Шар",
           variant(say("It's beautiful. I hate that it's beautiful.", "Здесь красиво. Ненавижу, что здесь красиво.",
                       emo="surprise>angry")),
@@ -248,19 +285,5 @@ PLACES = [
 ]
 
 # Места без надёжного запуска в данных игры: в игру не идут, реплики остаются в сценарии.
-GAPS = [
-    ("SeluneOutpost", "Селунитский аванпост (Подземье)",
-     "нет подрегиона и триггера бесед с этим местом; точечные триггеры путевых камней Подземья "
-     "(_Gustav_Waypoints_Act1.txt) не подписаны местом — не угадываем"),
-    ("GrymforgeLift", "Лифт Гримфорджа",
-     "лифт — предмет S_UND_Elevator_Fort_ToShadowlands (Act1_UND_DuergarCamp_Elevator.txt:188, флаг "
-     "UND_ElevatorToScl_Used): по имени и флагу это переход к Оскверненным землям, а не поездка; своего "
-     "триггера у кабины в данных нет — [проверить в игре, есть ли поездка, на которой успеет реплика]"),
-    ("ClearNight", "Ясная ночь в пути",
-     "в данных нет события «ясная ночь»: смена дня и ночи есть только в лагере (GLO_CAMP_State_NightMode)"),
-    ("WaukeensRest", "Приют Вокин (горит)",
-     "триггер горящего трактира S_PLA_TavernInvestigation_BurnDownTrigger_Inner игра снимает с отряда "
-     "(Act1_PLA_TavernInvestigation.txt:711), подрегиона у трактира нет"),
-    ("Reithwin", "Рейтвин",
-     "у города нет подрегиона; триггеры бесед Рейтвина — только «…Cleared» (после зачистки, Act2_Gossip.txt:15-21)"),
-]
+# Сейчас таких нет: пять мест из прежнего списка собраны (docs/STAGE5.md §5).
+GAPS = []

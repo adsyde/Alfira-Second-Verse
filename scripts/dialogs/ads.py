@@ -90,7 +90,7 @@ class Place:
     triggers: list = field(default_factory=list)   # Osiris-имена триггеров: EnteredTrigger(Альфира, триггер)
     flags: list = field(default_factory=list)      # глобальные флаги игры: FlagSet(флаг)
     levels: list = field(default_factory=list)     # имена уровней: LevelGameplayStarted(уровень)
-    custom: str = ""                     # особый запуск, описан в world_goal (фуникулёр Яслей)
+    custom: str = ""                     # особый запуск, описан в world_goal: lift, grymforge_lift, clear_night
     source: str = ""                     # откуда взят триггер (файл:строка) — для документации
 
 
@@ -305,6 +305,95 @@ NOT DB_ALFSV_Lift_Ride(_X, _Y, _Z, _Half);
 //END_REGION
 """
 
+# Лифт Гримфорджа (GLO_LevelSwap.txt, GLO_LevelSwap_PostEA.txt): предмет S_UND_Elevator_Fort_ToShadowlands —
+# телепорт смены уровня «ReadyCheck_ToSCLFromUnderdark» (WLD_Main_A → SCL_Main_A), обратно —
+# S_SCL_Elevator_Fort_ToUnderdark «ReadyCheck_ToWLDFromSCL». Сама поездка — за экраном загрузки, поэтому
+# реплика — по прибытии: PROC_GLO_LevelSwap_LeavingFromTo игра вызывает ровно тогда, когда переход
+# состоялся (проверка готовности пройдена, не заблокирован лагерем), а LevelGameplayStarted нового уровня —
+# «приехали». Блок стоит перед общими правилами мест: при первом приезде в SCL реплика лифта встаёт в
+# очередь раньше «первого шага» (SCLFirst).
+GRYMFORGE_LIFT_BLOCK = """//REGION Grymforge lift: line on arrival after the level swap (the ride is behind the loading screen)
+PROC
+PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToSCLFromUnderdark")
+THEN
+DB_ALFSV_LiftArrival("SCL_Main_A");
+
+PROC
+PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToWLDFromSCL")
+THEN
+DB_ALFSV_LiftArrival("WLD_Main_A");
+
+IF
+LevelGameplayStarted(_Level, _)
+AND
+DB_ALFSV_LiftArrival(_Level)
+THEN
+NOT DB_ALFSV_LiftArrival(_Level);
+PROC_ALFSV_Place_Request("GrymforgeLift");
+
+//END_REGION
+"""
+
+# «Ясная ночь» (GLO_Camp.txt): в пути ночи нет, день и ночь меняются только в лагере — «Закончить день»
+# ставит режим вечера PROC_Camp_SetModeToNight (флаг GLO_CAMP_State_NightMode, DB_Camp_NightMode(1)).
+# Честный вариант — первый вечер в главном лагере акта 1 «WLDMAIN» (лес, открытое небо; Act1a_Camp.txt:7),
+# не в мини-лагерях (подвал, пещеры, подземелья) и не в Подземье (WLDUND). Флаг ставится в затемнении,
+# дальше идут сцены лагеря, поэтому реплика ждёт свободного вечера: раз в 5 с, пока вечер не кончился,
+# проверяются лагерь, что Альфира в лагере, экран не затемнён (DB_Camp_Faded) и никто из героев не в разговоре.
+CLEAR_NIGHT_BLOCK = """//REGION Clear night: the first free evening in the forest camp (open sky, act 1)
+IF
+FlagSet(GLO_CAMP_State_NightMode_fb53edc2-9a89-4ad2-af83-20b5fe425cdd, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+QRY_ALFSV_Place_Wanted("ClearNight")
+THEN
+DB_ALFSV_ClearNight_Wait(1);
+TimerCancel("ALFSV_ClearNight");
+TimerLaunch("ALFSV_ClearNight", 5000);
+
+QRY
+QRY_ALFSV_AvatarInDialog()
+AND
+DB_Avatars(_Avatar)
+AND
+DB_InteractiveDialogSpeaker(_, _Avatar)
+THEN
+DB_NOOP(1);
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+AND
+NOT DB_Camp_NightMode(1)
+THEN
+NOT DB_ALFSV_ClearNight_Wait(1);
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+AND
+DB_ActiveCamp("WLDMAIN")
+AND
+DB_InCamp({A})
+AND
+NOT DB_Camp_Faded(_, _)
+AND
+NOT QRY_ALFSV_AvatarInDialog()
+THEN
+NOT DB_ALFSV_ClearNight_Wait(1);
+PROC_ALFSV_Place_Request("ClearNight");
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+THEN
+TimerLaunch("ALFSV_ClearNight", 5000);
+
+//END_REGION
+"""
+
 
 def world_goal(places, trv: Travel, ids) -> str:
     """ALFSV_World.txt: реплики на местах (разово) и фразы в пути (по таймеру)."""
@@ -336,7 +425,7 @@ def world_goal(places, trv: Travel, ids) -> str:
         for lv in p.levels:
             o.append(f'DB_ALFSV_PlaceLevel("{lv}", "{p.key}");')
     o.append(f"DB_ALFSV_TravelAD({dlg(trv.scene)});")
-    o += ["", "//END_REGION", "",
+    o += ["", "//END_REGION", "", GRYMFORGE_LIFT_BLOCK,
           "//REGION Place lines: event -> request -> first free moment within the wait window", "",
           "IF", f"EnteredTrigger({A}, _Trigger)", "AND", "DB_ALFSV_PlaceTrigger(_Trigger, _Key)", "THEN",
           "PROC_ALFSV_Place_Request(_Key);", "",
@@ -387,7 +476,7 @@ def world_goal(places, trv: Travel, ids) -> str:
     for f, cond in mood:
         o += ["PROC", "PROC_ALFSV_AD_SetMood()", "AND", "DB_Avatars(_Avatar)", "AND", cond, "THEN",
               f"SetFlag({fl(f)}, {A});", ""]
-    o += ["//END_REGION", "", LIFT_BLOCK.replace("{A}", A),
+    o += ["//END_REGION", "", LIFT_BLOCK.replace("{A}", A), CLEAR_NIGHT_BLOCK.replace("{A}", A),
           f"//REGION Travel lines: every {TRAVEL_MIN_MS // 60000}-{(TRAVEL_MIN_MS + TRAVEL_SPREAD_MS) // 60000} min while "
           "she walks with the party; each line once (flags in the dialog)", "",
           "PROC", "PROC_ALFSV_Travel_Start()", "AND", "DB_ALFSV_IsCompanion(1)", "AND",

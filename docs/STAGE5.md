@@ -14,7 +14,8 @@
   34 фазы: 10 её озвученных реплик игры (handle из сценария) с их постановкой, новые реплики — только
   текст, действия — ремарки рассказчика.
 - **Реплики на местах, акты 1–3** — `design/banter/02_places.md`, `scripts/dialogs/scenes/places.py`:
-  36 AD (фуникулёр Яслей — три реплики по ходу рейса). 5 мест без надёжного запуска — §5.
+  41 AD (фуникулёр Яслей — три реплики по ходу рейса). Все места сценария собраны; пять из них
+  (аванпост, лифт Гримфорджа, ясная ночь, Приют Вокин, Рейтвин) — с особым запуском, §5.
 - **Фразы в пути, акт 1** — `design/banter/01_act1_world.md` §2, `scripts/dialogs/scenes/travel.py`:
   10 фраз, 3 из них — её озвученные из `CAMP_Bard_AD`.
 - **Конвейер AD** (`scripts/dialogs/ads.py`): описание мест и фраз → AD (текст над головой) + goal
@@ -75,11 +76,15 @@
 | 1 | Обитель Розиморн | `Monastery` | `S_CRE_Monastery_SUB_94be6628-ed02-4bdc-9173-5d1b06f26daa` | Act1b_Subregions.txt (CRE_Monastery_SUB) |
 | 1 | Подземье, первый шаг | `UnderdarkFirst` | `S_UND_Underdark_SUB_b379a862-a59f-4e52-9166-23fbe0e8976e` | Act1_Subregions.txt (UND_Underdark_SUB) |
 | 1 | Подземье, колония миконидов | `Myconids` | `S_UND_MyconidCircle_SUB_4b5cc8fc-88f4-465e-bf82-4c20b055c019` | Act1_Subregions.txt:54 |
+| 1 | Селунитский аванпост | `SeluneOutpost` | `S_UND_SharFortBox_3419cfbf-5ad0-473b-bfa6-f10cb1e4a415` | Act1_UND_SharFort.txt:4 (регистрация для отряда, не снимается) — §5 |
 | 1 | Адамантиновая кузня | `AdamantineForge` | `S_UND_AdamantineForge_SUB_5fd81ed1-b91b-413e-91de-360715aba962` | Act1_Subregions.txt (UND_AdamantineForge_SUB) |
+| 1 | Лифт Гримфорджа | `GrymforgeLift` | по прибытии после поездки на лифте (§5) | GLO_LevelSwap_PostEA.txt:9,13; GLO_LevelSwap.txt (PROC_GLO_LevelSwap_LeavingFromTo) |
 | 1 | Изумрудная роща, Священный пруд | `SacredPool` | `S_DEN_SacredPond_SUB_2303e19f-549f-434f-bee0-b886fb34c46a` | Act1_Subregions.txt:18 |
+| 1 | Ясная ночь | `ClearNight` | первый свободный вечер в лесном лагере `WLDMAIN` (§5) | Shared GLO_Camp.txt (PROC_Camp_SetModeToNight), Act1a_Camp.txt:7 |
 | 1 | Всхожая дорога | `RisenRoad` | `S_PLA_Plains_SUB_bcc3efa5-bfe1-4224-9df1-6758cac764cd` | Act1_Subregions.txt:45 — **проверить в игре**: подрегион «равнин» = Всхожая дорога |
 | 1 | Вымершая деревня | `BlightedVillage` | `S_FOR_ForestVillage_SUB_21e6bfbf-c5c9-4e99-97f8-2df7143967c4` | Act1_Subregions.txt:30 |
 | 1 | Место крушения наутилоида | `CrashSite` | `S_CRA_Beach_SUB_a78bd6f2-9c61-4866-a6d7-74a46ebd82b0` | Act1_Subregions.txt:85 |
+| 1 | Приют Вокин (горит) | `WaukeensRest` | флаг `PLA_Tavern_Knows_Burning_f1d6e5cf-e8d4-4095-a6ef-17dfcd4521b0` | Act1_PLA_TavernInvestigation_Surroundings.txt:19,912-916 — §5 |
 | 1 | Чайный домик у реки | `Teahouse` | `S_HAG_House_SUB_a54033ab-fc50-476b-99c6-5d6ad01bcf18` | Act1_HAG_Hag.txt:74 (DB_SubregionMarker) |
 | 1 | Лагерь гоблинов | `GoblinCamp` | `S_GOB_Festivities_SUB_217424e5-f9b7-4441-ab09-715076696a12` | Act1_Subregions.txt — **проверить в игре**: двор лагеря |
 | 1 | Темный склеп | `DankCrypt` | `S_CHA_Crypt_SUB_001_f8bc812e-1cb3-46bd-942a-9f572f66ef16` | Act1_Subregions.txt (CHA_Crypt_SUB_001) |
@@ -87,6 +92,7 @@
 | 2 | Рассвет над Оскверненными тенью землями | `Sunrise` | флаг `GLO_LiftingTheCurse_State_BreathHasBeenRestored_2113b54e-…` или `SCL_ShadowCurse_State_CurseLifted_af78af4a-…`, что раньше | Act2_SCL_LiftingTheCurse_Confrontation.txt:781; Act2_SCE_LiftingTheCurse_HalsinFollowUp.txt:52-68 |
 | 2 | Оскверненные тенью земли, первый шаг | `SCLFirst` | начало уровня `SCL_Main_A` | LevelGameplayStarted |
 | 2 | Таверна «Последний свет» | `LastLight` | `S_HAV_Haven_SUB_6ac001f4-9c56-4a1b-963d-a509e158ffab` | Act2_Subregions.txt (HAV_Haven_SUB) |
+| 2 | Рейтвин | `Reithwin` | `S_TWN_MainSub_169edf4a-bd51-4964-adb0-4d47956d5fae` | Act2_TWN_General.txt:49, Act2_TWN_Misc.txt:80 — §5 |
 | 2 | Вызов Шар | `Gauntlet` | `S_SHA_Temple_SUB_348b76ee-33d8-471b-a95d-7ded0d6cdfd5` | Act2_Subregions.txt (SHA_Temple_SUB) |
 | 2 | Вызов Шар, подъёмник | `GauntletLift` | `S_SHA_Disc_Bounds_ed943df3-d3ca-43e4-890f-4ef9bd30faa1` (диск) | Act2_SHA_Disc.txt:4 (регистрация), :69 |
 | 2 | Песня Ночи | `Nightsong` | `S_SHA_NightsongPrison_SUB_0a302268-dd92-4462-99e5-ca7491815ec0` | Act2_Subregions.txt |
@@ -126,15 +132,19 @@
 звучит, следующая ждёт очереди (до 60 с). «Наверху» — конец рейса в любую сторону: какая станция
 выше, по данным не видно (станции названы Down/Up).
 
-## 5. Места без надёжного запуска (в игру не идут)
+## 5. Особые запуски: аванпост, лифт Гримфорджа, ясная ночь, Приют Вокин, Рейтвин
 
-| Место | Ключ | Почему |
+Раньше эти пять мест не собирались: не было надёжного запуска. Теперь запуск найден для всех пяти, в
+`GAPS` (`places.py`) ничего не осталось. Goals — `Gustav/Mods/Gustav(Dev)/Story/RawFiles/Goals/`, лагерь —
+`Shared/Mods/Shared/…/GLO_Camp.txt` (из хотфикса).
+
+| Место | Запуск | Почему это надёжно (данные игры) |
 |---|---|---|
-| Селунитский аванпост (Подземье) | `SeluneOutpost` | нет подрегиона и триггера бесед с этим местом; точечные триггеры путевых камней Подземья (`_Gustav_Waypoints_Act1.txt`) не подписаны местом — не угадываем |
-| Лифт Гримфорджа | `GrymforgeLift` | лифт — предмет `S_UND_Elevator_Fort_ToShadowlands` (`Act1_UND_DuergarCamp_Elevator.txt:188`, флаг `UND_ElevatorToScl_Used`): по имени и флагу это переход к Оскверненным землям, а не поездка; своего триггера у кабины нет — проверить в игре, есть ли поездка, на которой успеет реплика |
-| Ясная ночь в пути | `ClearNight` | в данных нет события «ясная ночь»: день и ночь меняются только в лагере (`GLO_CAMP_State_NightMode`) |
-| Приют Вокин (горит) | `WaukeensRest` | триггер горящего трактира `S_PLA_TavernInvestigation_BurnDownTrigger_Inner` игра снимает с отряда (`Act1_PLA_TavernInvestigation.txt:711`), подрегиона у трактира нет |
-| Рейтвин | `Reithwin` | у города нет подрегиона; триггеры бесед Рейтвина — только «…Cleared» (после зачистки, `Act2_Gossip.txt:15-21`) |
+| **Селунитский аванпост** (Подземье) | `EnteredTrigger(Альфира, S_UND_SharFortBox_3419cfbf-…)` | В игре аванпост — `UND_SharFort` (статуи Селуны с «глазами»-турелями, самоцвет Селуны). Коробка-триггер вокруг него регистрируется для отряда в INIT `Act1_UND_SharFort.txt:4` и нигде не снимается. Что это аванпост, видно по данным: при уничтожении самоцвета `S_UND_Gem` цель предыстории «Act1_Acolyte_SeluneGem» засчитывается тому, кто стоит в этой коробке (`Act1_GLO_Backgrounds_Goals.txt:646`). Ещё в `Act1_DEN_AdventurersQuest.txt:56` эту коробку описывают как часть Подземья с лифтом наверх. |
+| **Лифт Гримфорджа** | по прибытии: `PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToSCLFromUnderdark")` → `LevelGameplayStarted("SCL_Main_A")`, обратно — `"ReadyCheck_ToWLDFromSCL"` → `"WLD_Main_A"` (`ads.GRYMFORGE_LIFT_BLOCK`) | Лифт `S_UND_Elevator_Fort_ToShadowlands` — телепорт смены уровня (`GLO_LevelSwap_PostEA.txt:9`, прибытие — `StartPoint_000` в `SCL_Main_A`, :21; обратно — `S_SCL_Elevator_Fort_ToUnderdark`, :13). Сама поездка идёт за экраном загрузки, поэтому реплика звучит по прибытии. `PROC_GLO_LevelSwap_LeavingFromTo` игра вызывает только тогда, когда переход действительно начался: проверка готовности пройдена, лагерь перехода (`GLO_CampNights.txt`, fallback camp) закончился (`GLO_LevelSwap.txt`, `PROC_GLO_LevelSwap_CheckSwap`). Если на лифт нажали и отказались, реплики нет. Звучит один раз, в какую бы сторону ни ехали впервые с ней. ✨ — основная реплика + «…Loose strap.» |
+| **Ясная ночь** | первый свободный вечер в лагере `WLDMAIN` (`ads.CLEAR_NIGHT_BLOCK`) | В пути ночи нет: день и ночь меняются только в лагере. «Закончить день» включает вечер: `PROC_Camp_SetModeToNight` ставит флаг `GLO_CAMP_State_NightMode_fb53edc2-…` и `DB_Camp_NightMode(1)` (`GLO_Camp.txt:2733-2735`). Честный вариант — лесной главный лагерь акта 1 `WLDMAIN` (Main Camp (Forest), `Act1a_Camp.txt:7`): там открытое небо. Мини-лагеря (подвал, пещеры, подземелья) и Подземье (`WLDUND`) не подходят, акты 2–3 тоже, у них свои лагеря. Флаг ставится в затемнении, потом идут сцены лагеря, поэтому реплика ждёт: раз в 5 с, пока вечер не кончился, проверяется, что лагерь — `WLDMAIN`, Альфира в лагере (`DB_InCamp`), экран не затемнён (`DB_Camp_Faded`) и никто из героев не в разговоре (`DB_InteractiveDialogSpeaker`). Потом — обычная очередь реплик места. Если в этот вечер не сработало, реплика ждёт следующего. |
+| **Приют Вокин (горит)** | флаг `PLA_Tavern_Knows_Burning_f1d6e5cf-…` | Это акт 1 (в `02_places.md` — «Тяжёлые места» акта 1): трактир горит, когда отряд приходит впервые. Триггер `S_PLA_TavernInvestigation_BurnDownTrigger_Inner` регистрируется для отряда в INIT (`Act1_PLA_TavernInvestigation_Surroundings.txt:19`). Когда в него впервые входит кто-то из отряда, игра снимает триггер и ставит глобальный флаг «знаем, что горит» (:912-916). Снятие, из-за которого место раньше не собирали, происходит ровно в момент прихода, поэтому берём флаг, а не `EnteredTrigger` Альфиры. Если трактир сгорел без отряда (уход с уровня, `PROC_LevelUnloading("WLD_Main_A")`), `PROC_PLA_BurnDownTavern` снимает триггер (`Act1_PLA_TavernInvestigation.txt:711`), флага нет — и реплики нет, что правильно. |
+| **Рейтвин** | `EnteredTrigger(Альфира, S_TWN_MainSub_169edf4a-…)` | У города нет `DB_Subregion`, но есть главный триггер города `S_TWN_MainSub`. Он регистрируется для героев отряда (`PROC_TriggerRegisterForPlayers`, `Act2_TWN_General.txt:49`) и не снимается. Этим же триггером игра отмечает «впервые в городе» (`DB_PartyProgress_Trigger` → `TWN_State_EverEnteredBefore`, `Act2_TWN_Misc.txt:80`). Карлах по нему перестаёт жаловаться на проклятие (`Act2_OriginMoments_Karlach.txt:35`, вместе с подрегионами «Последнего света» и Лунных Башен). «PlayerTriggers» регистрируются на всех из `DB_Players`, то есть и на Альфиру в активном отряде (`_GLO_Shared_PartyMembers.txt`, `PROC_RegisterPartyTrigger`). |
 
 ## 6. Как проверить в игре
 
@@ -180,6 +190,18 @@ python scripts/dialogs/tree.py       # build/dialogs/ALFSV_Alfira_Ch02_Lute.md, 
 12. **Лагерь гоблинов**, **Всхожая дорога**, **Серая бухта** — реплика в правильном ли месте.
 13. **Вход в бою / в разговоре:** реплика ждёт и звучит после (до 60 с) или сработает при следующем входе.
 14. **Альфира в лагере** (не в отряде): реплик нет.
+14a. **Селунитский аванпост:** войти в аванпост со статуями Селуны пешком из Подземья и (отдельно)
+    приехать лифтом из Оскверненного храма — «Someone built a lighthouse down here…». Если прийти в
+    Подземье впервые через этот лифт, то сначала звучит аванпост, «No sky, no stars…» — при выходе в пещеры.
+14b. **Лифт Гримфорджа:** поехать на лифте в Оскверненные земли. После загрузки — «If this rope snaps…»
+    (с искрой — и «…Loose strap.»), затем «Oh, gods. It's like the whole world is holding its breath…»
+    (первый шаг): порядок именно такой. Нажать на лифт и отказаться в окне готовности — реплики нет.
+14c. **Ясная ночь:** в лесном лагере акта 1 нажать «Закончить день». После сцен лагеря, когда экран
+    открыт и никто не разговаривает, — «Stars are out. She'd be dancing.». В лагере Подземья — тишина,
+    реплика ждёт вечера в лесу.
+14d. **Приют Вокин:** подойти к горящему трактиру — «An inn! A real inn! …Oh. It's on fire.».
+14e. **Рейтвин:** войти в город — «Empty streets and doors left open…». Проверить, что реплика звучит на
+    въезде в город, а не только у отдельных зданий.
 
 **Фразы в пути**
 
@@ -203,3 +225,12 @@ python scripts/dialogs/tree.py       # build/dialogs/ALFSV_Alfira_Ch02_Lute.md, 
 7. **Подрегионы большие:** реплика звучит на входе в подрегион, а не у конкретного вида.
 8. **Порядок Osiris** при нескольких местах сразу: запускается одно, остальные ждут (выбор «первого»
    держится на проверке `NOT DB_ALFSV_AD_Requested` внутри одного правила — проверить п. 13).
+9. **Порядок «лифт → первый шаг»** в Оскверненных землях держится на порядке правил в `ALFSV_World.txt`:
+   правило прибытия (`GRYMFORGE_LIFT_BLOCK`) стоит раньше общего `LevelGameplayStarted` мест, и очередь
+   берёт первую заявку. Проверить п. 14b.
+10. **Ясная ночь и праздник.** Первый вечер в лесном лагере может совпасть с праздником в лагере
+   (своя сцена главы). Реплика ждёт, пока никто не разговаривает, и звучит в первую свободную минуту
+   вечера. Отдельного запрета на вечер праздника нет.
+11. **Лифт Гримфорджа по прибытии**, а не в поездке: поездки на экране нет (переход уровня без ролика,
+   `GLO_LevelSwap_PostEA.txt:21`). Строка «If this rope snaps…» звучит как отклик на только что
+   закончившийся спуск/подъём.
