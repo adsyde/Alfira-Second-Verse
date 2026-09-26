@@ -18,7 +18,12 @@ class F:
     ReturnedInstrument = Flag("DEN_TieflingBard_State_ReturnedInstrument", "Global", "03c9168b-079b-eff1-fbe4-9dcb4425c529")
     # ставит DEN_TieflingBard_Bard после удачного дуэта на лютне (на герое)
     GiveProficiency = Flag("DEN_TieflingBard_Event_GiveProficiency", "Object", "da7a54f9-091d-9276-2a76-3abec2b701a7")
-    MaxPlayerCount = Flag("GEN_MaxPlayerCountReached", "Global", "823b5064-8aa4-c0b7-1b8c-657b46987ccd")
+    # на герое: он играл дуэт на лютне Лихейлы (DEN_TieflingBard_Bard N4659 «Hand me that lute»), после чего
+    # лютня остаётся у него во всех ветках («Keep the lute», N2541/N4534). TransferInstrument не годится:
+    # это событие «передать предмет от Альфиры тому, на ком флаг» (Act1_DEN_TieflingBard.txt:45-49),
+    # его ставят и возврат украденной лютни, и отказ от помощи.
+    PlayWithInstrument = Flag("DEN_TieflingBard_Event_PlayWithInstrument", "Object", "b063223a-761a-fae0-e766-f76a53b78b81")
+    MaxPlayerCount =Flag("GEN_MaxPlayerCountReached", "Global", "823b5064-8aa4-c0b7-1b8c-657b46987ccd")
     OriginAddToParty = Flag("OriginAddToParty", "Object", "4870b2cd-210c-0fdc-9c58-4d0142bdae29")
     InvitedToCampWalk = Flag("GLO_ORI_Event_InvitedToCamp_Walk", "Object", "6dfae0e0-e6c4-4d4f-8979-df320356ea03")
     SwapToCamp = Flag("GLO_ND_CompanionSwap_ToCamp", "Object", "b0ad7652-77ee-c932-3440-922b6e1173aa")

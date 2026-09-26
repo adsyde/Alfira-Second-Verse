@@ -16,6 +16,7 @@
                                                                      HasPlayerApprovalRating (в git не идёт)
   Mods/_MOD_/Localization/English|Russian/AlfiraSecondVerse_*.xml    тексты
   Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt                 Osiris глав разговоров (этап 4)
+  Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt                    Osiris реплик на местах и в пути (AD, этап 5)
   build/dialogs/manifest.json                                        ванильные handle (для build_pak)
 """
 from __future__ import annotations
@@ -39,6 +40,7 @@ import bg3lib  # noqa: E402
 import dsl  # noqa: E402
 from dsl import ALFIRA, PLAYER, Flag, FlagRef, Line, Option, has_gender, render  # noqa: E402
 from staging import Stager  # noqa: E402
+import ads  # noqa: E402
 from vanilla import ALFIRA_ORIGIN, ALFIRA_TEMPLATE, APPROVAL_SP1, NARRATOR_SPEAKER, PLAYER_SPEAKER, F  # noqa: E402
 
 enable_utf8_stdout()
@@ -46,6 +48,7 @@ enable_utf8_stdout()
 # Сцены: вербовка, разговор в отряде и все главы разговоров scenes/chNN_*.py (подхватываются сами).
 SCENES = ["recruitment", "inparty"] + sorted(p.stem for p in (HERE / "scenes").glob("ch[0-9][0-9]_*.py"))
 CHAPTERS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt"
+WORLD_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt"
 # Женские формы обращения к героине: отдельный файл <имя>_to_F.xml рядом с русским (как
 # russian_to_F.loca у игры). Проверить в игре; если игра не различает — выключить.
 FEMALE_VARIANTS = True
@@ -325,6 +328,8 @@ class Compiler:
             self.d.add_root_node(r)
         # постановка
         tl = b.timeline_object(bundle.timeline, self.d)
+        if s.kind == "ad":
+            return self.run_ad(tl)
         base_tl = lib.assets.get_timeline_object(s.base)
         base_d = lib.assets.get_dialog_object(s.base)
         self.stager = st = Stager(lib, tl, self.d, base_tl, base_d, ALFIRA_TEMPLATE, PLAYER_SPEAKER,
@@ -359,6 +364,31 @@ class Compiler:
         for cam in st.added_cams:
             et.SubElement(et.SubElement(tch, "node", {"id": "DependencyCache"}), "attribute",
                           {"id": "Object", "type": "guid", "value": cam})
+        self.dres, self.tres = dres, tres
+        return self
+
+    def run_ad(self, tl):
+        """AD: категория как у Larian, фазы — ADStager (голос и эмоции, без камер), записи банков."""
+        s, lib = self.s, self.lib
+        dnode = self.bundle.dialog.root_node.find('./region[@id="dialog"]/node[@id="dialog"]')
+        if s.category:
+            set_attr(dnode, "category", s.category, "LSString")
+        self.stager = st = ads.ADStager(lib, tl, lambda k: self.uid(k))
+        for nid, line in self.npc:
+            if line.handle:
+                src, src_node, _ = self.voices[line.handle]
+                st.voiced_phase(nid, src, src_node)
+            else:
+                st.text_phase(nid, line)
+        dres = lib.assets.get_dialog_resource(s.dialog_id)
+        sub = f"{s.subfolder}/" if s.subfolder else ""
+        set_attr(dres, "Name", s.name, "LSString")
+        set_attr(dres, "SourceFile", f"Mods/_MOD_/Story/Dialogs/{sub}{s.name}.lsj", "LSString")
+        timeline_id = self.ids.uid(f"{s.name}/timeline")
+        tres = lib.assets.get_timeline_resource(timeline_id)
+        set_attr(tres, "Name", s.name, "LSString")
+        set_attr(tres, "SourceFile", f"Public/_MOD_/Timeline/Generated/{s.name}.lsf", "LSString")
+        set_attr(tres, "EditorSourceFile", f"Editor/Mods/_MOD_/Timeline/Generated/{s.name}.tml", "LSString")
         self.dres, self.tres = dres, tres
         return self
 
@@ -525,6 +555,8 @@ def load_scenes():
     for name in SCENES:
         mod = importlib.import_module(f"scenes.{name}")
         out.append(mod.SCENE)
+    places, trv = load_world()
+    out += [p.scene for p in places] + [trv.scene]
     chapters = [s for s in out if s.chapter is not None]
     nums = sorted(s.chapter.number for s in chapters)
     if nums != list(range(1, len(nums) + 1)):
@@ -533,6 +565,16 @@ def load_scenes():
     if chapters and len(hubs) != 1:
         sys.exit(f"Входы в главы (Scene.chapter_entries) должны быть ровно в одной сцене, сейчас: {hubs}")
     return out
+
+
+def load_world():
+    """Реплики на местах (scenes/places.py) и фразы в пути (scenes/travel.py)."""
+    from scenes.places import PLACES
+    from scenes.travel import TRAVEL
+    keys = [p.key for p in PLACES]
+    if len(keys) != len(set(keys)):
+        sys.exit(f"Повторяются ключи мест: {sorted(k for k in keys if keys.count(k) > 1)}")
+    return PLACES, TRAVEL
 
 
 # --- Osiris глав -------------------------------------------------------------------------------
@@ -647,6 +689,12 @@ def generate(dump=False):
         goal.write_text(chapters_goal(chapters, ids), encoding="utf-8", newline="\n")
     elif goal.exists():
         goal.unlink()
+    # реплики на местах и в пути (AD) — свой goal
+    places, trv = load_world()
+    (src / WORLD_GOAL).write_text(ads.world_goal(places, trv, ids), encoding="utf-8", newline="\n")
+    from scenes.recruitment import ROMANCE as romance_flag        # флаг только из Osiris: файл нужен всё равно
+    if romance_flag not in flags:
+        write_xml(flag_xml(ids.flag(romance_flag), romance_flag), src / f"Public/_MOD_/Flags/{ids.flag(romance_flag)}.lsx")
     loc = src / "Mods/_MOD_/Localization"
     write_xml(loca_xml(loca_en), loc / "English" / f"{LOCA_NAME}_en.xml")
     write_xml(loca_xml(loca_ru), loc / "Russian" / f"{LOCA_NAME}_ru.xml")
@@ -663,6 +711,10 @@ def generate(dump=False):
         "chapters": {s.chapter.number: {"scene": s.name, "dialog": s.dialog_id, "title": s.chapter.title,
                                          "available": ids.flag(s.chapter.available_flag),
                                          "done": ids.flag(s.chapter.done_flag)} for s in chapters},
+        "places": {p.key: {"dialog": p.scene.dialog_id, "name": p.scene.name, "act": p.act, "title": p.title,
+                           "triggers": p.triggers, "flags": p.flags, "levels": p.levels, "custom": p.custom}
+                   for p in places},
+        "travel": {"dialog": trv.scene.dialog_id, "name": trv.scene.name, "lines": len(trv.played)},
         "female_variants": sorted(loca_ru_f) if FEMALE_VARIANTS else [],
         "bg3moddinglib": lib.commit,
     }

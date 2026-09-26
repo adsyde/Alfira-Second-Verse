@@ -26,6 +26,9 @@ POSTPONED = new_flag("ALFSV_Recruitment_Postponed", "Dialog", "Hero answered 'no
 REFUSED = new_flag("ALFSV_Recruitment_Refused", "Dialog", "Hero refused Alfira's request to join")
 # На герое (Object, спикер 1): у каждого героя своя искра и свой мотив для песни.
 SPARK = new_flag("ALFSV_Romance_Spark", "Object", "Romance spark with Alfira (fork R1)")
+# 💞 роман начат (R3/R4, главы 5 и 8 — ещё не написаны). Объявлен здесь, рядом с искрой: его уже
+# проверяют реплики на местах и в пути (scenes/ad_*.py); ставить будет глава, где роман открывается.
+ROMANCE = new_flag("ALFSV_Romance_Started", "Object", "Romance with Alfira has started (R3/R4)")
 MOTIVE_DUTY = new_flag("ALFSV_HeroMotive_Duty", "Object", "Hero's motive for the song: someone has to")
 MOTIVE_MODESTY = new_flag("ALFSV_HeroMotive_Modesty", "Object", "Hero's motive for the song: wrong place, right time")
 MOTIVE_HONESTY = new_flag("ALFSV_HeroMotive_Honesty", "Object", "Hero's motive for the song: the tadpole, honesty")

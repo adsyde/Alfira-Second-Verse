@@ -266,6 +266,8 @@ class Scene:
     nested: list = field(default_factory=list)       # ID вложенных диалогов (childResources банка)
     status: str = ""
     chapter: Chapter | None = None                   # сцена — глава разговора (вложенный диалог)
+    kind: str = "dialog"                             # "ad" — реплика над головой (scripts/dialogs/ads.py)
+    category: str = ""                               # категория диалога (у AD — как у Larian, см. ads.py)
     blocks: dict = field(default_factory=dict)
     roots: list = field(default_factory=list)
 

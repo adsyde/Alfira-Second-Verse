@@ -32,6 +32,13 @@ DB_ALFSV_IsCompanion(1)
 THEN
 PROC_ALFSV_Chapters_Unlock(0);
 
+IF
+FlagSet((FLAG)ALFSV_Chapter02_Done_4cd365b4-313e-536b-969f-84319fa4cbb6, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_Chapters_Unlock(0);
+
 // Debug (Script Extender console): Osi.PROC_ALFSV_Debug_UnlockChapter() - as if a long rest had passed
 PROC
 PROC_ALFSV_Debug_UnlockChapter()
@@ -51,6 +58,20 @@ AND
 NOT DB_GlobalFlag((FLAG)ALFSV_Chapter01_Available_c5a9450f-9f12-54bf-af68-396d3813a270)
 THEN
 PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter01_Available_c5a9450f-9f12-54bf-af68-396d3813a270);
+
+// Chapter 2: ALFSV_Alfira_Ch02_Lute - unlocks after a long rest, after chapter 1
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter02_Available_b8ac2941-38e0-5c94-8fc1-4dec55aa4d2d)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter01_Done_646b75d3-e9b5-5022-ada3-b3388118c998)
+AND
+_AtRest == 1
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter02_Available_b8ac2941-38e0-5c94-8fc1-4dec55aa4d2d);
 
 //END_REGION
 EXITSECTION
