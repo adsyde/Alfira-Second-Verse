@@ -1,4 +1,4 @@
-"""Сцена A «Ученица без наставницы» — design/dialogs/01_recruitment.md, черновик v3.
+"""Сцена A «Ученица без наставницы» — design/dialogs/01_recruitment.md, согласовано (v3).
 
 Альфира закончила «Плач рассвета» с помощью героя; при следующем разговоре с ней
 (QRY_ALFSV_CanOfferRecruitment в ALFSV_Companion.txt) открывается этот диалог.
@@ -17,7 +17,7 @@ SCENE = Scene(
         "DEN_TieflingBard_Bard", "HAV_AlfiraTale_Bard", "DEN_AttackOnDen_Bard",
     ],
     nested=[NESTED.SwapRecruitment],
-    status="черновик v3",
+    status="согласовано v3",
 )
 S = SCENE
 
