@@ -199,13 +199,16 @@ class ADStager:
 
     def text_phase(self, node_uuid, line):
         from dsl import emotion_keys
+        from style import STYLE
         chars = max(len(render(line.en)), len(render(line.ru)))
         dur = D(min(MAX_PHASE, max(MIN_PHASE, chars / READ_CPS + TAIL)))
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
         actor = self.actors[line.speaker]
         self._voice(node_uuid, start, start + dur, phase, actor=actor)
-        self._emotions(dur, emotion_keys(line.emo, float(dur)), actor=actor)
+        # у Альфиры — её собственные вариации эмоций по каталогу её реплик у Larian (style.py)
+        keys = STYLE.keys(line, float(dur), node_uuid) if line.speaker == ALFIRA else emotion_keys(line.emo, float(dur))
+        self._emotions(dur, keys, actor=actor)
         self.report.append((node_uuid, "текст", float(dur)))
 
     def voiced_phase(self, node_uuid, src_name, src_node, speaker=ALFIRA):

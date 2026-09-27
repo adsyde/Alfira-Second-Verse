@@ -264,3 +264,5 @@ R2.greeting("R2",
 
 EXTRA_SCENES = [R2]
 OSIRIS_FLAGS = [TONIGHT]
+
+S.blocks["F3"].seated = "fire"      # «Альфира сидит на бревне у догорающего костра» — F3 и ответы после неё сидя (staging.SEATED)

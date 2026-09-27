@@ -7,11 +7,11 @@
 Если открыта новая глава (scripts/dialogs/scenes/chNN_*.py), после холодной реплики и до ротации
 стоит вход в неё (S.chapter_entries()); ротация играет, пока новой главы нет.
 """
-from dsl import ALFIRA, PLAYER, Join, Scene, narrate, new_flag, opt, say, voice
+from dsl import ALFIRA, PLAYER, Join, Scene, cinematic, narrate, nested, new_flag, opt, say, voice
 from scenes.ch04_celebration import CLOAK, SAID_FRIEND
 from scenes.ch07_fear import CH as CH7
 from scenes.recruitment import ROMANCE
-from vanilla import APPROVAL_SP1, F, NESTED
+from vanilla import APPROVAL_SP1, F, NESTED, T
 
 SCENE = Scene(
     name="ALFSV_Alfira_InParty",
@@ -47,13 +47,39 @@ MENU = [
 # Особые случаи «вечер в лагере» звучат по разу за вечер (флаги снимает Osiris на PROC_LongRest), «Подземье» —
 # по разу за спуск (снимает LeftTrigger подрегиона Подземья). Постановка — ремаркой рассказчика: анимации
 # поцелуя Larian (TagCinematic, отдельный узел на каждое тело героя) на Альфиру надёжно не переносятся —
-# docs/STAGE4.md §13.
+# docs/STAGE4.md §13. Проба переноса — один узел под отладочным флагом (KISS_CINEMATIC_TRIAL ниже).
 
 KISS_OPT = ("h57aba6c9g5230g4cdcg9d57g0daa34b784ed", 1)       # Kiss her. / Поцеловать ее.
 HUG_OPT = ("h4e908b98g9055g4a21gb8b3g118fa3b5250c", 2)        # *Hug her.* / *Обнять ее.*
 AP20 = APPROVAL_SP1[20](ALFIRA)
 AP40 = APPROVAL_SP1[40](ALFIRA)
 IN_UNDERDARK = new_flag("ALFSV_InUnderdark", "Object", "Alfira is in the Underdark subregion (set and cleared by Osiris)")
+
+# --- Проба: поцелуй Larian на Альфире (docs/STAGE4.md §13, этап 9). Не проверено в игре. ---
+#
+# Вложенный диалог ALFSV_Alfira_KissTrial на основе ShadowHeart_InParty2_Nested_ShadowheartKiss: спикер 0
+# (Шэдоухарт) → Альфира, зрители-спутники убраны, сцена основы (стадии Kiss_Tall/…, её камеры) — целиком. Один узел:
+# вариант A (ORI_Kiss_VersionA) на обычное тело героя — у Larian это узел без тегов тела, остальные тела выбирают
+# свои узлы раньше него. Его фаза копируется целиком (staging.Stager.cinematic_phase): анимации обоих, TLTransform,
+# стадия, 4 плана своих камер, звуки, эмоции, взгляды.
+# Вариант героя «[Проба] Поцеловать её» виден, только если на Альфире стоит отладочный флаг — из консоли SE:
+# Osi.PROC_ALFSV_Debug_KissCinematic() (снять — …Off()), и тело героя обычное. Остальные поцелуи — ремарки.
+KISS_CINEMATIC_TRIAL = True          # False — пробы нет в сборке вовсе
+SHADOWHEART = "3ed74f06-3c60-42dc-83f6-f034cb47c679"            # спикер 0 основы поцелуя
+KISS_A_NORMAL = "5f5e750e-d2e2-4e2e-90fe-e6f7fc8eea71"          # узел: ORI_Kiss_VersionA, тело героя без тегов
+KISS_A_FEMALE = "2e786fd7-bbc4-df6b-0df2-e8413461e992"          # тот же вариант, FEMALE — для следующей пробы
+NORMAL_BODY = [~T.FEMALE(PLAYER), ~T.SHORT(PLAYER), ~T.DWARF(PLAYER), ~T.DRAGONBORN(PLAYER), ~T.BODYTYPE_STRONG(PLAYER)]
+DEBUG_KISS = new_flag("ALFSV_Debug_KissCinematic", "Object",
+                      "Debug: show the Larian kiss staging trial in the party talk (Osi.PROC_ALFSV_Debug_KissCinematic)")
+KISS_TRIAL = Scene(
+    name="ALFSV_Alfira_KissTrial",
+    dialog_id="af94d8ab-d2f7-4b6b-adef-4d264223fad1",
+    base="ShadowHeart_InParty2_Nested_ShadowheartKiss",
+    alfira_base=SHADOWHEART,
+    kind="cinematic",
+    status="проба постановки, не проверено в игре",
+)
+KISS_TRIAL.greeting("A", cinematic(KISS_A_NORMAL, note="вариант A, обычное тело героя"), end=True)
 
 
 MENU[-1:-1] = [
@@ -64,6 +90,12 @@ MENU[-1:-1] = [
     opt("Обнять ее.", "Hug her.", game_line=HUG_OPT, when=[~ROMANCE(PLAYER), AP40], key="menu.hug_friend",
         go=["HugFriend_01", "HugFriend_02", "HugFriend_03", "HugFriend_03_last", "HugFriend_04"]),
 ]
+
+if KISS_CINEMATIC_TRIAL:
+    MENU[-1:-1] = [opt("[Проба] Поцеловать её (постановка Larian).", "[Trial] Kiss her (Larian staging).",
+                       when=[ROMANCE(PLAYER), DEBUG_KISS(ALFIRA), *NORMAL_BODY], key="menu.kiss_trial", go="kiss_trial")]
+    SCENE.nested.append(KISS_TRIAL.dialog_id)
+
 
 def circle(prefix, items):
     """items: [(реплики, доп. условия)] → блоки круга. Последний (или последний доступный) сбрасывает флаги."""
@@ -91,6 +123,10 @@ def hug(direction_en="", direction_ru=""):
     ru = "Ты обнимаешь её." + (f" {direction_ru}" if direction_ru else "")
     return narrate(en, ru, emo="happy", shot="alfira_close")
 
+
+if KISS_CINEMATIC_TRIAL:
+    S.block("kiss_trial", nested(KISS_TRIAL.dialog_id, note="кат-сцена поцелуя Larian"),
+            say("Mm. Hello to you too.", "Ммм. И тебе привет.", emo="happy"), choices=MENU)
 
 # особые случаи поцелуя
 KISS_NIGHT = [new_flag(f"ALFSV_KissNight_{i}", "Object", f"Kiss: camp-evening special {i} said tonight") for i in (1, 2, 3)]
@@ -199,3 +235,5 @@ S.greeting("second", voice("h94c66b2ag36cbg4fafg9decgbd3f033b843d"),         # N
            when=[TALKED_2(ALFIRA, False)], set=[TALKED_2(ALFIRA)], choices=MENU)
 S.greeting("third", voice("hdb83bb64ga330g4966gabddg5ccd5448a7cd"),          # N13: …Thank you again for letting me stay.
            set=[TALKED_1(ALFIRA, False), TALKED_2(ALFIRA, False)], choices=MENU)
+
+EXTRA_SCENES = [KISS_TRIAL] if KISS_CINEMATIC_TRIAL else []

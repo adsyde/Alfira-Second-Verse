@@ -221,3 +221,5 @@ BOOTS_OFF = ("Half-asleep, she sits up and slowly pulls off her boots. She sets 
 # герой пообещал, что бежать не придётся, или узнал правду о той ночи (два узла — «или» в условиях игры)
 S.block("C5_boots_promised", narrate(*BOOTS_OFF, emo="sleeping>happy"), when=[BOOTS_PROMISED(PLAYER)], end=True)
 S.block("C5_boots_truth", narrate(*BOOTS_OFF, emo="sleeping>happy"), when=[BOOTS_TRUTH(PLAYER)], end=True)
+
+S.blocks["C3"].seated = "knees"      # «Она подтягивает колени к груди» — с C3 и дальше сидя (staging.SEATED)

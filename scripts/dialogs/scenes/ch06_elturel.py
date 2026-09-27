@@ -208,3 +208,5 @@ S.block("E5",
         say("Next time we talk, it's squirrels. Strictly squirrels.", "В следующий раз говорим о белках. Только о белках.",
             emo="happy/2"),
         end=True)
+
+S.blocks["E2"].seated = "fire"      # «Она садится ближе к огню» — с E2 и дальше сидя (staging.SEATED)

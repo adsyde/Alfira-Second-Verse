@@ -103,6 +103,8 @@ class Compiler:
         self.done_opts = {}
         self.alt_ends = set()
         self.voices = {}         # handle → (диалог, узел, версия)
+        self.seat = {}           # узел → поза сидя (staging.SEATED) или "" — стоя
+        self.seat_ctx = scene.seated
 
     def uid(self, key):
         return self.ids.uid(f"{self.s.name}/{key}")
@@ -156,7 +158,11 @@ class Compiler:
             return [self.option(o, f"{block_id}.o{i}") for i, o in enumerate(blk.next.choices)]
         if block_id not in self.done_blocks:
             self.done_blocks.add(block_id)
+            outer = self.seat_ctx
+            if blk.seated is not None:
+                self.seat_ctx = blk.seated
             self.lines(block_id, blk.lines, blk.next, when=blk.when)
+            self.seat_ctx = outer
         return [self.uid(f"{block_id}.0")]
 
     def after(self, nx, prefix):
@@ -181,11 +187,33 @@ class Compiler:
 
     def lines(self, prefix, lines, nx, *, root=False, when=(), first_set=(), first_approve=0):
         ids = [self.uid(f"{prefix}.{i}") for i in range(len(lines))]
-        self.npc.extend(zip(ids, lines))      # фазы в порядке чтения сцены
+        # фазы в порядке чтения сцены; у вложенного диалога фазы нет (она в его собственном таймлайне)
+        self.npc.extend((nid, ln) for nid, ln in zip(ids, lines) if not ln.nested)
+        for nid in ids:
+            self.seat.setdefault(nid, self.seat_ctx)
         for i, (nid, line) in enumerate(zip(ids, lines)):
             last = i == len(lines) - 1
             children = self.after(nx, prefix) if last else [ids[i + 1]]
             sets = list(line.set) + (list(first_set) if i == 0 else []) + (list(nx.set) if last else [])
+            if line.nested:
+                # вложенный диалог посреди блока (поцелуй в разговоре в отряде): сыграть и идти дальше
+                self.nested_node(nid, line.nested, children, self.groups(when) if i == 0 else [])
+                if sets:
+                    raise ValueError(f"{self.s.name}: {prefix}.{i}: у вложенного диалога не ставятся флаги (set)")
+                continue
+            if line.cinematic:
+                # кат-узел без текста, как у Larian (TagCinematic). Корень — пустое приветствие над ним
+                # (так устроен ShadowHeart_InParty2_Nested_ShadowheartKiss)
+                if root and i == 0:
+                    head = self.uid(f"{prefix}.head")
+                    self.d.create_standard_dialog_node(head, ALFIRA_TEMPLATE, [nid], None,
+                                                       constructor=self.b.dialog_object.GREETING,
+                                                       checkflags=self.groups(when), root=True)
+                    ids[0] = head
+                self.d.create_cinematic_dialog_node(
+                    nid, children, setflags=self.groups(sets),
+                    checkflags=self.groups(when) if i == 0 and not root else [], end_node=last and nx.end)
+                continue
             self.d.create_standard_dialog_node(
                 nid, NARRATOR_SPEAKER if line.narrator else self.speaker_uuid[line.speaker], children,
                 self.line_text(f"{prefix}.{i}", line),
@@ -254,6 +282,72 @@ class Compiler:
         if reply:
             self.npc.append((add, reply))
         return [nested, add]
+
+    def swap_speaker(self, bundle, old, new):
+        """Спикер основы old → new (в speakerlist у Larian только uuid персонажа; актёры таймлайна привязаны к
+        номеру спикера, поэтому они остаются)."""
+        for sp in bundle.dialog.root_node.iter("node"):
+            if sp.get("id") == "speaker":
+                a = sp.find('./attribute[@id="list"]')
+                if a is not None and a.get("value") == old:
+                    a.set("value", new)
+                    return
+        raise RuntimeError(f"{self.s.name}: в основе {self.s.base} нет спикера {old}")
+
+    def strip_speakers(self, bundle, keep):
+        """Убрать спикеров основы не из keep (зрители-спутники поцелуя Шэдоухарт): из speakerlist, из
+        TimelineSpeakers и их актёров из TimelineActorData. Номера оставшихся не меняются (0 и 1)."""
+        gone = set()
+        for sl in list(bundle.dialog.root_node.iter("node")):
+            if sl.get("id") != "speakerlist":
+                continue
+            ch = sl.find("./children")
+            for sp in list(ch):
+                a = sp.find('./attribute[@id="list"]')
+                if a is not None and a.get("value") not in keep:
+                    gone.add(sp.find('./attribute[@id="index"]').get("value"))
+                    ch.remove(sp)
+        for das in list(bundle.dialog.root_node.iter("node")):
+            if das.get("id") == "DefaultAddressedSpeakers" and das.find("./children") is not None:
+                ch = das.find("./children")
+                for m in list(ch):
+                    k = m.find('./attribute[@id="MapKey"]')
+                    if k is not None and k.get("value") in gone:
+                        ch.remove(m)
+        root = bundle.timeline.root_node
+        actors = set()
+        for tsn in list(root.iter("node")):
+            if tsn.get("id") != "TimelineSpeaker":
+                continue
+            ch = tsn.find("./children")
+            for m in list(ch):
+                k = m.find('./attribute[@id="MapKey"]')
+                if k is not None and k.get("value") in gone:
+                    actors.add(m.find('./attribute[@id="MapValue"]').get("value"))
+                    ch.remove(m)
+        for tad in list(root.iter("node")):
+            if tad.get("id") != "TimelineActorData":
+                continue
+            ch = tad.find("./children")
+            if ch is None:
+                continue
+            for m in list(ch):
+                k = m.find('./attribute[@id="MapKey"]')
+                if k is not None and k.get("value") in actors:
+                    ch.remove(m)
+        # камеры, привязанные к убранным актёрам, остаются без привязки — убрать и их
+        for tad in list(root.iter("node")):
+            if tad.get("id") != "TimelineActorData":
+                continue
+            ch = tad.find("./children")
+            if ch is None:
+                continue
+            for m in list(ch):
+                v = m.find('./children/node[@id="Value"]')
+                if v is not None and any((v.find(f'./attribute[@id="{x}"]') is not None
+                                          and v.find(f'./attribute[@id="{x}"]').get("value") in actors)
+                                         for x in ("AttachTo", "LookAt")):
+                    ch.remove(m)
 
     def chapter_entries(self):
         """Входы в главы (Scene.chapter_entries): корень без текста → вложенный диалог главы → конец.
@@ -324,15 +418,15 @@ class Compiler:
         # AD-основа на двоих с другим собеседником: её спикер other_base заменяется на other (как у Larian, у
         # спикера в speakerlist — только uuid персонажа; актёры таймлайна привязаны к номеру спикера)
         if s.other_base:
-            for sp in bundle.dialog.root_node.iter("node"):
-                if sp.get("id") == "speaker":
-                    a = sp.find('./attribute[@id="list"]')
-                    if a is not None and a.get("value") == s.other_base:
-                        a.set("value", s.other)
-                        break
-            else:
-                raise RuntimeError(f"{s.name}: в основе {s.base} нет спикера {s.other_base}")
+            self.swap_speaker(bundle, s.other_base, s.other)
             self.d = b.dialog_object(bundle.dialog)
+        # чужая основа (поцелуй Шэдоухарт): её спикер alfira_base становится Альфирой; у кат-сцены лишние
+        # спикеры (зрители-спутники) и их актёры убираются — у нас сцена на двоих
+        if s.alfira_base:
+            self.swap_speaker(bundle, s.alfira_base, ALFIRA_TEMPLATE)
+        if s.kind == "cinematic":
+            self.strip_speakers(bundle, {ALFIRA_TEMPLATE, PLAYER_SPEAKER})
+        self.d = b.dialog_object(bundle.dialog)
         # слоты спикеров — из основы: у основ на двоих Альфира 0 и герой 1, у сцены на троих — как у Larian
         speakers = list(self.d.get_speakers())
         want = {ALFIRA: ALFIRA_TEMPLATE} if s.kind == "ad" else {ALFIRA: ALFIRA_TEMPLATE, PLAYER: PLAYER_SPEAKER}
@@ -364,6 +458,7 @@ class Compiler:
             if blk.chapters:
                 roots.extend(self.chapter_entries())
                 continue
+            self.seat_ctx = s.seated if blk.seated is None else blk.seated
             roots.append(self.lines(bid, blk.lines, blk.next, root=True, when=blk.when))
         for r in roots:
             self.d.add_root_node(r)
@@ -375,15 +470,18 @@ class Compiler:
         base_d = lib.assets.get_dialog_object(s.base)
         self.stager = st = Stager(lib, tl, self.d, base_tl, base_d, ALFIRA_TEMPLATE, PLAYER_SPEAKER,
                                   lambda k: self.uid(k), other_template=s.other,
-                                  base_scene_file=self.base_scene_file())
+                                  base_scene_file=self.base_scene_file(), alfira_base=s.alfira_base, base_name=s.base)
         for nid, line in self.npc:
-            if line.handle:
+            seat = self.seat.get(nid, "")
+            if line.cinematic:
+                st.cinematic_phase(nid, line.cine_from, line.cinematic)
+            elif line.handle:
                 src, src_node, _ = self.voices[line.handle]
-                st.voiced_phase(nid, src, src_node)
+                st.voiced_phase(nid, src, src_node, seat=seat)
             elif line.narrator:
-                st.narrator_phase(nid, line)
+                st.narrator_phase(nid, line, seat=seat)
             else:
-                st.text_phase(nid, line)
+                st.text_phase(nid, line, seat=seat)
         # записи банков
         dres = lib.assets.get_dialog_resource(s.dialog_id)
         sub = f"{s.subfolder}/" if s.subfolder else ""
@@ -557,7 +655,7 @@ def check_vanilla(lib, scenes):
         if fl.new:
             continue
         if fl.kind == "Tag":
-            for pack in ("Shared", "Gustav", "GustavDev"):     # REALLY_DARK_URGE — в GustavDev
+            for pack in ("Shared", "SharedDev", "Gustav", "GustavDev"):   # REALLY_DARK_URGE — в GustavDev, DRAGONBORN — в SharedDev
                 path = f"Public/{pack}/Tags/{fl.uuid}.lsf"
                 try:
                     lib.assets.index.get_pak_by_file(path)

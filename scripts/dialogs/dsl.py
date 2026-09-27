@@ -89,6 +89,10 @@ class Line:
     note: str = ""                       # для людей: ремарка из сценария
     narrator: bool = False               # ремарка рассказчика (narrate)
     speaker: int = ALFIRA                # кто говорит: ALFIRA или OTHER (третий участник сцены)
+    shot_default: bool = False           # план не задан автором: в сцене на троих — планы Larian из шаблонной фазы
+    cinematic: str = ""                  # узел TagCinematic: UUID узла-источника в ванильном диалоге (cinematic())
+    cine_from: str = ""                  # ванильный диалог-источник кат-фазы (пусто — основа сцены)
+    nested: str = ""                     # узел Nested Dialog: ID ресурса вложенного диалога (nested())
 
 
 def say(en: str, ru: str, *, emo="neutral", shot=None, set=(), approve=0, note="", speaker=ALFIRA) -> Line:
@@ -100,9 +104,11 @@ def say(en: str, ru: str, *, emo="neutral", shot=None, set=(), approve=0, note="
     """
     if speaker not in (ALFIRA, OTHER):
         raise ValueError("say(): говорит Альфира (ALFIRA) или третий участник сцены (OTHER)")
+    default = shot is None
     if shot is None:
         shot = "other" if speaker == OTHER else "alfira"
-    return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note, speaker=speaker)
+    return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note, speaker=speaker,
+                shot_default=default)
 
 
 def voice(handle: str, *, set=(), approve=0, note="", speaker=ALFIRA) -> Line:
@@ -118,6 +124,19 @@ def narrate(en: str, ru: str, *, emo="neutral", shot="alfira", set=(), approve=0
     shot — план камеры на время ремарки.
     """
     return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note, narrator=True)
+
+
+def cinematic(src_node: str, *, source: str = "", set=(), note="") -> Line:
+    """Кат-узел без текста (TagCinematic, как поцелуй у Larian): фаза — копия фазы узла src_node ванильного
+    диалога source (по умолчанию — основы сцены) со всеми компонентами: TLAnimation, TLTransform, стадии,
+    камеры, звуки, эмоции, взгляды (staging.Stager.cinematic_phase). Актёры и камеры переводятся на наших."""
+    return Line(cinematic=src_node, cine_from=source, set=list(set), note=note)
+
+
+def nested(dialog_id: str, *, set=(), note="") -> Line:
+    """Вложенный диалог (узел Nested Dialog) посреди блока: сыграть его и идти дальше по блоку.
+    ID ресурса нужно добавить в Scene.nested (childResources банка)."""
+    return Line(nested=dialog_id, set=list(set), note=note)
 
 
 # --- переходы и варианты -----------------------------------------------------------------------
@@ -217,6 +236,7 @@ class Block:
     when: list = field(default_factory=list)
     root: bool = False
     chapters: bool = False               # место входов в главы (Scene.chapter_entries)
+    seated: str | None = None            # поза с этого блока и во всём, что из него следует (None — как у сцены)
 
 
 # --- главы разговоров (этап 4) -----------------------------------------------------------------
@@ -321,7 +341,10 @@ class Scene:
     other: str = ""                                  # uuid третьего участника (спикер основы), say(speaker=OTHER)
     other_name: str = ""                             # его имя — для распечаток
     other_base: str = ""                             # спикер основы, на место которого встаёт other (AD-основа на двоих)
-    kind: str = "dialog"                             # "ad" — реплика над головой (scripts/dialogs/ads.py)
+    kind: str = "dialog"                             # "ad" — реплика над головой (scripts/dialogs/ads.py),
+                                                     # "cinematic" — кат-сцена на двоих из чужой основы (поцелуй)
+    alfira_base: str = ""                            # спикер основы, на место которого встаёт Альфира (чужая основа)
+    seated: str = ""                                 # сидя у костра: ключ позы из staging.SEATED ("" — стоя, как основа)
     category: str = ""                               # категория диалога (у AD — как у Larian, см. ads.py)
     blocks: dict = field(default_factory=dict)
     roots: list = field(default_factory=list)
@@ -334,17 +357,20 @@ class Scene:
             self.roots.append(b.id)
         return b
 
-    def greeting(self, id: str, *lines: Line, when=(), go="", choices=(), end=False, join=None, set=()):
-        """Приветствие (корневой узел). Порядок вызовов = приоритет: первое подходящее по when."""
+    def greeting(self, id: str, *lines: Line, when=(), go="", choices=(), end=False, join=None, set=(), seated=None):
+        """Приветствие (корневой узел). Порядок вызовов = приоритет: первое подходящее по when.
+        seated — поза с этого блока (ключ staging.SEATED, "" — стоя); по умолчанию — Scene.seated."""
         if not lines:
             raise ValueError(f"{id}: приветствию нужна реплика")
-        return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set), list(when), root=True))
+        return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set), list(when), root=True,
+                               seated=seated))
 
-    def block(self, id: str, *lines: Line, when=(), go="", choices=(), end=False, join=None, set=()):
-        """Реплики подряд. when — условия (для альтернатив в go=[...]: берётся первый подходящий)."""
+    def block(self, id: str, *lines: Line, when=(), go="", choices=(), end=False, join=None, set=(), seated=None):
+        """Реплики подряд. when — условия (для альтернатив в go=[...]: берётся первый подходящий).
+        seated — поза с этого блока и в ответах после него (ключ staging.SEATED, "" — стоя)."""
         if not lines:
             raise ValueError(f"{id}: блоку нужна реплика (для одних вариантов — menu())")
-        return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set), list(when)))
+        return self._add(Block(id, list(lines), _next(id, go, choices, end, join, set), list(when), seated=seated))
 
     def chapter_entries(self):
         """Здесь (между приветствиями, по приоритету) встают входы во все главы из scenes/ch*.py.

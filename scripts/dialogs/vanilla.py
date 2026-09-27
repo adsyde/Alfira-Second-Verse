@@ -95,6 +95,11 @@ class T:
     FIGHTER = Flag("FIGHTER", "Tag", "1ae7017c-4884-4a43-bc4a-742fa0d201c0")
     BARBARIAN = Flag("BARBARIAN", "Tag", "02913f9a-f696-40cf-acdf-32032afab32c")
     PALADIN = Flag("PALADIN", "Tag", "6d85ab2d-5c23-498c-a61e-98f05a00177a")
+    # тело героя: так узлы поцелуя Larian выбирают анимацию (ShadowHeart_InParty2_Nested_ShadowheartKiss)
+    SHORT = Flag("SHORT", "Tag", "50e7beca-4e90-43cd-b7c5-c235e236077f")
+    DWARF = Flag("DWARF", "Tag", "486a2562-31ae-437b-bf63-30393e18cbdd")
+    DRAGONBORN = Flag("DRAGONBORN", "Tag", "02e5e9ed-b6b2-4524-99cd-cb2bc84c754a")               # SharedDev/Tags
+    BODYTYPE_STRONG = Flag("BODYTYPE_STRONG", "Tag", "d3116e58-c55a-4853-a700-bee996207397")     # SharedDev/Tags
 
 
 class DC:

@@ -2,6 +2,8 @@
 game-data/
 # Распечатки диалогов игры: полный текст Larian
 reports/dialogs/
+# Каталог постановки Альфиры (scripts/dialogs/alfira_catalog.py): ремарки и тексты Larian
+reports/staging/
 
 # --- Голос: записи актрисы, модели и сгенерированное аудио ---
 voice-work/
