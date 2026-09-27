@@ -1,0 +1,201 @@
+{
+  "_note": "Переделка реплик по заказу автора (voice_act1.py gen _redo). На реплику 3 варианта Breeze и 3 IndexTTS, у каждого свои образец, текст и подача. Пути образцов — относительно voice-work/. На странице — группа «Переделка» наверху, варианты breeze_r1…, indextts_r1….",
+  "lines": {
+    "hd92279bbg257ag5f44g9cddgc291a11951ef": {
+      "why": "R2: её застали с Лакриссой — смущение и растерянность, сбивчиво, на вдохе; не пьяное хихиканье",
+      "emotion": "embarrassed",
+      "ref": "refs/embarrassed/he19f9f1fgc50dg403cga547g6394c0780a89.wav",
+      "breeze": {
+        "1": {
+          "text": "I - we -",
+          "instruct": "caught off guard, flustered, embarrassed, breathless stammer",
+          "cfg": 4.0
+        },
+        "2": {
+          "text": "I... we...",
+          "instruct": "caught off guard, flustered, embarrassed, breathless stammer",
+          "cfg": 4.0,
+          "ref": "refs/surprise/hed943d24gee26g4793g9be2g20058a386fe4.wav"
+        },
+        "3": {
+          "text": "I - ... we - ...",
+          "instruct": "caught off guard, flustered, embarrassed, breathless stammer, long pauses",
+          "cfg": 3.0,
+          "seed": 4107
+        }
+      },
+      "indextts": {
+        "1": {
+          "text": "I - we -",
+          "emo_ref": "refs/embarrassed/he19f9f1fgc50dg403cga547g6394c0780a89.wav",
+          "emo_alpha": 0.9
+        },
+        "2": {
+          "text": "I... we...",
+          "emo_ref": "refs/surprise/hed943d24gee26g4793g9be2g20058a386fe4.wav",
+          "emo_alpha": 0.9
+        },
+        "3": {
+          "text": "I - ... we - ...",
+          "emo_vector": [
+            0.1,
+            0,
+            0,
+            0.4,
+            0,
+            0,
+            0.5,
+            0
+          ],
+          "emo_alpha": 1.0
+        }
+      }
+    },
+    "hf4bf6e70ge83cg5ca7g8057g95881097763c": {
+      "why": "R2: сильно пьяна, игриво оправдывается, со смешком",
+      "emotion": "drunk",
+      "ref": "refs/drunk/h6c9202f3ga40dg4b8bg9372gebda4227ec36.wav",
+      "breeze": {
+        "1": {
+          "instruct": "very drunk, playfully making excuses, giggling, slurred words",
+          "cfg": 4.0
+        },
+        "2": {
+          "text": "(laugh) One dance. I'm very drunk. It doesn't count.",
+          "instruct": "very drunk, playfully making excuses, giggling, slurred words",
+          "cfg": 4.0,
+          "ref": "refs/laugh/hda21e6afg0c5bg43acgb391g88e3fd835b4f.wav"
+        },
+        "3": {
+          "instruct": "very drunk and giggly, playful excuse, a little laugh at the end",
+          "cfg": 3.0,
+          "seed": 4107,
+          "ref": "refs/drunk/he4c710e9g260bg424fgb0bbg2804c34895ea.wav"
+        }
+      },
+      "indextts": {
+        "1": {
+          "emo_ref": "refs/laugh/hda21e6afg0c5bg43acgb391g88e3fd835b4f.wav",
+          "emo_alpha": 1.0
+        },
+        "2": {
+          "emo_vector": [
+            0.9,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.1,
+            0
+          ],
+          "emo_alpha": 1.0
+        },
+        "3": {
+          "emo_ref": "refs/drunk/h6c9202f3ga40dg4b8bg9372gebda4227ec36.wav",
+          "emo_alpha": 1.0,
+          "seed": 1107
+        }
+      }
+    },
+    "h67494125g6522g5f52g944ag0dac08dbcc5d": {
+      "why": "глава 6, ответ на «мой отец был в Элтуриэле» (Уилл): тихо узнаёт имя, вспоминает, давит горе; медленно, низко, пауза между словами; Ravengard — [ˈreɪvənɡɑːrd]; вторая переделка (all_v10): r4–r6",
+      "emotion": "sad",
+      "ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+      "breeze": {
+        "1": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 4.0
+        },
+        "2": {
+          "text": "The Duke... Raven-gard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 4.0,
+          "ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav"
+        },
+        "3": {
+          "text": "The Duke. ... Rayvengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 3.0,
+          "seed": 4107
+        },
+        "4": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued, low voice, long pause between the words",
+          "cfg": 5.0,
+          "seed": 4201
+        },
+        "5": {
+          "text": "The Duke... ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 3.0,
+          "seed": 4202,
+          "ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav"
+        },
+        "6": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued, almost a whisper",
+          "cfg": 4.0,
+          "seed": 4203,
+          "ref": "refs/sad/hdee1259ega676g4a38gbc44g8cbe0861cbe3.wav"
+        }
+      },
+      "indextts": {
+        "1": {
+          "text": "The Duke. ... Ravengard.",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.8
+        },
+        "2": {
+          "text": "The Duke... Raven-gard.",
+          "emo_vector": [
+            0,
+            0,
+            0.4,
+            0,
+            0,
+            0.5,
+            0,
+            0.3
+          ],
+          "emo_alpha": 0.9
+        },
+        "3": {
+          "text": "The Duke. ... Rayvengard.",
+          "emo_ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav",
+          "emo_alpha": 1.0,
+          "seed": 1107
+        },
+        "4": {
+          "text": "The Duke. ... Ravengard.",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.6,
+          "seed": 1201
+        },
+        "5": {
+          "text": "The Duke... ... Ravengard.",
+          "emo_vector": [
+            0,
+            0,
+            0.2,
+            0,
+            0,
+            0.7,
+            0,
+            0.3
+          ],
+          "emo_alpha": 0.8,
+          "seed": 1202
+        },
+        "6": {
+          "text": "The Duke. ... Ravengard.",
+          "ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.9,
+          "seed": 1203
+        }
+      }
+    }
+  }
+}
