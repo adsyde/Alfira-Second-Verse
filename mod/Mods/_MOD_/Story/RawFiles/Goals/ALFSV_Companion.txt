@@ -248,8 +248,24 @@ DB_ALFSV_IsCompanion(1)
 THEN
 NOT DB_DEN_DruidAttack_NonDruids(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Role, _Group, _Dialog);
 
-// Tiefling celebration: sets her dialog, teleports her, then SetOnStage 0 at the sleep cutscene.
-// Her backup (S_CAMP_TieflingBackup_001) takes her place, exactly as when she is defeated.
+// Anubis configs per act (DEN_Bard, HAV_Bard, SCE_Alfira, LOW_Alfira)
+IF
+DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level, _Config)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+NOT DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level, _Config);
+
+//END_REGION
+
+//REGION Act 1: tiefling celebration with Alfira as a companion (chapter 4, docs/STAGE4.md section 8)
+
+// Act1_CAMP_GoblinHuntCelebration.txt, PROC_CAMP_GoblinHuntCelebration_SetupTieflings: for every fact of
+// DB_CAMP_GoblinHuntCelebration_Tieflings the game replaces the NPC's dialogs (PROC_RemoveAllDialogEntriesForSpeaker +
+// DB_Dialogs(CAMP_GoblinHuntCelebration_Bard)), teleports her and adds her to the scene actors that are put off
+// stage at the sleep scene (PROC_Camp_ForceHideAllNonPlayers) and by PROC_CAMP_GoblinHuntCelebration_RemoveTieflings.
+// None of that fits a companion: she is taken out of that DB, and her backup (S_CAMP_TieflingBackup_001, the one the
+// game uses when she is defeated) is remembered for a night she is not in camp.
 IF
 DB_CAMP_GoblinHuntCelebration_Tieflings(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Dialog, _Replacement, _Pos)
 AND
@@ -266,8 +282,59 @@ DB_ALFSV_IsCompanion(1)
 THEN
 NOT DB_CAMP_GoblinHuntCelebration_SceneActors(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
 
+// Her spot for the night - the game's own way to put a camper on a night-specific position (GLO_CampNights.txt,
+// "CampNight - Evening - Execution 1": TeleportTo + PROC_CampSwap_UpdateAnubisCampPos for DB_InCamp non-avatars;
+// QRY_Camp_GetCamperPos in GLO_Camp.txt; cleared by PROC_CampNight_ClearCampNight). Like Shadowheart at the raider
+// celebration (DB_CampNight_SetPosition in the INIT of Act1_CAMP_GoblinHuntCelebration.txt). The spot is the one of
+// her vanilla celebration scene, S_CAMP_TieflingPos_008 (her fact in DB_CAMP_GoblinHuntCelebration_Tieflings).
+// DB_Camp_QueuedNight is set by PROC_CampNight_DecideCampNight, before PROC_CampNight_StartSelected.
+IF
+DB_Camp_QueuedNight((FLAG)NIGHT_GoblinHunt_TieflingCelebration_1ad8c357-2695-4d5c-b5f9-8b8c07803121)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+DB_CampNight_SetPosition((FLAG)NIGHT_GoblinHunt_TieflingCelebration_1ad8c357-2695-4d5c-b5f9-8b8c07803121, (CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "WLDMAIN", S_CAMP_TieflingPos_008_5f699fd2-3b3b-4ac9-bd6d-2cb9fbd58fa8);
+
+// The celebration starts (PROC_CampNight_StartSelected -> PROC_CAMP_GoblinHuntCelebration_SetupTieflings).
+// She is in camp: the night is with her (chapter 4 opens on ALFSV_Celebration_Tonight, ALFSV_Chapters.txt).
 PROC
 PROC_CAMP_GoblinHuntCelebration_SetupTieflings()
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+DB_InCamp(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_Dead(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+DB_ALFSV_CelebrationWithHer(1);
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c);
+
+// Lakrissa is there unless she is defeated - the same test the game uses for her backup (SetupTieflings: DB_Defeated)
+PROC
+PROC_CAMP_GoblinHuntCelebration_SetupTieflings()
+AND
+DB_ALFSV_CelebrationWithHer(1)
+AND
+NOT DB_Defeated(S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Celebration_LakrissaHere_4a3f3b64-8281-539b-af25-e6c87242b017);
+
+// Lakrissa is dead: no R2 fork, the late-night talk (F3) is next right away
+PROC
+PROC_CAMP_GoblinHuntCelebration_SetupTieflings()
+AND
+DB_ALFSV_CelebrationWithHer(1)
+AND
+DB_Defeated(S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Celebration_LateNight_04af0e80-a174-512e-85fb-c93411f281b7);
+
+// She is a companion but not in camp that night: her backup takes her place, as when she is defeated (vanilla).
+// Chapter 4 does not open (optional: it does not hold the queue).
+PROC
+PROC_CAMP_GoblinHuntCelebration_SetupTieflings()
+AND
+NOT DB_ALFSV_CelebrationWithHer(1)
 AND
 DB_ALFSV_CelebrationReplacement(_Replacement)
 AND
@@ -277,13 +344,135 @@ SetOnStage(_Replacement, 1);
 SetEntityEvent(_Replacement, "CAMP_GoblinHuntCelebration_Teleported");
 DB_CAMP_GoblinHuntCelebration_SceneActors(_Replacement);
 
-// Anubis configs per act (DEN_Bard, HAV_Bard, SCE_Alfira, LOW_Alfira)
-IF
-DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level, _Config)
+// Clicking her that night. Order of our dialogs: her talk (vanilla CAMP_GoblinHuntCelebration_Bard node for node
+// + F1), the Lakrissa scene (F2: after the first talk, if Lakrissa is here and in range), later that night (F3).
+QRY
+QRY_SelectCustomDialog(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player)
+AND
+DB_Avatars((CHARACTER)_Player)
+AND
+QRY_ALFSV_Celebration_LakrissaScene((CHARACTER)_Player)
+THEN
+DB_SelectedDialog((DIALOGRESOURCE)ALFSV_Alfira_Ch04_Lakrissa_e36a27f8-a3b1-4e6f-9c9b-464b02534b7a, S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player);
+
+QRY
+QRY_SelectCustomDialog(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player)
+AND
+DB_Avatars((CHARACTER)_Player)
 AND
 DB_ALFSV_IsCompanion(1)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c)
+AND
+NOT QRY_ALFSV_Celebration_LakrissaScene((CHARACTER)_Player)
 THEN
-NOT DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level, _Config);
+PROC_ALFSV_Celebration_BeforeTalk((CHARACTER)_Player);
+DB_SelectedDialog((DIALOGRESOURCE)ALFSV_Alfira_Ch04_Celebration_ba151298-664c-43b8-9271-844a2153d101, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player);
+
+// F2 by click: this hero has had her talk (ALFSV_Celebration_Talked), the Lakrissa scene has not been played yet,
+// Lakrissa is here, free and in dialog range
+QRY
+QRY_ALFSV_Celebration_LakrissaScene((CHARACTER)_Player)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_LakrissaHere_4a3f3b64-8281-539b-af25-e6c87242b017)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Celebration_LateNight_04af0e80-a174-512e-85fb-c93411f281b7)
+AND
+GetFlag((FLAG)ALFSV_Celebration_Talked_4ba55122-2d67-5155-b387-2a1814b077c8, _Player, 1)
+AND
+QRY_SpeakerIsAvailableAndInDialogRange(S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c, _Player)
+THEN
+DB_NOOP(1);
+
+// Talking to her again after her talk, and the Lakrissa scene cannot happen now: it is late night (F3 is next)
+PROC
+PROC_ALFSV_Celebration_BeforeTalk((CHARACTER)_Player)
+AND
+GetFlag((FLAG)ALFSV_Celebration_Talked_4ba55122-2d67-5155-b387-2a1814b077c8, _Player, 1)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Celebration_LateNight_04af0e80-a174-512e-85fb-c93411f281b7)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Celebration_LateNight_04af0e80-a174-512e-85fb-c93411f281b7);
+
+// F2 on its own: right after their flirt scene (the AD CAMP_GoblinHuntCelebration_AD_Bard_Flirty repeats; its first
+// two roots are the lines quoted in the scenario, "make it spicy" and "two tiefling queens") - once, if a hero is
+// within 8 m of her
+IF
+AutomatedDialogEnded((DIALOGRESOURCE)CAMP_GoblinHuntCelebration_AD_Bard_Flirty_81e514bc-0212-ae5e-46b7-9ecce21dda4f, _)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Celebration_LateNight_04af0e80-a174-512e-85fb-c93411f281b7)
+THEN
+PROC_ALFSV_Celebration_FlirtEnded();
+
+PROC
+PROC_ALFSV_Celebration_FlirtEnded()
+AND
+DB_ALFSV_Celebration_FlirtsSeen(_Count)
+AND
+IntegerSum(_Count, 1, _Next)
+THEN
+NOT DB_ALFSV_Celebration_FlirtsSeen(_Count);
+DB_ALFSV_Celebration_FlirtsSeen(_Next);
+
+PROC
+PROC_ALFSV_Celebration_FlirtEnded()
+AND
+NOT DB_ALFSV_Celebration_FlirtsSeen(_)
+THEN
+DB_ALFSV_Celebration_FlirtsSeen(1);
+
+PROC
+PROC_ALFSV_Celebration_FlirtEnded()
+AND
+DB_ALFSV_Celebration_FlirtsSeen(_Count)
+AND
+_Count >= 2
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_LakrissaHere_4a3f3b64-8281-539b-af25-e6c87242b017)
+AND
+DB_Avatars(_Player)
+AND
+GetDistanceTo(_Player, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Dist)
+AND
+_Dist < 8.0
+AND
+QRY_SpeakerIsAvailableAndInDialogRange(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player)
+AND
+QRY_SpeakerIsAvailableAndInDialogRange(S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c, _Player)
+AND
+QRY_OnlyOnce("ALFSV_Celebration_LakrissaScene")
+AND
+QRY_StartDialog_Fixed((DIALOGRESOURCE)ALFSV_Alfira_Ch04_Lakrissa_e36a27f8-a3b1-4e6f-9c9b-464b02534b7a, S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Player)
+THEN
+DB_NOOP(1);
+
+// The Lakrissa scene is over: later that night
+IF
+DialogEnded((DIALOGRESOURCE)ALFSV_Alfira_Ch04_Lakrissa_e36a27f8-a3b1-4e6f-9c9b-464b02534b7a, _)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Celebration_LateNight_04af0e80-a174-512e-85fb-c93411f281b7);
+
+// The night is over: the sleep scene (as the game hides the celebration actors), or a long rest as a fallback.
+// A chapter 4 that has not been played expires (ALFSV_Chapters.txt, FlagCleared).
+PROC
+PROC_Camp_ForceHideAllNonPlayers()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c)
+THEN
+PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c);
+
+PROC
+PROC_LongRest()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c)
+THEN
+PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c);
 
 //END_REGION
 

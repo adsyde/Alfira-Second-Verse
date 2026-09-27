@@ -328,6 +328,10 @@ class Stager:
             role = self.base.role.get(actor_of(c))
             if (role, typ) in skip_roles_types:
                 continue
+            if actor_of(c) in self.base.cam_info:
+                # движение, фокус и угол локальной камеры основы (TLTransform/TLCameraFoV/TLCameraDoF у сцены
+                # на троих): их ключи лежат во вложенных каналах и привязаны к её плану — у нас свой TLShot
+                continue
             new = self._clone(c, self.base, ws, we, start, dur, phase, stretch=True)
             if new is not None:
                 self.tl.insert_new_tl_node(new)

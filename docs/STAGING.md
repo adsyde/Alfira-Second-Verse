@@ -156,9 +156,22 @@ python scripts/dialogs/tree.py        # дерево диалогов в build/d
   │     └─ Nested Dialog → ALFSV_Alfira_ChNN_… (свой таймлайн) → конец
   └─ ротация озвученных приветствий                   → меню отряда
 Osiris (ALFSV_Chapters.txt, генерируется):
-  PROC_LongRest / вербовка / FlagSet(Done главы) / INIT → PROC_ALFSV_Chapters_Unlock(отдых?)
-  глава N: спутница, !Available(N), Done(N−1), [отдых], [story] → Available(N)
+  PROC_LongRest / вербовка / FlagSet(Done главы) / FlagSet(story главы без отдыха) / начало уровня / INIT
+    → PROC_ALFSV_Chapters_Unlock(отдых?)
+  глава N: спутница, !Available(N), !Done(N), никто не ждёт, Done(обязательных < N),
+           [отдых], [story], [story_any], [акт] → Available(N)
+  необязательная: кончился акт / снят флаг story (expire), а Done нет → !Available(N)
 ```
+
+**Необязательные главы.** Глава «ждёт», пока она `Available` и не `Done`; пока ждёт хоть одна,
+новые не открываются — одна новая глава за проверку. `optional=True`: глава, у которой не выполнено
+условие сюжета, очередь не держит, более поздние главы открываются без неё; когда условие наступит,
+она откроется на ближайшей проверке, где никто не ждёт. `act=N` ограничивает главу актом
+(`DB_CurrentLevel`: акт 1 — `WLD_Main_A`, `CRE_Main_A`, как делит игра в `GLO_Pixie.txt`); открытая, но
+не сыгранная глава после конца акта перестаёт ждать. `expire=True` — то же, когда снят флаг из `story`.
+`hub=False` — глава-событие без входа в разговоре в отряде (глава 4, праздник). Подробно —
+[scripts/dialogs/README.md, «Очередь глав»](../scripts/dialogs/README.md#очередь-глав).
+Сцена на троих (`Scene.other`, `say(..., speaker=OTHER)`) — там же, «Сцена на троих».
 
 Флаги `Available`/`Done` глобальные (одна Альфира на игру). Условия, которые зависят от
 собеседника (одобрение, пол, теги, флаги на герое), — в `when`/`approval`, они проверяются при

@@ -1,4 +1,4 @@
-# Этап 4. Главы разговоров: основа и глава 1
+# Этап 4. Главы разговоров: основа и главы 1–4
 
 Статус: **собрано, в игре не проверено.** Этап закрывается только после проверки по §4
 (CLAUDE.md §2).
@@ -37,6 +37,8 @@
 | `scripts/dialogs/dsl.py`, `build.py`, `staging.py`, `validate.py`, `tree.py`, `vanilla.py` | `chapter()`, `narrate()`, альтернативы `go=[…]`, генерация goal глав, фазы рассказчика, проверки |
 | `mod/Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt` | Osiris глав (генерируется, руками не править) |
 | `mod/Mods/_MOD_/Story/DialogsBinary/Companions/ALFSV_Alfira_Ch01_FirstNight.lsx` | Диалог главы 1 (вложенный) |
+| `scripts/dialogs/scenes/ch03_first_verse.py`, `ch04_celebration.py` | Главы 3 и 4 (§7, §8) |
+| `mod/Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Companion.txt` | регион праздника тифлингов (глава 4) |
 | `mod/Public/_MOD_/Flags/*.lsx` | +10 флагов: главы, правило героя, сапоги, первый танец |
 
 Идентификаторы (на них ссылаются Osiris и сохранения — **не менять**):
@@ -137,8 +139,182 @@ python scripts/dialogs/tree.py       # дерево главы для сверк
    проверить переход камеры (шаг 2).
 4. **Глава не сгорает.** Если не поговорить с ней в первую ночь, глава 1 будет ждать следующего
    вечера. Сценарий («доступна до следующего отдыха») можно понять и как «сгорает» — решение автора.
-5. **Строгая очередь глав.** Если условие следующей главы не наступит (например, «первая крупная
-   победа» для главы 3), дальнейшие главы тоже не откроются. Для этого нужна будет «пропускаемая»
-   глава — решается при написании глав 2–8.
+5. ~~Строгая очередь глав~~ — решено необязательными главами (§6).
 6. **Мультиплеер.** Флаги глав глобальные: глава одна на игру, играет с тем, кто первым заговорил.
    Флаги-воспоминания (правило, сапоги, танец) — на герое, который отвечал.
+
+## 6. Очередь глав: необязательные главы и акты
+
+Ветка `feat/act1-chapters`. Семантика — [scripts/dialogs/README.md, «Очередь глав»](../scripts/dialogs/README.md#очередь-глав),
+схема — [STAGING.md §5a](STAGING.md#5a-главы-разговоров-этап-4). Коротко: глава «ждёт», пока `Available` и не
+`Done`; новая открывается, только когда никто не ждёт, сыграны все **обязательные** главы до неё и выполнены
+её условия. Необязательная (`optional=True`) без выполненного условия очередь не держит и открывается позже,
+на ближайшей свободной проверке. `act=1` — только в акте 1 (`DB_CurrentLevel` `WLD_Main_A` / `CRE_Main_A`);
+открытая, но не сыгранная глава после конца акта перестаёт ждать. `expire=True` — перестаёт ждать, когда снят
+флаг из `story`.
+
+Главы 1–2 обязательные, как были; в их правилах добавились `!Done` и «никто не ждёт» — на старых сохранениях
+поведение то же. Новое в goal: `QRY_ALFSV_Chapters_Waiting`, `QRY_ALFSV_Chapters_InAct`,
+`QRY_ALFSV_Chapter03_StoryAny`, проверки на `LevelGameplayStarted` и на `FlagSet(ALFSV_Celebration_Tonight)`.
+
+## 7. Глава 3 «Первый куплет»
+
+Точно по `design/dialogs/04_act1_ch3_first_verse.md` (согласовано 2026-09-27), файл
+`scripts/dialogs/scenes/ch03_first_verse.py`. 52 узла, 35 фаз; 5 её озвученных реплик игры (V1 «It's still
+rough…», «She'd yell at me for that metre», «Plenty with tiefling villains», V4 «And then some…» и «entire
+catalogue» при одобрении 20+), остальное — текст и ремарки.
+
+- **Открытие:** необязательная, акт 1, после долгого отдыха, когда сыграны главы 1–2 и была «первая крупная
+  победа» (любое из, по данным игры):
+  - вожаки гоблинов разбиты — `GOB_State_LeadersAreDead` (все трое, `Act1_GOB_GoblinHunt.txt`,
+    `PROC_GLO_DefeatCounter_AllDefeated("GOB_GoblinHunt_Leaders")`);
+  - Майрина спасена — флага у игры нет, это запись журнала: `QuestUpdateIsUnlocked(NULL, "HAG_HagSpawn",
+    "SavedMayrina", 1)` (так её проверяют `Act1_HAG_HagAmbush.txt`, `Act1_HAG_HagSpawn.txt`);
+  - налёт на Рощу отбит — `DEN_AttackOnDen_State_DenVictory` (`Act1_DEN_AttackOnDen.txt`, «Raiders defeated!»).
+- **Вход:** любой разговор в отряде или лагере, одобрение 0+. «Потом» — конец, глава ждёт; любой другой ответ
+  в V1 — `CH.done`.
+- **V2:** куплет по мотиву из вербовки (`ALFSV_HeroMotive_*`), без мотива [решение сборки] — «долг»; припев по
+  правилу дороги из главы 1 (`ALFSV_HeroRule_Loyalty / _Force / _Distrust`), иначе без реплики; ремарка «она
+  опускает листок и ждёт» [решение сборки] — общий узел перед ответом героя.
+- **V3:** 8 ответов по сценарию; 🎲 Исполнение `Act1_Medium`; ✨ «А ты в этой песне есть?» (искра); 🏷️ «Посмотреть
+  на свои руки» — Темный Соблазн с `ALFSV_Durge_UrgeNear` из главы 2.
+- **🏷️ V1 «Я же говорил(а)»** — если на празднике герой отказался от песни (`CAMP_GoblinHuntCelebration_Event_RefusedBardSong`
+  на герое; глава 3 может идти и после праздника).
+
+Флаги (на герое, **не менять**; uuid выводится из имени, `Public/_MOD_/Flags`):
+
+| Флаг | Когда |
+|---|---|
+| `ALFSV_Song_FirstVerse` (`863d579a-…`) | она показала куплет (его ждёт глава 4, F1) |
+| `ALFSV_Song_HonestCritic` (`80f9f022-…`) | «хромает размер» |
+| `ALFSV_Song_CoAuthor` (`c82c81dc-…`) | успех Исполнения |
+| `ALFSV_Romance_OurSong` (`85a119d0-…`) | успех Исполнения с искрой 💞 |
+| `ALFSV_Song_Tieflings` (`bbe25697-…`) | «песня о тифлингах» (акт 3) |
+| `ALFSV_Romance_SecondVerse` (`5a57c706-…`) | ✨ «может, во втором куплете» 💞 |
+| `ALFSV_Durge_LookedAtHands` (`4bbf83a1-…`) | 🏷️ руки (этап 7) |
+
+| Ресурс / флаг главы | ID |
+|---|---|
+| `ALFSV_Alfira_Ch03_FirstVerse` | `ae06974a-c262-4fdc-8a9c-eed5d4b5596e` |
+| `ALFSV_Chapter03_Available` / `_Done` | `019959fe-9b91-5a1f-8a41-1dcd03c8ab8f` / `e36eef66-be91-5d11-bbb3-258f164c1005` |
+
+## 8. Глава 4 «Праздник»
+
+По `design/dialogs/05_act1_ch4_celebration.md` (согласовано 2026-09-27), файл
+`scripts/dialogs/scenes/ch04_celebration.py`, Osiris — `ALFSV_Companion.txt`, регион «tiefling celebration».
+
+### Как праздник устроен у игры (`Act1_CAMP_GoblinHuntCelebration.txt`)
+
+- Ночь `NIGHT_GoblinHunt_TieflingCelebration` (эксклюзивная, лагерь `WLDMAIN`). `PROC_CampNight_StartSelected` →
+  `PROC_CAMP_GoblinHuntCelebration_SetupTieflings`: для каждого факта `DB_CAMP_GoblinHuntCelebration_Tieflings(NPC,
+  диалог, дублёр, место)` — если NPC повержен, выходит дублёр; иначе `PROC_RemoveAllDialogEntriesForSpeaker`,
+  `DB_Dialogs(NPC, диалог праздника)`, телепорт на место, NPC — в `DB_CAMP_GoblinHuntCelebration_SceneActors`.
+- Сцена сна (`PROC_Camp_ForceHideAllNonPlayers`) и `PROC_CAMP_GoblinHuntCelebration_RemoveTieflings` ставят всем
+  актёрам праздника `SetOnStage 0`.
+- Спутников в лагере игра на особые ночи ставит через `DB_CampNight_SetPosition` (`GLO_CampNights.txt`,
+  «Execution 1»: `TeleportTo` + `PROC_CampSwap_UpdateAnubisCampPos` для `DB_InCamp`, не аватаров; снимается
+  `PROC_CampNight_ClearCampNight`) — так стоит Шэдоухарт на празднике гоблинов.
+- Сцена флирта `CAMP_GoblinHuntCelebration_AD_Bard_Flirty` — AD «Repeated automated NPC Dialog» (Лакрисса,
+  Альфира), своих флагов нет (только локальные A/B/C по кругу). Osiris её **не запускает** (нет ни в goals, ни в
+  триггерах уровня) — видимо, это поведение Anubis праздника, которое в `game-data` не распаковано.
+
+### Что делает мод (Альфира — спутница)
+
+1. Убирает её из `DB_CAMP_GoblinHuntCelebration_Tieflings` (как раньше): ни чужого диалога, ни телепорта, ни
+   `SetOnStage 0` во сне. Её диалог в отряде (`ALFSV_Alfira_InParty`) не трогается.
+2. Ставит ей место на ночь `DB_CampNight_SetPosition(…, "WLDMAIN", S_CAMP_TieflingPos_008)` — её место из
+   ванильной сцены праздника.
+3. В `SetupTieflings`: если она в лагере (`DB_InCamp`) — `ALFSV_Celebration_Tonight`; Лакрисса не повержена —
+   `ALFSV_Celebration_LakrissaHere`, иначе сразу `ALFSV_Celebration_LateNight` (R2 нет). Если она **не в лагере** —
+   выходит дублёр `S_CAMP_TieflingBackup_001`, как у игры; глава 4 не открывается и очередь не держит.
+4. Диалоги той ночи — через `QRY_SelectCustomDialog` (клик по ней), пока стоит `Tonight`:
+   - `ALFSV_Alfira_Ch04_Celebration` — ванильный `CAMP_GoblinHuntCelebration_Bard` **узел в узел** (основа — он же:
+     его сцена, камеры, свет; её реплики — его голос и постановка, реплики героя — handle игры) + наши вставки.
+     Корни с `ConvincedToQuit` (N23, N19) и недостижимый N39 не перенесены: у завербованной Альфиры этого флага
+     нет. **F1:** после её ответа на тему — «Oh, the *first* verse is serious…», если у героя `ALFSV_Song_FirstVerse`.
+     Глава сыграна (`CH.done`) при выборе темы.
+   - `ALFSV_Alfira_Ch04_Lakrissa` (**F2**) — сцена на троих (основа `HAV_AlfiraTale_ReunionWithFlirty`: Лакрисса,
+     Альфира, герой; общая сцена `bnz_standing_Px2`, свет `EXT_NIGHT`). Реплики Лакриссы — текст без голоса.
+     Запуск: (а) сам — после второго конца AD флирта («make it spicy» → «two tiefling queens»), если герой в 8 м от
+     Альфиры и обе свободны, один раз; (б) кликом по Альфире после её разговора, если Лакрисса в диалоговом
+     радиусе. После F2 — `LateNight`. Если после разговора кликнуть, когда Лакриссы рядом нет, — `LateNight` без
+     F2 (R2 не случается, флагов R2 нет).
+   - **F3** — корень того же диалога, когда `LateNight` и у героя ещё нет `ALFSV_Celebration_LateNightDone`:
+     реплика по состоянию (выбрал её → брови; подтолкнул → «все милые»; искра → брови; иначе — «хороший друг»)
+     и 4 варианта; «Лакрисса, присмотри за ней» — только если Лакрисса на празднике.
+5. Конец ночи: сцена сна (`PROC_Camp_ForceHideAllNonPlayers`) или `PROC_LongRest` снимают `Tonight`; не сыгранная
+   глава 4 перестаёт ждать (`expire`).
+
+Если Альфиру не завербовали, ни одно правило не срабатывает (все стоят на `DB_ALFSV_IsCompanion` или `Tonight`):
+праздник как в игре.
+
+### Флаги-воспоминания главы 4 (на герое, **не менять**)
+
+| Флаг | Исход |
+|---|---|
+| `ALFSV_Celebration_Talked` (`4ba55122-…`) | говорил с ней на празднике |
+| `ALFSV_Celebration_Theme_Courage` (`108f45b7-…`) | тема: храбрость, доблесть, хребты гоблинов, «не бард», «эльфы жалки», «правдиво, насколько позволит поэзия» |
+| `ALFSV_Celebration_Theme_Beauty` (`01eb8c0e-…`) | «это тело», «моя красота» |
+| `ALFSV_Celebration_Theme_Everyone` (`73bfc4d8-…`) | «для всех, кто сражался», «наш народ», «два народа» |
+| `ALFSV_Celebration_Theme_OtherHero` (`50b0932e-…`) | Клинок Фронтира, Мистра, Влаакит, «служу высшей силе» |
+| `ALFSV_Celebration_Theme_NoSong` (`e5992023-…`) | «лучше не стоит», «поплатишься жизнью», «не жажду» (Шэдоухарт), «заткнись», «напишу сам» |
+| `ALFSV_Celebration_ChoseHer` (`d74a96b0-…`) | R2 ✨ «она сама со мной ушла» (танец) |
+| `ALFSV_Celebration_PushedToLakrissa` (`88303cf8-…`) | R2 «отличная пара» |
+| `ALFSV_Celebration_Deferred` (`54a1e975-…`) | R2 «не буду мешать» |
+| `ALFSV_Celebration_Said_Eyebrows` (`76b1121b-…`) | F3: «симметричные брови» |
+| `ALFSV_Celebration_Said_Lovely` (`76a3824f-…`) | F3: «все милые» |
+| `ALFSV_Celebration_Said_GoodFriend` (`b7dc73c4-…`) | F3: «хороший друг» |
+| `ALFSV_Celebration_Cloak` (`fa96a31a-…`) | «Пора спать» — укрыл плащом |
+| `ALFSV_Celebration_Shoulder` (`8b43fa57-…`) | «Посиди со мной» — уснула на плече |
+| `ALFSV_Celebration_GaveToLakrissa` (`b1722708-…`) | «Лакрисса, присмотри за ней» |
+| `ALFSV_Celebration_LateNightDone` (`8c1250f9-…`) | F3 сыгран (в т. ч. «Иди проспись» — у него своего флага нет) |
+
+Глобальные (ставит Osiris): `ALFSV_Celebration_Tonight` (`286ff093-d8b0-584d-9e8d-7c92853e9b5c`),
+`ALFSV_Celebration_LakrissaHere` (`4a3f3b64-8281-539b-af25-e6c87242b017`), `ALFSV_Celebration_LateNight`
+(`04af0e80-a174-512e-85fb-c93411f281b7`).
+
+| Ресурс / флаг главы | ID |
+|---|---|
+| `ALFSV_Alfira_Ch04_Celebration` | `ba151298-664c-43b8-9271-844a2153d101` |
+| `ALFSV_Alfira_Ch04_Lakrissa` | `e36a27f8-a3b1-4e6f-9c9b-464b02534b7a` |
+| `ALFSV_Chapter04_Available` / `_Done` | `98012add-a301-57d3-91a7-653224520ec9` / `628434fd-747c-5041-87a3-fdbea040a950` |
+
+## 9. Главы 3–4: как проверить в игре
+
+```
+python scripts/check_story.py        # 3 goal(s) мода: ошибок 0
+python scripts/build_pak.py          # 266 файлов
+python scripts/dialogs/validate.py   # «Проверка пройдена.»
+python scripts/dialogs/tree.py       # build/dialogs/ALFSV_Alfira_Ch03_FirstVerse.md, …_Ch04_Celebration.md, …_Ch04_Lakrissa.md
+```
+
+Праздник для проверки — ванильные отладочные `TextEvent("ghvtieflings")` / `PROC_Camp_DebugQNight_ForceRequirements`
+в `Act1_CAMP_GoblinHuntCelebration.txt` **[проверить, как вызвать]**; `Osi.PROC_ALFSV_Debug_UnlockChapter()` — как
+будто прошёл отдых.
+
+1. **Очередь.** Главы 1–2 сыграны, победы нет → после отдыха главы 3 нет, играет ротация. Убить вожаков / спасти
+   Майрину / отбить налёт → после отдыха глава 3 (одна). Проверить все три условия по отдельности.
+2. **Глава 3:** V1 «Потом» — конец, глава снова; куплеты по 4 мотивам (героиня — женские формы); припев по трём
+   правилам и без правила; «размер» (голос), Исполнение успех/провал, «тифлинги» (голос), ✨ и 🏷️ варианты; при
+   одобрении 20+ в конце вторая озвученная реплика.
+3. **Праздник с ней в лагере:** она у места праздника (`S_CAMP_TieflingPos_008`), а не на своём месте в лагере;
+   дублёра нет; клик — наш разговор её голосом, варианты героя по происхождению и классу как у игры; после темы
+   (при флаге главы 3) — «first verse is serious».
+4. **Флирт и F2:** играет ли AD флирта, когда Альфира спутница; стартует ли после него сцена с Лакриссой; иначе —
+   клик по Альфире рядом с Лакриссой. Три исхода R2; планы камеры и позы в сцене на троих.
+5. **F3:** снова клик — «позже ночью», реплика по состоянию, 4 варианта; после — «Your song was coming along».
+6. **Утро:** Альфира в отряде или лагере с нашим диалогом, на обычном месте; `Tonight` снят; флаги на герое.
+   Лакрисса мертва (отдельное сохранение) — F2 нет, сразу F3, варианта «Лакрисса, присмотри» нет.
+7. **Не в лагере** (отправлена прочь) — праздник с дублёром, глава 4 не открыта, дальнейшие главы не ждут.
+8. **Не завербована** — праздник как в игре (её ванильный разговор, флирт с Лакриссой).
+
+### Риски и ограничения
+
+- **Кто запускает AD флирта — по данным не видно** (Anubis праздника не распакован). Если AD привязан к её
+  поведению на празднике, у спутницы его может не быть; тогда F2 — только по клику.
+- **Место на ночь** через `DB_CampNight_SetPosition` для спутницы из отряда проверено по коду, не в игре; поза —
+  лагерная, а не поза праздника.
+- **Сцена на троих** в конвейере впервые: основа из «Последнего света» (свет EXT_NIGHT; анимации поз шаблонной
+  фазы сохранены, движения её локальных камер убраны). Проверить планы и позы.
+- Реплики героя в копии разговора — handle Larian одним текстом; у основы есть тексты с правилами по тегам
+  (`RuleGroup`), у нас их нет (сверка структуры в `validate.py`).
