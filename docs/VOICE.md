@@ -44,8 +44,9 @@ metadata.csv — это каталог всего, что Альфира уже 
 
 ## Клон для личной сборки: этап 8, акт 1
 
-Статус на 2026-09-27: **референсы и слепое сравнение моделей готовы; модель выбирает автор на слух.**
-Дообучение и генерация всех реплик — после выбора. В игру ничего не ставилось.
+Статус на 2026-09-27: референсы и слепое сравнение готовы; автор выбрал Breeze TTS 2 и IndexTTS-2.5 без
+дообучения. Собран конвейер личной сборки (`build_pak --voice clone`) и поставлена на пробу одна
+реплика — ниже, «Первая проба в игре». **В игре ещё не проверено.**
 
 Всё аудио, модели, venv и кэши лежат в `voice-work/` (в git не попадает). В git — только
 скрипты `scripts/voice/`, идентификаторы (handle) и эта документация.
@@ -61,6 +62,8 @@ python scripts/voice/compare_models.py run chatterbox breeze indextts voxcpm
 python scripts/voice/compare_models.py score   # метрики (venv _metrics)
 python scripts/voice/compare_models.py publish # compare/lineNN/, same_text/, LISTEN.md
 python scripts/voice/game_voice.py --handle <h> --wav <48 кГц wav>   # прототип файлов для пака
+python scripts/voice/voice_line.py all --handle <h> --emotion <эмоция> … # дубль → voice-work/game/
+python scripts/build_pak.py --voice clone                            # личная сборка с голосом
 ```
 
 Инструменты вне репозитория: vgmstream r2117 (`C:\Tools\vgmstream`, официальный релиз
@@ -129,7 +132,7 @@ audio, text, duration).
   перемешаны для каждой реплики, громкость и частота выровнены. Ключ и метрики —
   `voice-work/compare/_key/` (раскрывают модели, автору до выбора не показывать).
 
-### Конвейер в игру (исследование и прототип; в игре не проверено)
+### Конвейер в игру (исследование; в сборке с 27.09 — ниже, в игре не проверено)
 
 По данным игры (Patch 8 Hotfix 9) у озвученной реплики её голоса пять частей:
 
@@ -162,23 +165,94 @@ audio, text, duration).
 Для VoiceMeta в генераторе можно взять `soundbank_object` из bg3moddinglib (MIT; там Codec
 жёстко VORBIS — поле нужно менять).
 
-### Две сборки: план флага
+### Две сборки: флаг `--voice clone` (сделано 27.09)
 
 ```text
-python scripts/build_pak.py                   # публичная: как сейчас, реплики ✍️ — текстом
-python scripts/build_pak.py --voice clone     # личная: + голос клона из voice-work/game/
+python scripts/voice/voice_line.py all --handle h… --emotion <refs/…> [--ref файл] --instruct "…" --vector …
+python scripts/build_pak.py                   # публичная: dist/AlfiraSecondVerse.pak, реплики ✍️ — текстом
+python scripts/build_pak.py --voice clone     # личная: build/personal/AlfiraSecondVerse_personal.pak
+python scripts/install.py [--voice clone]     # ставит одну из двух: копию другой убирает из Mods
 ```
 
+- `voice_line.py` озвучивает реплику Breeze и IndexTTS (по 3 варианта), считает метрики (venv `_metrics`)
+  и выбирает дубль: из вариантов с WER ≤ 0,15 — самый похожий (ECAPA + WavLM к центру её голоса).
+  Все варианты, приведённые к 48 кГц и одной громкости, — `voice-work/trial/<handle>/norm/`.
+  Перед каждой моделью смотрит свободную видеопамять (`nvidia-smi`): если её меньше, чем нужно
+  (IndexTTS 7 ГБ, Breeze 9,5 ГБ), модель считается на процессоре (`--device auto`; `gpu` — ждать памяти).
+  Breeze на процессоре идёт через `model.generate` (потоковый рантайм — только CUDA) с тем же CFG.
 - Выбранные дубли лежат в `voice-work/game/<handle>.wav` (48 кГц моно) и `voice-work/game/voice.json`
-  (handle → файл, длина, модель). В `mod/` (git) клон не попадает никогда.
-- `--voice clone`: генератор (`scripts/dialogs/build.py`) заполняет `Stager.voice_durations[uuid узла]`
-  длинами дублей из `voice.json`; `Stager.phase_duration()` тогда даёт фазу «длина звука + TAIL 0,6 с»
-  вместо длины по тексту (`text_duration`), `TLVoice` — на длину звука; `build_pak` после копирования `mod/` кладёт в `build/pak/Mods/<папка>/Localization/English/`
-  файлы из `game_voice.py`: `.wem`, банк VoiceMeta, FX_/MC_, FaceFXActors.
-- Имя пака личной сборки — `AlfiraSecondVerse_personal.pak`, `dist/` для публикации её не содержит;
-  `install.py` ставит любую из двух.
-- Для AD-реплик (над головой) — приоритет `P4_RepeatingDialog_AD`, для сюжетных — `P1_StoryDialog`.
-- Первая проверка в игре — одна реплика (прототип), потом все.
+  (handle → файл, длина, модель, метрики). В `mod/` (git) клон не попадает никогда.
+- `--voice clone`: генератор (`scripts/dialogs/build.py`, `generate(voice=…)`) заполняет
+  `Stager.voice_durations[uuid узла]` длинами дублей; `Stager.phase_duration()` даёт фазу «длина звука +
+  TAIL 0,6 с» вместо длины по тексту, `TLVoice` — на длину звука. `build/dialogs/manifest.json → voice_clone`
+  — список озвученных handle; `build_pak --no-generate` проверяет, что таймлайны в `mod/` собраны для
+  того же набора. После конвертации `build_pak` кладёт в `Mods/<папка>/Localization/English/` файлы
+  `game_voice.write_takes()`: `Soundbanks/v<id>_<handle>.wem`, `Soundbanks/<id>.lsf`, `Animation/FX_/MC_`,
+  `Animation/FaceFXActors/`.
+- Путь проверен по пакам игры 27.09: все 184 978 `.wem` `Voice.pak` лежат в
+  `Mods/Gustav/Localization/English/Soundbanks/`, её банк VoiceMeta — там же в `VoiceMeta.pak`, `Source`
+  — только имя файла. В `bg3_dx11.exe` есть строка `Localization/English/Soundbanks` (путь внутри папки
+  модуля), поэтому наш `.wem` лежит рядом с нашим банком в папке нашего модуля.
+- Для AD-реплик (над головой) — приоритет `P4_RepeatingDialog_AD`, для сюжетных — `P1_StoryDialog`
+  (пока все — `P1`, AD генератор с голосом клона ещё не связывает).
+
+### Первая проба в игре: одна реплика (27.09, в игре ещё не проверено)
+
+**Реплика** — первая, которую герой слышит в нашей вербовке: приветствие `A1_duet`
+(`scenes/recruitment.py`), handle `habe18d85g7bf6g5207gbb65g98953eaaf91c`, узел
+`6b469df3-426b-59ee-bc06-4a53edd164cb`, фаза 43 таймлайна `ALFSV_Alfira_Recruitment`.
+EN: «There they are - my accompanist! I've been humming that bridge all morning. Lihala would've said
+I'm *insufferable*.» RU: «А вот и мой аккомпаниатор! Всё утро напеваю тот переход. Лихейла сказала бы,
+что я *невыносима*.»
+
+Почему она: в сохранении **«Леший — Лес — 5ч 02м» (25.09, 13:57)** песня закончена
+(`DEN_TieflingBard_State_FinishedSong`), лютню не крали (`ReturnedInstrument` нет), тифлинги в Роще,
+а на аватаре (Леший, варвар-человек) стоит `DEN_TieflingBard_Event_GiveProficiency` (дуэт на лютне;
+статус `DEN_ALFIRA_PROFICIENCY` тоже на нём, проверено по `Globals.lsf` сохранения). Значит, из
+приветствий A1 срабатывает `A1_duet`. Альфира в сохранении — в Роще у тифлингов (≈ 284, 22, 494),
+герой — в лесу (≈ −13, 37, 434).
+
+**Голос:** референс «воодушевление» `refs/excited/h3acb7afc…wav` («sincere and excited»: концерт для
+детей), подача Breeze — «warm and delighted, beaming, a cheerful teasing greeting to a friend», вектор
+IndexTTS — радость 0,7, удивление 0,2, спокойствие 0,1. Видеокарта была занята озвучкой акта 1
+(свободно 5,5–8,7 ГБ), поэтому IndexTTS считался на процессоре (~50 с на вариант).
+Breeze не считался: его потоковый рантайм работает только на CUDA (`fast streaming requires a CUDA
+device`; обычный `model.generate` на процессоре с этими входами падает), а видеокарту целиком занимала
+озвучка акта 1 (Breeze + метрики, свободно до 0,2 ГБ). Когда видеокарта освободится:
+`voice_line.py gen --models breeze … --device gpu`, затем `score` и `pick` (параметры — в `trial/<handle>/jobs.json`).
+
+| Вариант | ECAPA | WavLM | WER | Whisper |
+|---|---|---|---|---|
+| **IndexTTS v1** (эмоция из референса, α 0,8) — выбран | 0,546 | 0,807 | 0,12 | «…Lihala would have said I'm insufferable.» |
+| IndexTTS v3 (только референс) | 0,475 | 0,799 | 0,24 | «…Lehala would have said I'm inseparable.» |
+| IndexTTS v2 (вектор эмоций) | 0,188 | 0,743 | 0,12 | текст верный |
+| её собственные реплики к центру голоса | 0,695 | 0,950 | — | — |
+
+WER 0,12 у v1 — только «would've» → «would have». Дубль: `voice-work/game/habe18d85g7bf6g5207gbb65g98953eaaf91c.wav`
+(6,34 с), все варианты — `voice-work/trial/habe18d85g7bf6g5207gbb65g98953eaaf91c/norm/`.
+
+**Сборка:** `build_pak --voice clone` → `build/personal/AlfiraSecondVerse_personal.pak` (450 файлов,
+публичный — 444): `.wem` Wwise PCM 48 кГц моно 6,339 с (vgmstream читает его из пака как «Audiokinetic
+Wwise RIFF, 16-bit PCM»), банк VoiceMeta (`Codec=PCM`, `Length=6.339062`, `Priority=P1_StoryDialog`),
+FX_/MC_ от её реплики `h35f52e08gba2bg44cag94edg8b6f0318084a` (6,34 с, «Heh. She'd yell at me for that
+metre…»), FaceFXActors. Фаза 43 — 6,939 с (6,339 + 0,6), `TLVoice` — 6,339 с. `check_story`,
+`validate` — без ошибок.
+
+**Установка** (27.09 не выполнена: был открыт BG3 Mod Manager Redux). При закрытых BG3 и менеджере:
+`python scripts/test_mode.py on` (ставит публичный пак и выключает AJTP с переводом и патчем), затем
+`python scripts/install.py --voice clone` — личный пак вместо публичного, мод последним, после Alfira Redone.
+
+**Что проверить в игре** (личный пак, `test_mode.py on`; запуск — только `bg3_dx11.exe`):
+1. Загрузить «Леший — Лес — 5ч 02м» (25.09). Сохранения «Лешего» позже 26.09 14:40 без AJTP не открывать.
+2. Путевая точка «Изумрудная роща» → тифлинги, Альфира. Заговорить с ней **самим Лешим** (не спутником:
+   вербовку открывает только аватар).
+3. Первая реплика — «There they are - my accompanist!…» с голосом. Смотреть:
+   - звучит ли голос вообще (если тишина и субтитр 6,9 с — игра не приняла Wwise PCM);
+   - двигается ли рот (липсинк чужой реплики: рот не по словам, но должен двигаться);
+   - не обрывается ли звук до конца фазы и нет ли долгой немой паузы после (фаза = звук + 0,6 с);
+   - нет ли лишних жестов от MC_ донора;
+   - после реплики — меню A2 как обычно, остальные реплики ✍️ — без голоса, реплики игры — с её голосом.
+4. Выйти без сохранения, закрыть игру, `python scripts/test_mode.py off`.
 
 ### Видеокарта
 

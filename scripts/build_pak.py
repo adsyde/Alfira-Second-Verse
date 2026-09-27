@@ -21,8 +21,14 @@ mod/ повторяет раскладку пака:
      игры из build/dialogs/manifest.json — их тексты в локализации игры);
   5. Divine create-package → dist/.
 
-  python scripts/build_pak.py            # версия из config
+  python scripts/build_pak.py            # публичная сборка: версия из config, реплики ✍️ — текстом
   python scripts/build_pak.py --version 0.1.0
+  python scripts/build_pak.py --voice clone   # личная: + голос клона из voice-work/game/ (docs/VOICE.md)
+
+Личная сборка (--voice clone) не публикуется: пак — build/personal/<name>_personal.pak, в dist/ не попадает.
+Аудио в git не лежит: voice-work/game/voice.json (handle → файл, длина) и <handle>.wav 48 кГц моно.
+Генератор ставит фазам этих реплик длину звука (Stager.voice_durations), после конвертации в пак кладутся
+.wem Wwise PCM, банк VoiceMeta и заимствованный липсинк (scripts/voice/game_voice.py → write_takes).
 """
 import argparse
 import json
@@ -106,28 +112,50 @@ def meta_lsx(mod, folder, version):
 '''
 
 
+def pak_path(cfg, voice="none"):
+    """Пак сборки: публичная — dist/<name>.pak, личная (голос клона) — build/personal/<name>_personal.pak."""
+    name = cfg["mod"]["name"]
+    if voice == "clone":
+        return resolve(cfg["paths"]["build"]) / "personal" / f"{name}_personal.pak"
+    return resolve(cfg["paths"]["dist"]) / f"{name}.pak"
+
+
 def main():
     cfg = config()
     mod = cfg["mod"]
     ap = argparse.ArgumentParser()
     ap.add_argument("--version", default=mod["version"])
     ap.add_argument("--no-generate", action="store_true", help="не запускать генератор диалогов")
+    ap.add_argument("--voice", choices=["none", "clone"], default="none",
+                    help="clone — личная сборка с голосом клона из voice-work/game/ (не публикуется)")
     args = ap.parse_args()
 
+    takes = {}
+    if args.voice == "clone":
+        vdir = resolve(cfg["paths"]["voice_work"]) / "game"
+        vj = vdir / "voice.json"
+        if not vj.exists():
+            sys.exit(f"Нет {vj}: сначала python scripts/voice/voice_line.py (docs/VOICE.md)")
+        takes = {h: (vdir / t["file"], t["seconds"]) for h, t in json.loads(vj.read_text(encoding="utf-8")).items()}
+        missing = [str(w) for w, _ in takes.values() if not w.exists()]
+        if missing:
+            sys.exit("Нет файлов голоса: " + ", ".join(missing))
     if not args.no_generate:
         sys.path.insert(0, str(Path(__file__).resolve().parent / "dialogs"))
         import build as dialogs_build  # scripts/dialogs/build.py
         print("Генератор диалогов (scripts/dialogs/build.py):")
-        dialogs_build.generate()
+        dialogs_build.generate(voice={h: s for h, (_, s) in takes.items()})
     manifest = resolve(cfg["paths"]["build"]) / "dialogs" / "manifest.json"
     if not manifest.exists():
         sys.exit("Нет build/dialogs/manifest.json: запустите сборку без --no-generate.")
-    vanilla = set(json.loads(manifest.read_text(encoding="utf-8"))["vanilla_handles"])
+    man = json.loads(manifest.read_text(encoding="utf-8"))
+    vanilla = set(man["vanilla_handles"])
+    if set(man.get("voice_clone", [])) != set(takes):
+        sys.exit("Таймлайны в mod/ собраны для другого набора голоса клона: запустите сборку без --no-generate.")
 
     folder = f'{mod["name"]}_{mod["uuid"]}'
     src = resolve(cfg["paths"]["mod_src"])
     build = resolve(cfg["paths"]["build"]) / "pak"
-    dist = resolve(cfg["paths"]["dist"])
     if build.exists():
         shutil.rmtree(build)
     twins = set()   # X.lsx рядом с X.lsf.lsx: настоящий lsx (например, _Scene.lsx таймлайна)
@@ -167,6 +195,14 @@ def main():
     if errors:
         sys.exit("Сборка остановлена:\n  " + "\n  ".join(errors))
 
+    if takes:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "voice"))
+        from game_voice import write_takes  # scripts/voice/game_voice.py
+        print("Голос клона (личная сборка):")
+        for line in write_takes(build / "Mods" / folder / "Localization" / "English",
+                                [(h, w) for h, (w, _) in sorted(takes.items())], resolve(cfg["paths"]["voice_work"])):
+            print("  " + line)
+
     meta = build / "Mods" / folder / "meta.lsx"
     meta.parent.mkdir(parents=True, exist_ok=True)
     meta.write_text(meta_lsx(mod, folder, args.version), encoding="utf-8")
@@ -175,8 +211,8 @@ def main():
     if stray:
         sys.exit(f"В паке лишние папки модулей {sorted(stray)}: всё должно лежать в _MOD_ (иначе мод пропадёт из списка).")
 
-    dist.mkdir(parents=True, exist_ok=True)
-    pak = dist / f'{mod["name"]}.pak'
+    pak = pak_path(cfg, args.voice)
+    pak.parent.mkdir(parents=True, exist_ok=True)
     # Divine молча пропускает файлы, если в пути есть папка на «.» (например, .claude/worktrees):
     # тогда пакуем из временной копии.
     staged = build

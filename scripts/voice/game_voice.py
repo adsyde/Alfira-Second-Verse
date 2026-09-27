@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Прототип конвейера «новая реплика с голосом → файлы для пака» (в игру не ставится).
+"""Конвейер «новая реплика с голосом → файлы для пака»: write_takes() вызывает build_pak.py --voice clone
+(личная сборка), CLI ниже — прототип для одного handle в voice-work/pipeline/proto/.
 
 Для одного handle из loca мода и готового .wav (48 кГц, моно, 16 бит — так выдаёт
 compare_models.py publish / tts/normalize.py) собирает в voice-work/pipeline/proto/ то, что
@@ -114,6 +115,43 @@ def extract_anim(vw, pattern):
     return hits
 
 
+def write_takes(loc, takes, vw, keep_lsx=False):
+    """Файлы озвучки для пака в loc (= Mods/<папка>/Localization/English): takes — [(handle, wav)].
+
+    Раскладка — как у её голоса в паках игры: Voice.pak и VoiceMeta.pak → Mods/Gustav/Localization/English/
+    Soundbanks/ (.wem и банк VoiceMeta рядом, Source — имя файла), English_Animations.pak →
+    Mods/Gustav/Localization/English/Animation/ (FX_/MC_, FaceFXActors). Возвращает строки отчёта."""
+    bank, anim = loc / "Soundbanks", loc / "Animation"
+    entries, report = [], []
+    anim.mkdir(parents=True, exist_ok=True)
+    for handle, wav in takes:
+        base = f"v{KEY}_{handle}"
+        length = write_wem_pcm(wav, bank / f"{base}.wem")
+        entries.append((handle, f"{base}.wem", length))
+        donor = donor_line(vw, length)
+        got = []
+        for prefix, ext in (("FX_", ".ffxanim"), ("MC_", ".gr2")):
+            src = extract_anim(vw, f"{prefix}v{KEY}_{donor['handle']}{ext}")
+            if src:
+                shutil.copy2(src[0], anim / f"{prefix}{base}{ext}")
+                got.append(f"{prefix}{ext}")
+        report += [f"{handle}: {Path(wav).name} → {base}.wem (Wwise PCM, {length:.3f} с); "
+                   f"{', '.join(got) or 'без липсинка'} от её реплики {donor['handle']} ({donor['seconds']} с): "
+                   f"«{donor['text'][:60]}…» — рот по чужому тексту"]
+    lsx = bank / f"{KEY}.lsx"
+    lsx.write_text(voicemeta_lsx(entries), encoding="utf-8")
+    divine("-a", "convert-resource", "-s", lsx, "-d", lsx.with_suffix(".lsf"))
+    if not keep_lsx:
+        lsx.unlink()
+    actors = extract_anim(vw, f"{ALFIRA}.ffx*")
+    (anim / "FaceFXActors").mkdir(exist_ok=True)
+    for a in actors:
+        shutil.copy2(a, anim / "FaceFXActors" / a.name)
+    report += [f"VoiceMeta: Soundbanks/{KEY}.lsf, реплик {len(entries)}, Codec=PCM, Priority={PRIORITY}",
+               f"FaceFXActors: {', '.join(a.name for a in actors)}"]
+    return report
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--handle", required=True, help="handle новой реплики из loca мода")
@@ -124,38 +162,9 @@ def main():
     out = args.out or vw / "pipeline" / "proto"
     if out.exists():
         shutil.rmtree(out)
-    loc = out / "Mods" / "_MOD_" / "Localization" / "English"
-    bank, anim = loc / "Soundbanks", loc / "Animation"
-
-    base = f"v{KEY}_{args.handle}"
-    length = write_wem_pcm(args.wav, bank / f"{base}.wem")
-    lsx = bank / f"{KEY}.lsx"
-    lsx.write_text(voicemeta_lsx([(args.handle, f"{base}.wem", length)]), encoding="utf-8")
-    divine("-a", "convert-resource", "-s", lsx, "-d", lsx.with_suffix(".lsf"))
-
-    donor = donor_line(vw, length)
-    anim.mkdir(parents=True, exist_ok=True)
-    got = []
-    for prefix, ext in (("FX_", ".ffxanim"), ("MC_", ".gr2")):
-        src = extract_anim(vw, f"{prefix}v{KEY}_{donor['handle']}{ext}")
-        if src:
-            shutil.copy2(src[0], anim / f"{prefix}{base}{ext}")
-            got.append(f"{prefix}{ext}")
-    actors = extract_anim(vw, f"{ALFIRA}.ffx*")
-    (anim / "FaceFXActors").mkdir(exist_ok=True)
-    for a in actors:
-        shutil.copy2(a, anim / "FaceFXActors" / a.name)
-
-    report = [
-        f"handle: {args.handle}",
-        f"звук: {args.wav} → {base}.wem (Wwise PCM, {length:.3f} с)",
-        f"VoiceMeta: {KEY}.lsf, Codec=PCM, Length={length:.7g}, Priority={PRIORITY}",
-        f"липсинк и жесты: {', '.join(got) or 'нет'} взяты у её реплики {donor['handle']} ({donor['seconds']} с): "
-        f"«{donor['text'][:60]}…» — рот по чужому тексту",
-        f"FaceFXActors: {', '.join(a.name for a in actors)}",
-        f"длительность фазы таймлайна для этой реплики: {length:.3f} с + 0,6 с (staging.TAIL)",
-        "В игру не ставилось. Перед проверкой: build_pak с флагом личной сборки (docs/VOICE.md).",
-    ]
+    report = write_takes(out / "Mods" / "_MOD_" / "Localization" / "English", [(args.handle, args.wav)], vw,
+                         keep_lsx=True)
+    report.append("Прототип; в пак это кладёт build_pak.py --voice clone (docs/VOICE.md).")
     (out / "README.txt").write_text("\n".join(report) + "\n", encoding="utf-8")
     print("\n".join(report))
     print(f"→ {out}")

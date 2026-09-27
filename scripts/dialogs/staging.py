@@ -180,7 +180,8 @@ class Stager:
         self.templates = {}                 # роль говорящего → шаблонная фаза основы (_pick_template)
         self.sources = {}                   # имя диалога → (TimelineView, dialog_object)
         # Точка для голоса: uuid узла → длина аудио реплики, с. Если задана, фаза текстовой реплики — по ней
-        # (phase_duration). Заполняет сборка, когда у новых реплик появится голос (docs/VOICE.md).
+        # (phase_duration), TLVoice — на длину звука. Заполняет build.py в личной сборке (build_pak --voice clone,
+        # docs/VOICE.md).
         self.voice_durations = {}
         self.shared_cams = self._shared_cameras()
         self.added_cams = []
@@ -433,8 +434,8 @@ class Stager:
     def phase_duration(self, node_uuid, line):
         """Длина фазы текстовой реплики или ремарки.
 
-        Точка для голоса: когда у новой реплики будет аудио, его длина (с) кладётся в voice_durations[uuid узла] —
-        фаза станет длиной голоса + TAIL, как у озвученных реплик игры; ключи эмоций и планы растянутся по ней.
+        С голосом клона (build_pak --voice clone) длина аудио (с) лежит в voice_durations[uuid узла] — фаза
+        длиной голоса + TAIL, как у озвученных реплик игры; ключи эмоций и планы растягиваются по ней.
         Без аудио — по объёму текста (text_duration)."""
         v = self.voice_durations.get(node_uuid)
         return D(v) + D(TAIL) if v else text_duration(line)
@@ -450,7 +451,9 @@ class Stager:
         role = face if self.other_template else ALFIRA
         skip = {(face, "TLEmotionEvent")} | (self._seated_skip() if seat else set())
         self._template_parts(start, dur, phase, skip, role=role)
-        self._voice(node_uuid, start, start + dur, phase, speaker_actor or self.me.actor[face])
+        # с голосом (личная сборка, docs/VOICE.md) TLVoice — на длину звука, как у озвученных реплик игры
+        vdur = self.voice_durations.get(node_uuid)
+        self._voice(node_uuid, start, start + (D(vdur) if vdur else dur), phase, speaker_actor or self.me.actor[face])
         if face == ALFIRA:
             emo = STYLE.keys(line, float(dur), node_uuid)
         else:
@@ -463,7 +466,7 @@ class Stager:
         if not (self.other_template and line.shot_default and self._template_shots(role, start, dur, phase)):
             self._shot(self.named_camera(line.shot), start, start + dur, phase, "main", True)
         self.report.append((node_uuid, ("ремарка" if speaker_actor else ("текст (3-й)" if face == OTHER else "текст"))
-                            + (f", сидя ({seat})" if seat else ""), float(dur)))
+                            + (", голос клона" if vdur else "") + (f", сидя ({seat})" if seat else ""), float(dur)))
 
     # --- сидя у костра ---
 
