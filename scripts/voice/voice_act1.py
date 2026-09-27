@@ -336,6 +336,14 @@ def variant_how(model, k, ln, ref_name):
     return f"{src}; тембр и эмоция из образца, без отдельной эмоции"
 
 
+def ln_group(lines, h):
+    return orig_line(lines, h)["group"]
+
+
+def orig_line(lines, h):
+    return next(x for x in lines if x["id"] == h and not x.get("redo"))
+
+
 def redo_how(model, k, ln):
     c = ln["redo"][model][str(k)]
     ref = Path(c.get("ref", ln["redo"]["ref"]))
@@ -367,18 +375,33 @@ def cmd_page(_args):
     refdir.mkdir(exist_ok=True)
     ref_rel = {}
     total = 0
+    chapters = [x for x in order if x != REDO]
+    redo_ids = set(redo_spec()) if REDO in ready else set()
     for gi, g in enumerate(ready, 1):
         score = json.loads((gen / g / "score.json").read_text(encoding="utf-8"))
-        folder = f"{order.index(g) + 1:02d} " + re.sub(r'[<>:"/\|?*]', "", titles[g].split(".")[0]).strip()
+        num = 0 if g == REDO else chapters.index(g) + 1
+        folder = f"{num:02d} " + re.sub(r'[<>:"/\|?*]', "", titles[g].split(".")[0]).strip()
         (PAGE_DIR / folder).mkdir(exist_ok=True)
-        anchor = f"g{order.index(g) + 1:02d}"
+        anchor = f"g{num:02d}"
         nav.append(f'<a href="#{anchor}">{html.escape(titles[g])}</a>')
         body.append(f'<h2 id="{anchor}">{html.escape(titles[g])}</h2>')
         for ln in (x for x in lines if x["group"] == g):
             s = score.get(ln["id"])
             if not s or not s["cands"]:
                 continue
+            if g != REDO and ln["id"] in redo_ids:
+                continue                      # её карточка — в «Переделке»
+            for c in s["cands"]:
+                c["_tag"] = vtag(ln)
             s["default"] = default_pick(s["cands"], ln["emotion"], vtag(ln))
+            if g == REDO:
+                orig = (gen / ln_group(lines, ln["id"]) / "score.json")
+                if orig.exists():
+                    old = json.loads(orig.read_text(encoding="utf-8")).get(ln["id"], {}).get("cands", [])
+                    for c in old:
+                        c["_tag"] = "v"
+                        c["_old"] = True
+                    s = {**s, "cands": s["cands"] + old}
             total += 1
             emo = ln["ref_emotion"]
             if emo not in ref_rel:
@@ -389,19 +412,22 @@ def cmd_page(_args):
             short = ln["id"][:9]
             # у переделки показываем всё: на обрывках вроде «I - we -» Whisper ошибается чаще модели
             shown = ([c for c in s["cands"] if not c["reject"]] if not (s["all_rejected"] or ln.get("redo"))
-                     else s["cands"])
+                     else [c for c in s["cands"] if not (c.get("_old") and c["reject"])])
             dropped = [c for c in s["cands"] if c["reject"] and c not in shown]
             opts = []
-            for c in sorted(shown, key=lambda c: (c["model"], c["k"])):
-                val = f"{c['model']}_{vtag(ln)}{c['k']}"
+            for c in sorted(shown, key=lambda c: (bool(c.get("_old")), c["model"], c["k"])):
+                val = f"{c['model']}_{c['_tag']}{c['k']}"
                 name = f"{short}_{val}.wav"
                 norm.append([c["wav"], str(PAGE_DIR / folder / name)])
                 chk = " checked" if val == s["default"] else ""
                 warn = f'<div class="warn">{html.escape("; ".join(c["reject"]))}</div>' if c["reject"] else ""
                 star = " ★" if val == s["default"] else ""
                 how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
-                if ln.get("redo"):
+                if ln.get("redo") and not c.get("_old"):
                     how = redo_how(c["model"], c["k"], ln)
+                elif c.get("_old"):
+                    how = "прежний вариант: " + variant_how(c["model"], c["k"], {**ln, **orig_line(lines, ln["id"])},
+                                                              ref_rel[emo][2])
                 opts.append(f'<div class="opt"><input type="radio" name="{ln["id"]}" id="{ln["id"]}_{val}" value="{val}"{chk}>'
                             f'<label for="{ln["id"]}_{val}">{TITLE[c["model"]]} v{c["k"]}{star}<br>'
                             f'<small>похожесть {c["sim"]:.3f}, {c["dur"]:.1f} с</small></label>'
