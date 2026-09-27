@@ -267,6 +267,8 @@ class Chapter:
     act: int | None = None               # открывается и ждёт только в этом акте (ACT_LEVELS)
     expire: bool = False                 # снят флаг из story, а глава не сыграна — перестаёт ждать
     hub: bool = True                     # вход в разговоре в отряде (False — диалог запускает Osiris)
+    when_any: list = field(default_factory=list)  # «или» для входа: списки условий, вход — если выполнен любой
+    priority: int = 0                    # в одной проверке раньше открывается глава с большим приоритетом
 
     @property
     def available_flag(self) -> Flag:
@@ -284,7 +286,7 @@ class Chapter:
 
 
 def chapter(number: int, title: str, *, after_rest=True, story=(), when=(), approval=None, optional=False,
-            story_any=(), act=None, expire=False, hub=True) -> Chapter:
+            story_any=(), act=None, expire=False, hub=True, when_any=(), priority=0) -> Chapter:
     """Объявление главы: номер (порядок), название, условия открытия и входа. См. Chapter и README."""
     for r in list(story) + list(story_any):
         if isinstance(r, Osi):
@@ -302,7 +304,7 @@ def chapter(number: int, title: str, *, after_rest=True, story=(), when=(), appr
     if expire and not any(isinstance(r, FlagRef) and r.value for r in story):
         raise ValueError(f"глава {number}: expire без флага в story ничего не делает")
     return Chapter(number, title, after_rest, list(story), list(when), approval, optional, list(story_any), act,
-                   expire, hub)
+                   expire, hub, [list(w) for w in when_any], priority)
 
 
 @dataclass

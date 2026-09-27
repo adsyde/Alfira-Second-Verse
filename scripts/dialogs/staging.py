@@ -180,7 +180,9 @@ class Stager:
         if name not in self.sources:
             d = self.lib.assets.get_dialog_object(name)
             t = self.lib.assets.get_timeline_object(name)
-            if self.alfira_template in d.get_speakers() and len(d.get_speakers()) == 1:
+            if self.alfira_template in d.get_speakers() and (len(d.get_speakers()) == 1
+                                                             or self.player_speaker not in d.get_speakers()):
+                # AD (без героя: одна Альфира или Альфира и NPC, как CAMP_Bard_AD_Volo) — фаза по её голосу
                 self.sources[name] = (t, None)
             else:
                 other = self.other_template if self.other_template in d.get_speakers() else ""

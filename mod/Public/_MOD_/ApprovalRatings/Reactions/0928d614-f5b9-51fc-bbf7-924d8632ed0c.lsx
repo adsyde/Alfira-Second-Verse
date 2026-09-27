@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="0" revision="9" build="320" />
+	<region id="Reactions">
+		<node id="root">
+			<children>
+				<node id="Reaction">
+					<attribute id="Scope" type="uint8" value="1" />
+					<attribute id="UUID" type="guid" value="0928d614-f5b9-51fc-bbf7-924d8632ed0c" />
+					<children>
+						<node id="Reactions">
+							<children>
+								<node id="Reaction">
+									<attribute id="id" type="guid" value="38357c93-b437-4f03-88d0-a67bd4c0e3e9" />
+									<attribute id="value" type="int32" value="4" />
+								</node>
+							</children>
+						</node>
+					</children>
+				</node>
+			</children>
+		</node>
+	</region>
+</save>

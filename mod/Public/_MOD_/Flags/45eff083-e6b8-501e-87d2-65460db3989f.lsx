@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="45eff083-e6b8-501e-87d2-65460db3989f" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Elturel_LihalaCity" />
+			<attribute id="Description" type="LSString" value="'Some songs don't need writing' - Lihala's own city (personal quest, stage 7)" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="451a9df6-ec27-54ed-bf5b-cfbca9ade10d" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Romance_Open" />
+			<attribute id="Description" type="LSString" value="R3: the romance with Alfira is open (morning after, approval 30+)" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

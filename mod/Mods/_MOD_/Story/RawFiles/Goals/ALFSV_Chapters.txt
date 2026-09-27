@@ -54,6 +54,34 @@ DB_ALFSV_IsCompanion(1)
 THEN
 PROC_ALFSV_Chapters_Unlock(0);
 
+IF
+FlagSet((FLAG)ALFSV_Chapter05_Done_0f19b318-bae5-5905-bed6-a09bb29c86b9, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_Chapters_Unlock(0);
+
+IF
+FlagSet((FLAG)ALFSV_Chapter06_Done_19e5799f-d0b2-5897-88ce-8c3d924580ff, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_Chapters_Unlock(0);
+
+IF
+FlagSet((FLAG)ALFSV_Chapter07_Done_1b5d7b62-c6ca-5266-b5c0-856502c1440d, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_Chapters_Unlock(0);
+
+IF
+FlagSet((FLAG)ALFSV_Chapter08_Done_7fec2175-cd67-598f-9ef5-25f4b105ef63, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_Chapters_Unlock(0);
+
 // Chapter 4 does not wait for a rest: its story event opens it
 IF
 FlagSet((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c, NULL_00000000-0000-0000-0000-000000000000, _)
@@ -116,6 +144,57 @@ NOT DB_GlobalFlag((FLAG)ALFSV_Chapter04_Done_628434fd-747c-5041-87a3-fdbea040a95
 THEN
 DB_NOOP(1);
 
+QRY
+QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter05_Available_cfcfb20e-9966-57c0-a8d7-0c69f0386818)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter05_Done_0f19b318-bae5-5905-bed6-a09bb29c86b9)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter06_Available_458f6fe4-af1a-5cb5-9f4c-7a86ac060698)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter06_Done_19e5799f-d0b2-5897-88ce-8c3d924580ff)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter07_Available_2b447480-af19-5696-ba86-2f0ccf82bf35)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter07_Done_1b5d7b62-c6ca-5266-b5c0-856502c1440d)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter08_Available_75211302-c605-5114-99d7-4ccd72581054)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter08_Done_7fec2175-cd67-598f-9ef5-25f4b105ef63)
+THEN
+DB_NOOP(1);
+
+//END_REGION
+
+//REGION Approval of any avatar (DB_ApprovalRating) for optional chapters with an entry threshold
+
+QRY
+QRY_ALFSV_Chapters_Approval((INTEGER)_AtLeast)
+AND
+DB_Avatars(_Avatar)
+AND
+DB_ApprovalRating(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Avatar, _Value)
+AND
+_Value >= _AtLeast
+THEN
+DB_NOOP(1);
+
 //END_REGION
 
 //REGION Acts (DB_CurrentLevel; levels per act - scripts/dialogs/dsl.py ACT_LEVELS)
@@ -164,6 +243,50 @@ DB_GlobalFlag((FLAG)DEN_AttackOnDen_State_DenVictory_71c7f23e-3ff1-c9b8-3ef5-d75
 THEN
 DB_NOOP(1);
 
+// Chapter 6: any of these story events
+QRY
+QRY_ALFSV_Chapter06_StoryAny()
+AND
+DB_GlobalFlag((FLAG)ORI_Karlach_HasMet_50a43cde-0702-4c2a-a490-e9ee5f061f45)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapter06_StoryAny()
+AND
+DB_GlobalFlag((FLAG)GLO_TheMonitor_HasMet_TheMonitor_43aea040-f9d3-4f73-bdaa-b3512a3c92db)
+THEN
+DB_NOOP(1);
+
+// Chapter 7: any of these story events
+QRY
+QRY_ALFSV_Chapter07_StoryAny()
+AND
+DB_GlobalFlag((FLAG)GLO_Underdark_EverEnteredBefore_dd5cd5b4-2ad5-4dbd-4972-2afaa7538994)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapter07_StoryAny()
+AND
+DB_GlobalFlag((FLAG)GLO_DuergarCamp_EverEnteredBefore_ac0bae57-7006-4676-88b8-7498dde79c41)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapter07_StoryAny()
+AND
+DB_GlobalFlag((FLAG)VISITEDREGION_CRE_Main_A_c22062f9-2a42-4e19-8c72-34a2d9ff9c0a)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Chapter07_StoryAny()
+AND
+DB_CurrentLevel("CRE_Main_A")
+THEN
+DB_NOOP(1);
+
 // Chapter 3 is bound to act 1: unlocked but not played before the act ended - it no longer waits
 PROC
 PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
@@ -197,6 +320,78 @@ AND
 NOT DB_GlobalFlag((FLAG)ALFSV_Chapter04_Done_628434fd-747c-5041-87a3-fdbea040a950)
 THEN
 PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Chapter04_Available_98012add-a301-57d3-91a7-653224520ec9);
+
+// Chapter 5 is bound to act 1: unlocked but not played before the act ended - it no longer waits
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter05_Available_cfcfb20e-9966-57c0-a8d7-0c69f0386818)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter05_Done_0f19b318-bae5-5905-bed6-a09bb29c86b9)
+AND
+NOT QRY_ALFSV_Chapters_InAct(1)
+THEN
+PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Chapter05_Available_cfcfb20e-9966-57c0-a8d7-0c69f0386818);
+
+// Chapter 6 is bound to act 1: unlocked but not played before the act ended - it no longer waits
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter06_Available_458f6fe4-af1a-5cb5-9f4c-7a86ac060698)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter06_Done_19e5799f-d0b2-5897-88ce-8c3d924580ff)
+AND
+NOT QRY_ALFSV_Chapters_InAct(1)
+THEN
+PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Chapter06_Available_458f6fe4-af1a-5cb5-9f4c-7a86ac060698);
+
+// Chapter 7 is bound to act 1: unlocked but not played before the act ended - it no longer waits
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter07_Available_2b447480-af19-5696-ba86-2f0ccf82bf35)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter07_Done_1b5d7b62-c6ca-5266-b5c0-856502c1440d)
+AND
+NOT QRY_ALFSV_Chapters_InAct(1)
+THEN
+PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Chapter07_Available_2b447480-af19-5696-ba86-2f0ccf82bf35);
+
+// Chapter 8 is bound to act 1: unlocked but not played before the act ended - it no longer waits
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter08_Available_75211302-c605-5114-99d7-4ccd72581054)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter08_Done_7fec2175-cd67-598f-9ef5-25f4b105ef63)
+AND
+NOT QRY_ALFSV_Chapters_InAct(1)
+THEN
+PROC_GlobalClearFlagAndCache((FLAG)ALFSV_Chapter08_Available_75211302-c605-5114-99d7-4ccd72581054);
+
+// Chapter 5: ALFSV_Alfira_Ch05_MorningAfter - optional, unlocks after a long rest, after chapters 1, 2, only in act 1, priority 1 (checked before the others)
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter05_Available_cfcfb20e-9966-57c0-a8d7-0c69f0386818)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter05_Done_0f19b318-bae5-5905-bed6-a09bb29c86b9)
+AND
+NOT QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter01_Done_646b75d3-e9b5-5022-ada3-b3388118c998)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter02_Done_4cd365b4-313e-536b-969f-84319fa4cbb6)
+AND
+_AtRest == 1
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter04_Done_628434fd-747c-5041-87a3-fdbea040a950)
+AND
+QRY_ALFSV_Chapters_InAct(1)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter05_Available_cfcfb20e-9966-57c0-a8d7-0c69f0386818);
 
 // Chapter 1: ALFSV_Alfira_Ch01_FirstNight - unlocks immediately
 PROC
@@ -275,6 +470,84 @@ AND
 QRY_ALFSV_Chapters_InAct(1)
 THEN
 PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter04_Available_98012add-a301-57d3-91a7-653224520ec9);
+
+// Chapter 6: ALFSV_Alfira_Ch06_Elturel - optional, unlocks after a long rest, after chapters 1, 2, only in act 1
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter06_Available_458f6fe4-af1a-5cb5-9f4c-7a86ac060698)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter06_Done_19e5799f-d0b2-5897-88ce-8c3d924580ff)
+AND
+NOT QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter01_Done_646b75d3-e9b5-5022-ada3-b3388118c998)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter02_Done_4cd365b4-313e-536b-969f-84319fa4cbb6)
+AND
+_AtRest == 1
+AND
+QRY_ALFSV_Chapter06_StoryAny()
+AND
+QRY_ALFSV_Chapters_InAct(1)
+AND
+QRY_ALFSV_Chapters_Approval(10)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter06_Available_458f6fe4-af1a-5cb5-9f4c-7a86ac060698);
+
+// Chapter 7: ALFSV_Alfira_Ch07_Fear - optional, unlocks after a long rest, after chapters 1, 2, only in act 1
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter07_Available_2b447480-af19-5696-ba86-2f0ccf82bf35)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter07_Done_1b5d7b62-c6ca-5266-b5c0-856502c1440d)
+AND
+NOT QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter01_Done_646b75d3-e9b5-5022-ada3-b3388118c998)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter02_Done_4cd365b4-313e-536b-969f-84319fa4cbb6)
+AND
+_AtRest == 1
+AND
+QRY_ALFSV_Chapter07_StoryAny()
+AND
+QRY_ALFSV_Chapters_InAct(1)
+AND
+QRY_ALFSV_Chapters_Approval(10)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter07_Available_2b447480-af19-5696-ba86-2f0ccf82bf35);
+
+// Chapter 8: ALFSV_Alfira_Ch08_FirstKiss - optional, unlocks after a long rest, after chapters 1, 2, only in act 1
+PROC
+PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter08_Available_75211302-c605-5114-99d7-4ccd72581054)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Chapter08_Done_7fec2175-cd67-598f-9ef5-25f4b105ef63)
+AND
+NOT QRY_ALFSV_Chapters_Waiting()
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter01_Done_646b75d3-e9b5-5022-ada3-b3388118c998)
+AND
+DB_GlobalFlag((FLAG)ALFSV_Chapter02_Done_4cd365b4-313e-536b-969f-84319fa4cbb6)
+AND
+_AtRest == 1
+AND
+DB_GlobalFlag((FLAG)ALFSV_Romance_Act1Candidate_ce372796-8e0b-57b6-9c9d-1d19d7296cc5)
+AND
+QRY_ALFSV_Chapters_InAct(1)
+AND
+QRY_ALFSV_Chapters_Approval(40)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_Chapter08_Available_75211302-c605-5114-99d7-4ccd72581054);
 
 //END_REGION
 EXITSECTION

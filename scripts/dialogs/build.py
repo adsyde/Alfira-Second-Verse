@@ -60,6 +60,7 @@ OWNED = ["Mods/_MOD_/Story/DialogsBinary", "Public/_MOD_/Timeline", "Public/_MOD
          "Public/_MOD_/ApprovalRatings", "Public/_MOD_/Flags", "Mods/_MOD_/Globals"]
 SPEAKER_UUID = {ALFIRA: ALFIRA_TEMPLATE, PLAYER: PLAYER_SPEAKER}
 NULL = "NULL_00000000-0000-0000-0000-000000000000"
+ALFIRA_OSI_NAME = "S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c"
 FLAG_USAGE = {"Global": 5, "Object": 4, "Dialog": 6}
 
 
@@ -264,13 +265,16 @@ class Compiler:
                 if ch.approval not in APPROVAL_SP1:
                     raise ValueError(f"глава {ch.number}: порога одобрения {ch.approval} у игры нет; есть {sorted(APPROVAL_SP1)}")
                 when.append(APPROVAL_SP1[ch.approval](ALFIRA))
-            entry, nested, end = self.uid(key), self.uid(f"{key}.nested"), self.uid(f"{key}.end")
+            nested, end = self.uid(f"{key}.nested"), self.uid(f"{key}.end")
             self.d.create_standard_dialog_node(end, ALFIRA_TEMPLATE, [], None, end_node=True)
             self.nested_node(nested, sc.dialog_id, [end], [])
-            self.d.create_standard_dialog_node(
-                entry, ALFIRA_TEMPLATE, [nested], None, constructor=self.b.dialog_object.GREETING,
-                checkflags=self.groups(when), root=True)
-            out.append(entry)
+            # when_any — «или» как у Larian: по корню на каждый вариант, под ними один и тот же вложенный диалог
+            for i, extra in enumerate(ch.when_any or [[]]):
+                entry = self.uid(key if i == 0 else f"{key}.any{i}")
+                self.d.create_standard_dialog_node(
+                    entry, ALFIRA_TEMPLATE, [nested], None, constructor=self.b.dialog_object.GREETING,
+                    checkflags=self.groups(when + list(extra)), root=True)
+                out.append(entry)
         return out
 
     def nested_node(self, nid, nested, children, checkflags):
@@ -526,7 +530,7 @@ def check_vanilla(lib, scenes):
                 if roll:
                     stack.extend([roll.success, roll.failure])
         if s.chapter is not None:
-            for r in s.chapter.story + s.chapter.story_any + s.chapter.when:
+            for r in s.chapter.story + s.chapter.story_any + s.chapter.when + [x for w in s.chapter.when_any for x in w]:
                 if isinstance(r, FlagRef):
                     used.add(r.flag)
             if s.chapter.approval is not None:
@@ -673,6 +677,11 @@ def chapters_goal(chapters, ids) -> str:
         out += ["QRY", "QRY_ALFSV_Chapters_Waiting()", "AND", f"DB_GlobalFlag({fl(ch.available_flag)})", "AND",
                 f"NOT DB_GlobalFlag({fl(ch.done_flag)})", "THEN", "DB_NOOP(1);", ""]
     out += ["//END_REGION", ""]
+    if any(sc.chapter.optional and (sc.chapter.approval or 0) > 0 for sc in chapters):
+        out += ["//REGION Approval of any avatar (DB_ApprovalRating) for optional chapters with an entry threshold", "",
+                "QRY", "QRY_ALFSV_Chapters_Approval((INTEGER)_AtLeast)", "AND", "DB_Avatars(_Avatar)", "AND",
+                f"DB_ApprovalRating({ALFIRA_OSI_NAME}, _Avatar, _Value)", "AND", "_Value >= _AtLeast", "THEN",
+                "DB_NOOP(1);", "", "//END_REGION", ""]
     if acts:
         out += ["//REGION Acts (DB_CurrentLevel; levels per act - scripts/dialogs/dsl.py ACT_LEVELS)", ""]
         for a in acts:
@@ -705,7 +714,7 @@ def chapters_goal(chapters, ids) -> str:
                             f"DB_GlobalFlag({fl(ch.available_flag)})", "AND",
                             f"NOT DB_GlobalFlag({fl(ch.done_flag)})", "THEN",
                             f"PROC_GlobalClearFlagAndCache({fl(ch.available_flag)});", ""]
-    for sc in chapters:
+    for sc in sorted(chapters, key=lambda c: (-c.chapter.priority, c.chapter.number)):
         ch = sc.chapter
         required = [p.chapter for p in chapters if p.chapter.number < ch.number and not p.chapter.optional]
         when = "after a long rest" if ch.after_rest else "immediately"
@@ -714,6 +723,8 @@ def chapters_goal(chapters, ids) -> str:
             head += f", after chapter{'s' if len(required) > 1 else ''} {', '.join(str(p.number) for p in required)}"
         if ch.act is not None:
             head += f", only in act {ch.act}"
+        if ch.priority:
+            head += f", priority {ch.priority} (checked before the others)"
         out.append(head)
         c = ["PROC", "PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)", "AND", "DB_ALFSV_IsCompanion(1)",
              "AND", f"NOT DB_GlobalFlag({fl(ch.available_flag)})",
@@ -729,6 +740,9 @@ def chapters_goal(chapters, ids) -> str:
             c += ["AND", f"QRY_ALFSV_Chapter{ch.number:02d}_StoryAny()"]
         if ch.act is not None:
             c += ["AND", f"QRY_ALFSV_Chapters_InAct({ch.act})"]
+        if ch.optional and ch.approval is not None and ch.approval > 0:
+            # порог входа проверяется и при открытии: иначе необязательная глава ждала бы одобрения, держа очередь
+            c += ["AND", f"QRY_ALFSV_Chapters_Approval({ch.approval})"]
         out += c + ["THEN", f"PROC_GlobalSetFlagAndCache({fl(ch.available_flag)});", ""]
     out += ["//END_REGION", "EXITSECTION", "", "ENDEXITSECTION", ""]
     return "\n".join(out)

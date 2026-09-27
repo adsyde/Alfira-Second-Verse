@@ -50,6 +50,14 @@ class F:
     RefusedBardSong = Flag("CAMP_GoblinHuntCelebration_Event_RefusedBardSong", "Dialog", "d3939955-5d61-ad2d-d406-1ebc0753c139")
     # герой обещал Лакриссе выпить с ней (её «Heh. Lakrissa would approve» на празднике)
     LakrissaPromisedDrink = Flag("DEN_General_TieflingGuard10_PromisedDrink", "Dialog", "f8a1e851-679e-cf93-69ed-148230c22395")
+    # главы 6-7 (docs/research/act1-flags.md, задача B): первая встреча с адским и первый спуск / перевал
+    KarlachHasMet = Flag("ORI_Karlach_HasMet", "Global", "50a43cde-0702-4c2a-a490-e9ee5f061f45")
+    RaphaelHasMet = Flag("GLO_TheMonitor_HasMet_TheMonitor", "Global", "43aea040-f9d3-4f73-bdaa-b3512a3c92db")
+    RaphaelOfferedDeal = Flag("GLO_Monitor_State_FirstDealOffered", "Global", "ef829706-978e-4741-4610-bfb93006e886")
+    UnderdarkEntered = Flag("GLO_Underdark_EverEnteredBefore", "Global", "dd5cd5b4-2ad5-4dbd-4972-2afaa7538994")
+    GrymforgeEntered = Flag("GLO_DuergarCamp_EverEnteredBefore", "Global", "ac0bae57-7006-4676-88b8-7498dde79c41")
+    # уровень Горного перевала посещён: ставит движок (в goals SetFlag нет, диалоги игры его проверяют)
+    MountainPassVisited = Flag("VISITEDREGION_CRE_Main_A", "Global", "c22062f9-2a42-4e19-8c72-34a2d9ff9c0a")
 
 
 # Пороги одобрения для героя-спикера 1: Approval_AtLeast_N_For_Sp1 на спутнике
@@ -86,6 +94,7 @@ class T:
     REALLY_LOLTHDROWELF = Flag("REALLY_LOLTHDROWELF", "Tag", "c71eb8de-74e3-4d70-9826-22da7e2dc607")
     FIGHTER = Flag("FIGHTER", "Tag", "1ae7017c-4884-4a43-bc4a-742fa0d201c0")
     BARBARIAN = Flag("BARBARIAN", "Tag", "02913f9a-f696-40cf-acdf-32032afab32c")
+    PALADIN = Flag("PALADIN", "Tag", "6d85ab2d-5c23-498c-a61e-98f05a00177a")
 
 
 class DC:
