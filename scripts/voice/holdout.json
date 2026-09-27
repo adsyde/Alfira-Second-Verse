@@ -1,0 +1,10 @@
+{
+  "_note": "Отложенная выборка: 5 её реплик из игры с разными эмоциями. Не идут ни в референсы, ни в датасет дообучения (label_emotions.py). Модели озвучивают их текст по референсу той же эмоции — прямое сравнение с оригиналом (compare_models.py, same_text/). Текст берётся из metadata.csv, здесь только handle.",
+  "lines": [
+    {"id": "s01", "handle": "hc4c3ea33g4cbag4ec5g91b6gce583759feb7", "emotion": "laugh"},
+    {"id": "s02", "handle": "h1772a705gd427g4500g93b0g84a5067fca40", "emotion": "sad"},
+    {"id": "s03", "handle": "h22dc75e7g2c6bg4affg8e1fg676b65dd36c3", "emotion": "angry"},
+    {"id": "s04", "handle": "h2db2e75fgdb38g462bg88cag373f63d96cb0", "emotion": "excited"},
+    {"id": "s05", "handle": "h09f7a033g8dd7g495bg8b17gdff23f0b8822", "emotion": "fear"}
+  ]
+}

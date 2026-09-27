@@ -42,14 +42,148 @@ Fan Content Policy, §4.5 (31.07.2025), подробности в
 Этот же список пригодится, чтобы подбирать существующие реплики по смыслу:
 metadata.csv — это каталог всего, что Альфира уже говорит голосом.
 
-## Если выбран клон для личного использования
+## Клон для личной сборки: этап 8, акт 1
 
-1. `.wem → .wav`: vgmstream-cli (`vgmstream_path` в `config/tools.local.json`).
-2. Отобрать 15–30 минут ровной речи без пения и криков, плюс эмоциональные референсы.
-3. GPT-SoVITS (дообучение) или F5-TTS / XTTS-v2 + RVC.
-4. 3–5 вариантов на реплику, лучший — на слух.
-5. `.wav → .wem` (Wwise, Vorbis). VoiceMeta для новых handle, липсинк с
-   FaceFX-актёра Альфиры (руководство: https://wiki.bg3.community/Tutorials/new-voice-lines).
+Статус на 2026-09-27: **референсы и слепое сравнение моделей готовы; модель выбирает автор на слух.**
+Дообучение и генерация всех реплик — после выбора. В игру ничего не ставилось.
 
-Видеокарта с мая даёт сбросы драйвера (`nvlddmkm` 153). Обучение нагружает её
-сильно, поэтому нужно ограничить power limit или обучать в облаке.
+Всё аудио, модели, venv и кэши лежат в `voice-work/` (в git не попадает). В git — только
+скрипты `scripts/voice/`, идентификаторы (handle) и эта документация.
+
+### Порядок
+
+```text
+python scripts/voice/extract_voice.py          # .wem → .wav, metadata.csv (548 реплик, 47,4 мин)
+python scripts/voice/label_emotions.py         # labels.csv, refs/<эмоция>/, dataset/finetune/
+python scripts/voice/compare_models.py prepare # задания для сравнения
+python scripts/voice/compare_models.py stress chatterbox --minutes 7   # стабильность GPU
+python scripts/voice/compare_models.py run chatterbox breeze indextts voxcpm
+python scripts/voice/compare_models.py score   # метрики (venv _metrics)
+python scripts/voice/compare_models.py publish # compare/lineNN/, same_text/, LISTEN.md
+python scripts/voice/game_voice.py --handle <h> --wav <48 кГц wav>   # прототип файлов для пака
+```
+
+Инструменты вне репозитория: vgmstream r2117 (`C:\Tools\vgmstream`, официальный релиз
+github.com/vgmstream/vgmstream), uv 0.12.19 (`voice-work/tools/uv`, релиз astral-sh/uv).
+Окружение моделей — `voice-work/env.sh`: кэши uv, pip, HuggingFace, torch и сам Python 3.11
+лежат в `voice-work/`, в систему ничего не ставится.
+
+### Разметка по эмоциям (`label_emotions.py`)
+
+Для каждого handle скрипт находит узел диалога игры, где его говорит Альфира, и берёт:
+- ремарки из editorData узла, по точности: `VOContext` (прямая ремарка актрисе, 63 реплики),
+  `NodeContext` (258), `CinematicNodeContext`; поле `Emotion` узла (Sadness, Coyness…);
+- эмоции её лица в таймлайне на этой реплике: `TLEmotionEvent` её актёра в окне её `TLVoice`
+  (через bg3moddinglib, как `staging.voice_window`). Лицо — слабый признак: Larian ставит `fear`
+  и на радостное «Really? Oh, this is wonderful!». В референсы идут только реплики с ремаркой;
+- звук: пик, клиппинг, тишина по краям, уровень пауз между словами. Её записи студийные: паузы —
+  цифровая тишина, музыки под голосом нет. Замечание «паузы громче −55 дБ» у 42 реплик —
+  дыхание и хвосты (в том числе обработка «Разговора с мёртвыми»); они не берутся в референсы.
+
+Исключены из референсов и датасета: пение 25 и пение с речью 3 (по тексту «Плача рассвета» и
+по `DEN_TieflingBard_AD_FullSong`; декламация на празднике — речь, canon §8), «Разговор с
+мёртвыми» 7, рыдание 1, короткие выкрики 58 (речь < 1,6 с или ≤ 2 слов), повторы текста 15,
+отложенная выборка 5 (`holdout.json`, ниже).
+
+Категории (всего / без исключений): грусть 143/124, воодушевление 66/58, страх 61/53,
+злость 54/41, нейтраль 37/29, благодарность и тепло 33/30, навеселе на празднике 33/28,
+удивление 29/25, подначка 19/19, сквозь слёзы 13/10, смех 10/9, флирт и нежность 9/9,
+смущение 7/5, усталость 5/5, шёпот 1/1. **Похмелья в её банке нет**, ремарок «пьяная» тоже:
+«навеселе» — весёлые реплики праздника (она пробует вино). Для похмелья в сравнении взят
+референс «усталость».
+
+`voice-work/refs/<категория>/` — до 8 лучших фрагментов 3–12 с на категорию (края тишины
+подрезаны, текст в `.txt`, сводка в `index.csv`). `voice-work/dataset/finetune/` — ровная речь для
+дообучения: 377 реплик, 33,4 мин, 48 кГц, без пения, выкриков, шёпота, смеха, слёз и «навеселе»;
+списки `metadata.csv` (file|text), `gptsovits.list`, `train.jsonl` (формат VoxCPM/Qwen3-TTS:
+audio, text, duration).
+
+### Кандидаты (проверено по репозиториям и карточкам моделей 2026-09-27)
+
+| Модель | Версия | Лицензия | Эмоции | Дообучение | Windows |
+|---|---|---|---|---|---|
+| IndexTTS-2.5 (bilibili) | тег v2.5.0, 2026-08-10 | bilibili Model Use License: некоммерческое — можно | отдельный эмоциональный референс, `emo_alpha`, вектор 8 эмоций, эмоция из текста | официального нет | официально, uv; без DeepSpeed |
+| Breeze TTS 2 (BreezeBlue) | код 008f769, веса 2026-09-09 | код Apache-2.0; веса и результаты — только исследования и некоммерческое | «Voice Direction»: референс + свободная инструкция («flirty, embarrassed»), `(laugh)` `(sigh)` в тексте | официального нет | официально Linux; у нас работает нативно (eager, медленно) |
+| VoxCPM2 (OpenBMB) | 2.0.3 | Apache-2.0 | стиль в скобках в начале текста, «ultimate cloning» по референсу с текстом | **официально**: LoRA и полное SFT, JSONL | pip; без triton |
+| Chatterbox (Resemble AI) | 0.1.7 | MIT | референс + ручки `exaggeration` / `cfg_weight` | только сторонние скрипты | pip; нужен `setuptools<81` (perth) |
+
+Отсеяны: Fish S2 Pro (24 ГБ, Linux, S1-mini закрыт логином), Higgs TTS 3 и Step-Audio-EditX (только
+серверы vLLM/SGLang под Linux), Voxtral (управление голосом только в облаке Mistral), Qwen3-TTS
+(у клона нет instruct; запасной вариант, если нужно дообучение), CosyVoice 3 (инструкции
+по-китайски), GPT-SoVITS (последний релиз 2025-06, эмоция только референсом). Breeze, VoxCPM
+и Higgs в лицензиях запрещают клонирование голоса без согласия: у автора есть согласие актрисы,
+сборка личная.
+
+Каждая модель — в своём venv под `voice-work/models/<имя>/`, обёртка — `scripts/voice/tts/run_<имя>.py`.
+
+### Слепое сравнение (`compare_models.py`)
+
+- 10 новых реплик ✍️ с разными эмоциями (`compare_lines.json`): смех, смущение, грусть,
+  обида, флирт, тихо, навеселе, похмелье, страх, воодушевление;
+- «тот же текст»: 5 её реплик из игры (`holdout.json`), которых нет ни в референсах, ни в
+  датасете. Модели озвучивают их текст по референсу той же эмоции, рядом — оригинал;
+- все модели получают один и тот же референс эмоции; 3 варианта на реплику и модель
+  (у каждой свои настройки, см. обёртки), в сравнение идёт лучший по метрикам;
+- выход: `voice-work/compare/lineNN/lineNN_A..D.wav` + `lineNN_ORIG_ref.wav`,
+  `voice-work/compare/same_text/sNN_ORIG.wav` + `sNN_A..D.wav`, лист `LISTEN.md`; буквы
+  перемешаны для каждой реплики, громкость и частота выровнены. Ключ и метрики —
+  `voice-work/compare/_key/` (раскрывают модели, автору до выбора не показывать).
+
+### Конвейер в игру (исследование и прототип; в игре не проверено)
+
+По данным игры (Patch 8 Hotfix 9) у озвученной реплики её голоса пять частей:
+
+| Что | Где в игре | Что делаем мы |
+|---|---|---|
+| звук | `Localization/Voice.pak → Mods/Gustav/Localization/English/Soundbanks/v<id>_<handle>.wem`, Wwise Vorbis 48 кГц моно | `.wem` Wwise **PCM** (fmt 0xFFFE) — пишется без Wwise |
+| VoiceMeta | `VoiceMeta.pak → …/Soundbanks/4a405fba30004c6397e5a8001ebb883c.lsf`: `VoiceSpeakerMetaData` (MapKey — её uuid) → `VoiceTextMetaData` (MapKey — handle) → `Codec`, `Length`, `Priority`, `Source` | свой банк с тем же именем в папке мода, только новые handle, `Codec=PCM` |
+| липсинк | `English_Animations.pak → …/English/Animation/FX_v<id>_<handle>.ffxanim` (FaceFX) | заимствуется её `.ffxanim` реплики близкой длины |
+| жесты | там же `MC_v<id>_<handle>.gr2` (мокап; у 7 её реплик нет — необязателен) | заимствуется там же |
+| актёр FaceFX | `…/Animation/FaceFXActors/4a405fba-3000-4c63-97e5-a8001ebb883c.ffxactor/.ffxbones` | копия её файлов в папку мода |
+
+`Length` в VoiceMeta = число сэмплов / 48000 (совпало у всех 545 её `.wem`). `TLVoice` в таймлайне
+на файл не ссылается: узел диалога → handle → VoiceMeta.
+
+Что мешает:
+- **Wwise Vorbis без Wwise не сделать**: открытого кодировщика нет (ww2ogg и vgmstream только
+  читают). Wwise скачивается через Audiokinetic Launcher, для него нужен аккаунт — не создаём.
+  Обход — Wwise PCM: vgmstream читает наш `.wem` как «Audiokinetic Wwise RIFF, 16-bit PCM»,
+  кодек `PCM` есть в списке кодеков `bg3_dx11.exe`. Примет ли его игра — **первая проверка в игре**.
+  Файлы в 6 раз больше Vorbis (~94 КБ на секунду).
+- **Липсинк**: `.ffxanim` — скомпилированные данные FaceFX (магия `__ffx`), открытых
+  инструментов нет, сам FaceFX платный. Варианты: (а) заимствованный её `.ffxanim` — рот
+  двигается, но не по словам (прототип так делает); (б) по руководству сообщества — Rhubarb Lip Sync
+  + Blender + ригги BG3, экспорт GR2 через LSLib, в таймлайн `TLAdditiveAnimation` слот 1;
+  (в) без липсинка рот не двигается.
+- Голос звучит только в английской озвучке (русский текст — субтитрами, как у реплик игры).
+
+Прототип: `scripts/voice/game_voice.py` собирает для одного handle в `voice-work/pipeline/proto/`
+`.wem` + VoiceMeta (.lsx/.lsf через Divine) + заимствованные FX_/MC_ + FaceFXActors.
+Для VoiceMeta в генераторе можно взять `soundbank_object` из bg3moddinglib (MIT; там Codec
+жёстко VORBIS — поле нужно менять).
+
+### Две сборки: план флага
+
+```text
+python scripts/build_pak.py                   # публичная: как сейчас, реплики ✍️ — текстом
+python scripts/build_pak.py --voice clone     # личная: + голос клона из voice-work/game/
+```
+
+- Выбранные дубли лежат в `voice-work/game/<handle>.wav` (48 кГц моно) и `voice-work/game/voice.json`
+  (handle → файл, длина, модель). В `mod/` (git) клон не попадает никогда.
+- `--voice clone`: генератор (`scripts/dialogs/build.py`) заполняет `Stager.voice_durations[uuid узла]`
+  длинами дублей из `voice.json`; `Stager.phase_duration()` тогда даёт фазу «длина звука + TAIL 0,6 с»
+  вместо длины по тексту (`text_duration`), `TLVoice` — на длину звука; `build_pak` после копирования `mod/` кладёт в `build/pak/Mods/<папка>/Localization/English/`
+  файлы из `game_voice.py`: `.wem`, банк VoiceMeta, FX_/MC_, FaceFXActors.
+- Имя пака личной сборки — `AlfiraSecondVerse_personal.pak`, `dist/` для публикации её не содержит;
+  `install.py` ставит любую из двух.
+- Для AD-реплик (над головой) — приоритет `P4_RepeatingDialog_AD`, для сюжетных — `P1_StoryDialog`.
+- Первая проверка в игре — одна реплика (прототип), потом все.
+
+### Видеокарта
+
+RTX 4080 SUPER 16 ГБ, драйвер 617.14 (с 27.09; до этого 616.92). Сбросы `nvlddmkm` 153 в журнале
+System: 38 за май–сентябрь (3.05 — 3, 6.06 — 3, 15.08 и 22.08 — по 1, 6–10.09 — 21, 21.09 — 9),
+после установки 617.14 — ни одного. Проверка 27.09: 7 минут генерации Chatterbox — без сбросов,
+до 168 Вт и 59 °C. Power limit 320 Вт (допустимо 150–320) меняет только администратор:
+`nvidia-smi -pl 250` перед дообучением.
