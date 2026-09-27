@@ -99,7 +99,7 @@
       }
     },
     "h67494125g6522g5f52g944ag0dac08dbcc5d": {
-      "why": "глава 6, ответ на «мой отец был в Элтуриэле» (Уилл): тихо узнаёт имя, вспоминает, давит горе; медленно, низко, пауза между словами; Ravengard — [ˈreɪvənɡɑːrd]",
+      "why": "глава 6, ответ на «мой отец был в Элтуриэле» (Уилл): тихо узнаёт имя, вспоминает, давит горе; медленно, низко, пауза между словами; Ravengard — [ˈreɪvənɡɑːrd]; вторая переделка (all_v10): r4–r6",
       "emotion": "sad",
       "ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
       "breeze": {
@@ -119,6 +119,26 @@
           "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
           "cfg": 3.0,
           "seed": 4107
+        },
+        "4": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued, low voice, long pause between the words",
+          "cfg": 5.0,
+          "seed": 4201
+        },
+        "5": {
+          "text": "The Duke... ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 3.0,
+          "seed": 4202,
+          "ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav"
+        },
+        "6": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued, almost a whisper",
+          "cfg": 4.0,
+          "seed": 4203,
+          "ref": "refs/sad/hdee1259ega676g4a38gbc44g8cbe0861cbe3.wav"
         }
       },
       "indextts": {
@@ -146,6 +166,34 @@
           "emo_ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav",
           "emo_alpha": 1.0,
           "seed": 1107
+        },
+        "4": {
+          "text": "The Duke. ... Ravengard.",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.6,
+          "seed": 1201
+        },
+        "5": {
+          "text": "The Duke... ... Ravengard.",
+          "emo_vector": [
+            0,
+            0,
+            0.2,
+            0,
+            0,
+            0.7,
+            0,
+            0.3
+          ],
+          "emo_alpha": 0.8,
+          "seed": 1202
+        },
+        "6": {
+          "text": "The Duke. ... Ravengard.",
+          "ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.9,
+          "seed": 1203
         }
       }
     }
