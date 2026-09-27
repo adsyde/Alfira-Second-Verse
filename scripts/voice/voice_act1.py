@@ -83,6 +83,28 @@ VIVID = {"laugh", "drunk", "excited", "flirty", "teasing", "embarrassed", "tearf
 VIVID_SIM_GAP = 0.03   # ★ на IndexTTS, если его похожесть ниже лучшей Breeze не больше чем на столько
 
 
+EVEN = "_even"   # «ровный набор»: все реплики похмелья с одним образцом, одной инструкцией и одними seed
+EVEN_EMOTION = "hungover"
+EVEN_SEEDS = (4301, 4302)
+HANGOVER_BLOCK = "Похмелье"   # блок наверху страницы: все реплики похмелья подряд, выбор синхронизирован с главой
+SPECIAL = {REDO: "r", EVEN: "e"}
+
+
+def even_spec():
+    """Для каждой реплики похмелья — 2 варианта Breeze: образец «усталость», инструкция похмелья, общие seed."""
+    import list_lines
+    vw = act1_paths()[0]
+    lines = [x for x in load_lines() if x["emotion"] == EVEN_EMOTION]
+    if not lines:
+        return {}
+    ref = Path(cm.pick_ref(vw, lines[0]["ref_emotion"])["ref_wav"]).relative_to(vw).as_posix()
+    instr = list_lines.STYLE[EVEN_EMOTION][0]
+    return {x["id"]: {"why": "ровный набор: один образец, одна инструкция, одни seed на все реплики похмелья",
+                      "emotion": EVEN_EMOTION, "ref": ref, "indextts": {},
+                      "breeze": {str(i + 1): {"instruct": instr, "cfg": 4.0, "seed": sd} for i, sd in enumerate(EVEN_SEEDS)}}
+            for x in lines}
+
+
 def redo_spec():
     p = HERE / "redo_act1.json"
     return json.loads(p.read_text(encoding="utf-8"))["lines"] if p.exists() else {}
@@ -93,10 +115,13 @@ def all_lines():
     lines = load_lines()
     by = {x["id"]: x for x in lines}
     out = []
-    for h, spec in redo_spec().items():
-        if h in by:
-            out.append({**by[h], "group": REDO, "group_title": "Переделка", "emotion": spec.get("emotion", by[h]["emotion"]),
-                        "ref_emotion": spec.get("emotion", by[h]["ref_emotion"]), "why": spec["why"], "redo": spec})
+    for group, title, spec_all in ((REDO, "Переделка", redo_spec()), (EVEN, "Похмелье: ровный набор", even_spec())):
+        for h, spec in spec_all.items():
+            if h in by:
+                emo = spec.get("emotion", by[h]["emotion"])
+                out.append({**by[h], "group": group, "group_title": title, "emotion": emo,
+                            "ref_emotion": by[h]["ref_emotion"] if group == EVEN else emo, "why": spec["why"],
+                            "redo": spec, "tag": SPECIAL[group]})
     return out + lines
 
 
@@ -106,20 +131,20 @@ def groups_order(lines):
 
 def model_variants(model, ln):
     if ln.get("redo"):
-        return sorted(int(k) for k in ln["redo"][model])
+        return sorted(int(k) for k in ln["redo"].get(model, {}))
     if model == "breeze":
         return [1, 2]
     return [1, 2, 3] if ln["index_variants"] == 3 else [1, 3]
 
 
 def vtag(ln):
-    return "r" if ln.get("redo") else "v"
+    return ln.get("tag") or ("r" if ln.get("redo") else "v")
 
 
 def redo_custom(vw, model, spec):
     """Параметры вариантов переделки для обёртки модели: пути образцов — абсолютные, текст с экранированием."""
     out = {}
-    for k, c in spec[model].items():
+    for k, c in spec.get(model, {}).items():
         c = dict(c)
         if "ref" in c:
             ref = vw / c.pop("ref")
@@ -294,19 +319,33 @@ main{max-width:980px;margin:0 auto;padding:8px 16px 80px}h2{margin:28px 0 8px;fo
 .how{font-size:14px;margin-top:2px}
 .warn{color:var(--bad);font-size:13px}.ref{font-size:13px;color:var(--mute)}.ref audio{height:28px;vertical-align:middle;width:260px;max-width:60%}
 textarea{width:100%;height:160px}#out{display:none;margin-top:8px}
+.mline{background:var(--card);border:2px solid var(--accent);border-radius:10px;padding:12px 14px;margin:10px 0}
+.cur{font-size:16px;margin:8px 0;padding:8px;background:var(--pick);border-radius:8px}.cur audio{width:100%;height:40px;margin-top:4px}
+.mline.playing{box-shadow:0 0 0 3px var(--accent)}
 @media (max-width:600px){.opt{grid-template-columns:22px 1fr}.opt audio{grid-column:1/-1}}
 """
 
 JS = """
 const KEY='alfira-voice-act1';
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
-function save(){try{const s={};document.querySelectorAll('input[type=radio]:checked').forEach(r=>{if(!r.defaultChecked)s[r.name]=r.value});localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
-function restore(){const s=load();for(const [n,v] of Object.entries(s)){const r=document.querySelector(`input[name="${n}"][value="${v}"]`);if(r)r.checked=true}}
+function save(){try{const s={};document.querySelectorAll('.line input[type=radio]:checked').forEach(r=>{if(!r.defaultChecked)s[r.name]=r.value});localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+function restore(){const s=load();for(const [n,v] of Object.entries(s)){const r=document.querySelector(`.line input[name="${CSS.escape(n)}"][value="${CSS.escape(v)}"]`);if(r)r.checked=true}syncAll()}
+function pick(name,val){const r=document.querySelector(`input[name="${CSS.escape(name)}"][value="${CSS.escape(val)}"]`);if(r)r.checked=true}
+function curOf(m){const r=m.querySelector('input[type=radio]:checked');const cur=m.querySelector('.cur audio'),nm=m.querySelector('.curname');
+ const a=r?r.closest('.opt').querySelector('audio'):null;if(a){if(cur.getAttribute('src')!==a.getAttribute('src'))cur.setAttribute('src',a.getAttribute('src'))}else{cur.removeAttribute('src')}
+ nm.textContent=r?r.nextElementSibling.firstChild.textContent:'—'}
+function syncAll(){document.querySelectorAll('.mline').forEach(m=>{const h=m.dataset.handle;const r=document.querySelector(`.line input[name="${CSS.escape(h)}"]:checked`);if(r)pick('m:'+h,r.value);curOf(m)})}
+document.addEventListener('change',e=>{const r=e.target;if(r.type!=='radio')return;if(r.name.startsWith('m:')){pick(r.name.slice(2),r.value)}else{pick('m:'+r.name,r.value)}
+ document.querySelectorAll('.mline').forEach(curOf)});
+let queue=[];function stopAll(){queue=[];document.querySelectorAll('audio').forEach(a=>a.pause());document.querySelectorAll('.mline').forEach(m=>m.classList.remove('playing'))}
+function playNext(){document.querySelectorAll('.mline').forEach(m=>m.classList.remove('playing'));const m=queue.shift();if(!m)return;const a=m.querySelector('.cur audio');
+ if(!a.getAttribute('src')){playNext();return}m.classList.add('playing');m.scrollIntoView({block:'center',behavior:'smooth'});a.currentTime=0;a.onended=()=>{a.onended=null;setTimeout(playNext,400)};a.play()}
+function playAll(){stopAll();queue=[...document.querySelectorAll('.mline')];playNext()}
 function result(){const out=[];document.querySelectorAll('.line').forEach(d=>{const r=d.querySelector('input[type=radio]:checked');out.push(d.dataset.handle+'='+(r?r.value:'?'))});return out.join('\\n')}
 async function copyChoice(){const t=result();const ta=document.getElementById('out');ta.value=t;ta.style.display='block';
  try{await navigator.clipboard.writeText(t);flash('Скопировано: '+t.split('\\n').length+' строк')}catch(e){ta.select();document.execCommand('copy');flash('Скопировано (выделено ниже)')}}
 function flash(m){const f=document.getElementById('msg');f.textContent=m;setTimeout(()=>f.textContent='',4000)}
-function resetAll(){try{localStorage.removeItem(KEY)}catch(e){}document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=r.defaultChecked)}
+function resetAll(){try{localStorage.removeItem(KEY)}catch(e){}document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=r.defaultChecked);syncAll()}
 document.addEventListener('change',save);document.addEventListener('play',e=>{document.querySelectorAll('audio').forEach(a=>{if(a!==e.target)a.pause()})},true);
 restore();
 """
@@ -352,12 +391,27 @@ def accepted_redo(vw, act):
     return out
 
 
+def special_cands(gen, group, h):
+    """Варианты реплики h из особой группы (переделка, ровный набор) — с пометками для страницы."""
+    p = gen / group / "score.json"
+    if not p.exists():
+        return []
+    return [{**c, "_tag": SPECIAL[group], "_special": group}
+            for c in json.loads(p.read_text(encoding="utf-8")).get(h, {}).get("cands", [])]
+
+
 def ln_group(lines, h):
     return orig_line(lines, h)["group"]
 
 
 def orig_line(lines, h):
     return next(x for x in lines if x["id"] == h and not x.get("redo"))
+
+
+def current_choice(vw, h):
+    meta_p = vw / GAME_DIR_NAME / "voice.json"
+    m = json.loads(meta_p.read_text(encoding="utf-8")).get(h) if meta_p.exists() else None
+    return f"{m['model']}_{m['variant'] if isinstance(m['variant'], str) else 'v' + str(m['variant'])}" if m else ""
 
 
 def redo_how(model, k, ln):
@@ -377,6 +431,20 @@ def redo_how(model, k, ln):
     return "; ".join(parts)
 
 
+def render_opts(h, opts, mirror=False):
+    """Радиокнопки вариантов. Зеркало (блок «Похмелье») — свои name/id с префиксом m:, выбор синхронизирует JS."""
+    name = f"m:{h}" if mirror else h
+    idp = f"m_{h}" if mirror else h
+    out = []
+    for val, chk, label, sub, src, how, warn in opts:
+        audio = f'<audio controls preload="none" src="{src}"></audio>' if src else ""
+        howd = f'<div class="how">{html.escape(how)}</div>' if how else ""
+        out.append(f'<div class="opt"><input type="radio" name="{name}" id="{idp}_{val}" value="{val}"{chk}>'
+                   f'<label for="{idp}_{val}">{html.escape(label)}{"<br><small>" + sub + "</small>" if sub else ""}</label>'
+                   f'<div>{audio}{howd}{warn}</div></div>')
+    return "".join(out)
+
+
 def cmd_page(_args):
     vw, models, act, gen = act1_paths()
     lines = all_lines()
@@ -391,7 +459,9 @@ def cmd_page(_args):
     refdir.mkdir(exist_ok=True)
     ref_rel = {}
     total = 0
-    chapters = [x for x in order if x != REDO]
+    chapters = [x for x in order if x not in SPECIAL]
+    ready = [x for x in ready if x != EVEN]      # ровный набор — не группа, а варианты в карточках похмелья
+    mirror = []                                  # (ln, s, folder) для блока «Похмелье»
     # переделка, которую автор уже принял (в voice.json выбран вариант rK): её карточка — снова в своей главе,
     # принятый вариант — в ней и выбран; «Переделка» на странице — только непринятые
     accepted = accepted_redo(vw, act)
@@ -424,6 +494,11 @@ def cmd_page(_args):
                     if f"{c['model']}_r{c['k']}" == val:
                         s = {**s, "cands": s["cands"] + [{**c, "_tag": "r", "reject": [], "_accepted": True}]}
                 s["default"] = val
+            if g != REDO and ln["emotion"] == EVEN_EMOTION:
+                s = {**s, "cands": s["cands"] + special_cands(gen, EVEN, ln["id"])}
+                picked = current_choice(vw, ln["id"])
+                if picked and any(f"{c['model']}_{c['_tag']}{c['k']}" == picked for c in s["cands"]):
+                    s["default"] = picked      # в блоке и в главе сначала стоит то, что автор уже выбрал
             if g == REDO:
                 orig = (gen / ln_group(lines, ln["id"]) / "score.json")
                 if orig.exists():
@@ -445,7 +520,7 @@ def cmd_page(_args):
                      else [c for c in s["cands"] if not (c.get("_old") and c["reject"])])
             dropped = [c for c in s["cands"] if c["reject"] and c not in shown]
             opts = []
-            for c in sorted(shown, key=lambda c: (bool(c.get("_old")), c["model"], c["k"])):
+            for c in sorted(shown, key=lambda c: (bool(c.get("_old")), c.get("_special") == EVEN, c["model"], c["k"])):
                 val = f"{c['model']}_{c['_tag']}{c['k']}"
                 name = f"{short}_{val}.wav"
                 norm.append([c["wav"], str(PAGE_DIR / folder / name)])
@@ -453,20 +528,21 @@ def cmd_page(_args):
                 warn = f'<div class="warn">{html.escape("; ".join(c["reject"]))}</div>' if c["reject"] else ""
                 star = " ★" if val == s["default"] else ""
                 how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
-                if c.get("_accepted"):
+                if c.get("_special") == EVEN:
+                    how = "ровный набор: " + redo_how(c["model"], c["k"], {**ln, "redo": even_spec()[ln["id"]]})
+                elif c.get("_accepted"):
                     how = "из переделки: " + redo_how(c["model"], c["k"], {**ln, "redo": redo_spec()[ln["id"]]})
                 elif ln.get("redo") and not c.get("_old"):
                     how = redo_how(c["model"], c["k"], ln)
                 elif c.get("_old"):
                     how = "прежний вариант: " + variant_how(c["model"], c["k"], {**ln, **orig_line(lines, ln["id"])},
                                                               ref_rel[emo][2])
-                opts.append(f'<div class="opt"><input type="radio" name="{ln["id"]}" id="{ln["id"]}_{val}" value="{val}"{chk}>'
-                            f'<label for="{ln["id"]}_{val}">{TITLE[c["model"]]} v{c["k"]}{star}<br>'
-                            f'<small>похожесть {c["sim"]:.3f}, {c["dur"]:.1f} с</small></label>'
-                            f'<div><audio controls preload="none" src="{rel(folder + "/" + name)}"></audio>'
-                            f'<div class="how">{html.escape(how)}</div>{warn}</div></div>')
-            opts.append(f'<div class="opt"><input type="radio" name="{ln["id"]}" id="{ln["id"]}_redo" value="переделать">'
-                        f'<label for="{ln["id"]}_redo">переделать</label><div></div></div>')
+                label = f"{TITLE[c['model']]} {c['_tag'] if c['_tag'] != 'v' else 'v'}{c['k']}"
+                if c.get("_special") == EVEN:
+                    label = f"{TITLE[c['model']]} ровный {c['k']}"
+                opts.append((val, chk, label + star, f"похожесть {c['sim']:.3f}, {c['dur']:.1f} с",
+                             rel(folder + "/" + name), how, warn))
+            opts.append(("переделать", "", "переделать", "", "", "", ""))
             extra = f' · ещё {len(ln["handles"]) - 1} handle с тем же текстом' if len(ln["handles"]) > 1 else ""
             drop = (f'<div class="warn">отброшено {len(dropped)}: ' + html.escape("; ".join(
                 f'{TITLE[c["model"]]} v{c["k"]} — {c["reject"][0]}' for c in dropped)) + "</div>") if dropped else ""
@@ -478,21 +554,34 @@ def cmd_page(_args):
             remark = " · ".join(x for x in [f"ремарка: {ln['note']}" if ln["note"] else "ремарки нет",
                                             f"лицо: {ln['emo']}", f"эмоция {basis}"] if x)
             refemo = EMO_RU.get(emo, emo)
-            body.append(
-                f'<div class="line" data-handle="{ln["id"]}">'
-                f'<div class="en"><span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
-                f'{html.escape(ln["text"])}</div>'
-                f'<div class="remark">{html.escape(remark)}</div>'
-                f'<div class="ru">{html.escape(re.sub(r"<[^>]+>", "", ln["ru"]))}</div>'
-                f'<div class="ref">её образец «{html.escape(refemo)}» ({rn}): <audio controls preload="none" src="{rel(rp)}"></audio> '
-                f'«{html.escape(rt[:90])}»</div>'
-                f'{allrej}{"".join(opts)}{drop}<div class="hid">{ln["id"]}{extra}</div></div>')
+            head = (f'<div class="en"><span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
+                    f'{html.escape(ln["text"])}</div>'
+                    f'<div class="remark">{html.escape(remark)}</div>'
+                    f'<div class="ru">{html.escape(re.sub(r"<[^>]+>", "", ln["ru"]))}</div>'
+                    f'<div class="ref">её образец «{html.escape(refemo)}» ({rn}): <audio controls preload="none" src="{rel(rp)}"></audio> '
+                    f'«{html.escape(rt[:90])}»</div>')
+            body.append(f'<div class="line" data-handle="{ln["id"]}">{head}{allrej}{render_opts(ln["id"], opts)}{drop}'
+                        f'<div class="hid">{ln["id"]}{extra}</div></div>')
+            if g != REDO and ln["emotion"] == EVEN_EMOTION:
+                mirror.append((ln, head, opts))
+    if mirror:
+        cards = []
+        for ln, head, opts in mirror:
+            cards.append(f'<div class="mline" data-handle="{ln["id"]}">{head}'
+                         f'<div class="cur"><b>сейчас выбран:</b> <span class="curname"></span><audio controls preload="none"></audio></div>'
+                         f'{render_opts(ln["id"], opts, mirror=True)}</div>')
+        body.insert(0, f'<h2 id="hang">{HANGOVER_BLOCK}: все реплики подряд, в порядке сцены</h2>'
+                       f'<p class="meta">Выбор здесь и в карточке главы 5 — один и тот же (синхронизирован). «Ровный» — '
+                       f'новые варианты Breeze: у всех реплик один образец, одна инструкция и одинаковые seed.</p>'
+                       f'<button onclick="playAll()">Играть все по порядку</button> <button class="ghost" onclick="stopAll()">Стоп</button>'
+                       + "".join(cards))
+        nav.insert(0, f'<a href="#hang">{HANGOVER_BLOCK}</a>')
     nj = act / "page_normalize.json"
     todo = [p for p in norm if not Path(p[1]).exists() or Path(p[1]).stat().st_mtime < Path(p[0]).stat().st_mtime]
     nj.write_text(json.dumps(todo, ensure_ascii=False), encoding="utf-8")
     if todo:
         subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "normalize.py"), str(nj)], env=cm.model_env(vw), check=True)
-    pending = [titles[g] for g in order if g not in ready and g != REDO]
+    pending = [titles[g] for g in order if g not in ready and g not in SPECIAL]
     note = (f"<p class='meta'>Ещё генерируются: {html.escape(', '.join(pending))}. Страница обновится.</p>" if pending else "")
     page = f"""<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Голос Альфиры, акт 1</title><style>{CSS}</style></head><body>
@@ -535,8 +624,9 @@ def cmd_pick(args):
             if v == "переделать":
                 redo.add(h)
                 continue
-            m = re.fullmatch(r"(breeze|indextts)_([vr])(\d)", v)
-            folder = REDO if m and m.group(2) == "r" else ln["group"]      # r — вариант из «Переделки»
+            m = re.fullmatch(r"(breeze|indextts)_([vre])(\d)", v)
+            # r — вариант из «Переделки», e — из «ровного набора»
+            folder = {"r": REDO, "e": EVEN}.get(m.group(2), ln["group"]) if m else ln["group"]
             src = gen / folder / m.group(1) / f"line{h}_v{m.group(3)}.wav" if m else None
             if not src or not wav_ok(src):
                 bad.append(f"{h}={v}: нет файла")
@@ -564,7 +654,7 @@ def cmd_pick(args):
 
 def cmd_all(args):
     lines = load_lines()
-    for g in [x for x in groups_order(lines) if x != REDO]:
+    for g in [x for x in groups_order(lines) if x not in SPECIAL]:
         if args.skip_done and (act1_paths()[3] / g / "score.json").exists():
             continue
         cmd_gen(argparse.Namespace(groups=[g], models=list(MODELS)))
