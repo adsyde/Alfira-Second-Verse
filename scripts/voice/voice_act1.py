@@ -336,6 +336,22 @@ def variant_how(model, k, ln, ref_name):
     return f"{src}; тембр и эмоция из образца, без отдельной эмоции"
 
 
+def accepted_redo(vw, act):
+    """handle → принятый вариант переделки (rK) по voice-work/game/voice.json, если он не снова в redo.txt."""
+    meta_p = vw / GAME_DIR_NAME / "voice.json"
+    if not meta_p.exists():
+        return {}
+    meta = json.loads(meta_p.read_text(encoding="utf-8"))
+    redo_p = act / "redo.txt"
+    again = set(redo_p.read_text(encoding="utf-8").split()) if redo_p.exists() else set()
+    out = {}
+    for h in redo_spec():
+        m = meta.get(h)
+        if m and str(m.get("variant", "")).startswith("r") and h not in again:
+            out[h] = f"{m['model']}_{m['variant']}"
+    return out
+
+
 def ln_group(lines, h):
     return orig_line(lines, h)["group"]
 
@@ -376,7 +392,12 @@ def cmd_page(_args):
     ref_rel = {}
     total = 0
     chapters = [x for x in order if x != REDO]
-    redo_ids = set(redo_spec()) if REDO in ready else set()
+    # переделка, которую автор уже принял (в voice.json выбран вариант rK): её карточка — снова в своей главе,
+    # принятый вариант — в ней и выбран; «Переделка» на странице — только непринятые
+    accepted = accepted_redo(vw, act)
+    redo_ids = (set(redo_spec()) - set(accepted)) if REDO in ready else set()
+    if REDO in ready and not redo_ids:
+        ready = [x for x in ready if x != REDO]
     for gi, g in enumerate(ready, 1):
         score = json.loads((gen / g / "score.json").read_text(encoding="utf-8"))
         num = 0 if g == REDO else chapters.index(g) + 1
@@ -391,9 +412,18 @@ def cmd_page(_args):
                 continue
             if g != REDO and ln["id"] in redo_ids:
                 continue                      # её карточка — в «Переделке»
+            if g == REDO and ln["id"] in accepted:
+                continue
             for c in s["cands"]:
                 c["_tag"] = vtag(ln)
             s["default"] = default_pick(s["cands"], ln["emotion"], vtag(ln))
+            if g != REDO and ln["id"] in accepted:
+                rs = json.loads((gen / REDO / "score.json").read_text(encoding="utf-8")).get(ln["id"], {}).get("cands", [])
+                val = accepted[ln["id"]]
+                for c in rs:
+                    if f"{c['model']}_r{c['k']}" == val:
+                        s = {**s, "cands": s["cands"] + [{**c, "_tag": "r", "reject": [], "_accepted": True}]}
+                s["default"] = val
             if g == REDO:
                 orig = (gen / ln_group(lines, ln["id"]) / "score.json")
                 if orig.exists():
@@ -423,7 +453,9 @@ def cmd_page(_args):
                 warn = f'<div class="warn">{html.escape("; ".join(c["reject"]))}</div>' if c["reject"] else ""
                 star = " ★" if val == s["default"] else ""
                 how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
-                if ln.get("redo") and not c.get("_old"):
+                if c.get("_accepted"):
+                    how = "из переделки: " + redo_how(c["model"], c["k"], {**ln, "redo": redo_spec()[ln["id"]]})
+                elif ln.get("redo") and not c.get("_old"):
                     how = redo_how(c["model"], c["k"], ln)
                 elif c.get("_old"):
                     how = "прежний вариант: " + variant_how(c["model"], c["k"], {**ln, **orig_line(lines, ln["id"])},
@@ -460,7 +492,7 @@ def cmd_page(_args):
     nj.write_text(json.dumps(todo, ensure_ascii=False), encoding="utf-8")
     if todo:
         subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "normalize.py"), str(nj)], env=cm.model_env(vw), check=True)
-    pending = [titles[g] for g in order if g not in ready]
+    pending = [titles[g] for g in order if g not in ready and g != REDO]
     note = (f"<p class='meta'>Ещё генерируются: {html.escape(', '.join(pending))}. Страница обновится.</p>" if pending else "")
     page = f"""<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Голос Альфиры, акт 1</title><style>{CSS}</style></head><body>
