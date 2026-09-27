@@ -35,7 +35,6 @@ import subprocess
 import sys
 import wave
 from pathlib import Path
-from urllib.parse import quote
 
 import numpy as np
 
@@ -80,6 +79,15 @@ def model_variants(model, ln):
     return [1, 2, 3] if ln["index_variants"] == 3 else [1, 3]
 
 
+def wav_ok(path):
+    """Файл есть и читается (прерванный прогон оставляет wav без заголовка — такой переделываем)."""
+    try:
+        with wave.open(str(path)) as w:
+            return w.getnframes() > 0
+    except (OSError, EOFError, wave.Error):
+        return False
+
+
 def cmd_gen(args):
     vw, models, act, gen = act1_paths()
     lines = load_lines()
@@ -92,7 +100,7 @@ def cmd_gen(args):
             for ln in todo:
                 emo = ln["ref_emotion"]
                 refs.setdefault(emo, cm.pick_ref(vw, emo))
-                ks = [k for k in model_variants(model, ln) if not (out / f"line{ln['id']}_v{k}.wav").exists()]
+                ks = [k for k in model_variants(model, ln) if not wav_ok(out / f"line{ln['id']}_v{k}.wav")]
                 if ks:
                     jobs.append({"id": ln["id"], "text": ln["text"], "instruct": ln["instruct"], "emo_vector": ln["emo_vector"],
                                  "tags": ln["tags"], "variants": ks, **refs[emo]})
@@ -156,7 +164,7 @@ def cmd_score(args):
             for model in MODELS:
                 for k in model_variants(model, ln):
                     w = gen / group / model / f"line{ln['id']}_v{k}.wav"
-                    if w.exists():
+                    if wav_ok(w):
                         items.append({"key": f"{ln['id']}|{model}|{k}", "wav": str(w), "text": ln["text"], "ref": ref})
         if not items:
             print(f"{group}: нечего оценивать")
@@ -206,10 +214,12 @@ header h1{font-size:17px;margin:0 12px 0 0}button{font:inherit;padding:6px 12px;
 button.ghost{background:transparent;color:var(--accent)}nav{display:flex;gap:6px;flex-wrap:wrap}nav a{color:var(--accent);font-size:13px;text-decoration:none;border:1px solid var(--line);padding:2px 8px;border-radius:12px}
 main{max-width:980px;margin:0 auto;padding:8px 16px 80px}h2{margin:28px 0 8px;font-size:18px}
 .line{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
-.en{font-weight:600}.ru{color:var(--mute);font-style:italic}.meta{font-size:13px;color:var(--mute);margin:4px 0 8px}
-.emo{display:inline-block;background:var(--pick);color:var(--accent);border-radius:10px;padding:0 8px;margin-right:6px}
-.opt{display:grid;grid-template-columns:22px 150px 1fr;gap:8px;align-items:center;padding:4px 6px;border-radius:6px}
-.opt:has(input:checked){background:var(--pick)}.opt label{font-size:13px}.opt audio{width:100%;height:32px}
+.en{font-weight:600;font-size:16px}.ru{color:var(--mute);font-style:italic}.meta{font-size:13px;color:var(--mute);margin:4px 0 8px}
+.emo{display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:1px 10px;margin-right:8px;font-size:15px;font-weight:700}
+.remark{font-style:italic;margin:2px 0 6px;color:var(--ink)}.hid{font-size:11px;color:var(--mute);margin-top:6px}
+.opt{display:grid;grid-template-columns:22px 170px 1fr;gap:8px;align-items:start;padding:6px;border-radius:6px;border-top:1px solid var(--line)}
+.opt:has(input:checked){background:var(--pick)}.opt label{font-size:14px;font-weight:600}.opt audio{width:100%;height:32px}
+.how{font-size:14px;margin-top:2px}
 .warn{color:var(--bad);font-size:13px}.ref{font-size:13px;color:var(--mute)}.ref audio{height:28px;vertical-align:middle;width:260px;max-width:60%}
 textarea{width:100%;height:160px}#out{display:none;margin-top:8px}
 @media (max-width:600px){.opt{grid-template-columns:22px 1fr}.opt audio{grid-column:1/-1}}
@@ -231,7 +241,27 @@ restore();
 
 
 def rel(p):
-    return "/".join(quote(part) for part in Path(p).as_posix().split("/"))
+    """Путь для src: как есть, относительный; экранируются только " & < (с %-кодированием у автора не играло)."""
+    return Path(p).as_posix().replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;")
+
+
+VEC_NAMES = ["happy", "angry", "sad", "afraid", "disgusted", "melancholic", "surprised", "calm"]
+
+
+def variant_how(model, k, ln, ref_name):
+    """Как сделан вариант: эмоция образца, файл образца, инструкция или режим эмоции (run_breeze/run_indextts)."""
+    emo = EMO_RU.get(ln["ref_emotion"], ln["ref_emotion"])
+    src = f"образец «{emo}» ({ref_name})"
+    if model == "breeze":
+        if k == 1:
+            return f"{src}; без инструкции — эмоция из образца (cfg 1)"
+        return f"{src} + инструкция: “{ln['instruct']}” (cfg 4)"
+    if k == 1:
+        return f"{src}; эмоция из образца, emo_alpha 0.8"
+    if k == 2:
+        vec = ", ".join(f"{n} {v:g}" for n, v in zip(VEC_NAMES, ln["emo_vector"]) if v)
+        return f"{src} — тембр; эмоция вектором: {vec}"
+    return f"{src}; тембр и эмоция из образца, без отдельной эмоции"
 
 
 def cmd_page(_args):
@@ -265,7 +295,7 @@ def cmd_page(_args):
                 ref = cm.pick_ref(vw, emo)
                 dst = refdir / f"{emo}.wav"
                 norm.append([ref["ref_wav"], str(dst)])
-                ref_rel[emo] = (f"_образцы/{emo}.wav", ref["ref_text"])
+                ref_rel[emo] = (f"_образцы/{emo}.wav", ref["ref_text"], Path(ref["ref_wav"]).name[:9] + "….wav")
             short = ln["id"][:9]
             shown = [c for c in s["cands"] if not c["reject"]] if not s["all_rejected"] else s["cands"]
             dropped = [c for c in s["cands"] if c["reject"] and c not in shown]
@@ -277,24 +307,34 @@ def cmd_page(_args):
                 chk = " checked" if val == s["default"] else ""
                 warn = f'<div class="warn">{html.escape("; ".join(c["reject"]))}</div>' if c["reject"] else ""
                 star = " ★" if val == s["default"] else ""
+                how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
                 opts.append(f'<div class="opt"><input type="radio" name="{ln["id"]}" id="{ln["id"]}_{val}" value="{val}"{chk}>'
                             f'<label for="{ln["id"]}_{val}">{TITLE[c["model"]]} v{c["k"]}{star}<br>'
                             f'<small>похожесть {c["sim"]:.3f}, {c["dur"]:.1f} с</small></label>'
-                            f'<div><audio controls preload="none" src="{rel(folder + "/" + name)}"></audio>{warn}</div></div>')
+                            f'<div><audio controls preload="none" src="{rel(folder + "/" + name)}"></audio>'
+                            f'<div class="how">{html.escape(how)}</div>{warn}</div></div>')
             opts.append(f'<div class="opt"><input type="radio" name="{ln["id"]}" id="{ln["id"]}_redo" value="переделать">'
                         f'<label for="{ln["id"]}_redo">переделать</label><div></div></div>')
             extra = f' · ещё {len(ln["handles"]) - 1} handle с тем же текстом' if len(ln["handles"]) > 1 else ""
             drop = (f'<div class="warn">отброшено {len(dropped)}: ' + html.escape("; ".join(
                 f'{TITLE[c["model"]]} v{c["k"]} — {c["reject"][0]}' for c in dropped)) + "</div>") if dropped else ""
             allrej = '<div class="warn">у всех вариантов брак — выбран лучший из них</div>' if s["all_rejected"] else ""
-            rp, rt = ref_rel[emo]
+            rp, rt, rn = ref_rel[emo]
+            # ремарка сценария: note из сцены (как в design/dialogs) и откуда взята эмоция
+            basis = ("по ремарке" if ln["why"].startswith("ремарка") else "по лицу в сценарии"
+                     if ln["why"].startswith("лицо") else f"по сцене: {ln['why']}")
+            remark = " · ".join(x for x in [f"ремарка: {ln['note']}" if ln["note"] else "ремарки нет",
+                                            f"лицо: {ln['emo']}", f"эмоция {basis}"] if x)
+            refemo = EMO_RU.get(emo, emo)
             body.append(
-                f'<div class="line" data-handle="{ln["id"]}"><div class="en">{html.escape(ln["text"])}</div>'
+                f'<div class="line" data-handle="{ln["id"]}">'
+                f'<div class="en"><span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
+                f'{html.escape(ln["text"])}</div>'
+                f'<div class="remark">{html.escape(remark)}</div>'
                 f'<div class="ru">{html.escape(re.sub(r"<[^>]+>", "", ln["ru"]))}</div>'
-                f'<div class="meta"><span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
-                f'{html.escape(ln["note"] or "")} <code>{ln["id"]}</code>{extra}</div>'
-                f'<div class="ref">её образец: <audio controls preload="none" src="{rel(rp)}"></audio> «{html.escape(rt[:90])}»</div>'
-                f'{allrej}{"".join(opts)}{drop}</div>')
+                f'<div class="ref">её образец «{html.escape(refemo)}» ({rn}): <audio controls preload="none" src="{rel(rp)}"></audio> '
+                f'«{html.escape(rt[:90])}»</div>'
+                f'{allrej}{"".join(opts)}{drop}<div class="hid">{ln["id"]}{extra}</div></div>')
     nj = act / "page_normalize.json"
     todo = [p for p in norm if not Path(p[1]).exists() or Path(p[1]).stat().st_mtime < Path(p[0]).stat().st_mtime]
     nj.write_text(json.dumps(todo, ensure_ascii=False), encoding="utf-8")
