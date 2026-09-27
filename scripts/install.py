@@ -21,6 +21,10 @@ docs/ARCHITECTURE.md). Вместе с Alfira Joins The Party он не став
   python scripts/install.py --profile Тест --clone-mods-from Public --remove-conflicts \\
                             --copy-save "Леший-402612611841__AutoSave_51"
   python scripts/install.py --uninstall [--profile Тест]     # убрать из порядка
+  python scripts/install.py --voice clone                    # личная сборка с голосом клона вместо публичной
+
+В Mods лежит только одна из двух сборок (AlfiraSecondVerse.pak или AlfiraSecondVerse_personal.pak):
+установка одной убирает из Mods копию другой.
 """
 import argparse
 import json
@@ -99,6 +103,8 @@ def main():
                     help="выключить в профиле Alfira Joins The Party, его перевод и патч Redux")
     ap.add_argument("--copy-save", metavar="ПАПКА",
                     help="скопировать сохранение из Public/Savegames/Story в профиль")
+    ap.add_argument("--voice", choices=["none", "clone"], default="none",
+                    help="clone — личная сборка с голосом клона (build_pak.py --voice clone)")
     args = ap.parse_args()
     cfg = config()
     mod = cfg["mod"]
@@ -120,8 +126,10 @@ def main():
         print(f"Порядок модов взят из профиля {args.clone_mods_from}.")
 
     folder = f'{mod["name"]}_{mod["uuid"]}'
-    pak = resolve(cfg["paths"]["dist"]) / f'{mod["name"]}.pak'
-    from build_pak import version64
+    from build_pak import pak_path, version64
+    pak = pak_path(cfg, args.voice)
+    # в Mods — только одна из двух сборок: два пака одного модуля не ставим
+    other = pak_path(cfg, "none" if args.voice == "clone" else "clone")
     ver = version64(mod["version"])
 
     s = settings.read_text(encoding="utf-8")
@@ -140,8 +148,11 @@ def main():
     s = drop_node(s, mod["uuid"])
     if not args.uninstall:
         if not pak.exists():
-            sys.exit(f"Нет {pak} — сначала python scripts/build_pak.py")
+            sys.exit(f"Нет {pak} — сначала python scripts/build_pak.py" + (" --voice clone" if args.voice == "clone" else ""))
         shutil.copy2(pak, MODS / pak.name)
+        if (MODS / other.name).exists():
+            (MODS / other.name).unlink()    # копия другой сборки; сам пак остаётся в dist/ или build/personal/
+            print(f"Убран из Mods {other.name} (другая сборка того же мода).")
         mods_block = s.index('<node id="Mods">')
         end = s.index("</children>", mods_block)
         end = s.rindex("\n", 0, end) + 1
