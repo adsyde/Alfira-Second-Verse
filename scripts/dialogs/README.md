@@ -242,7 +242,8 @@ place("Monastery", "Обитель Розиморн",                        # �
 ```
 
 - Запуск — одно из: `triggers=[…]` (любой из списка, что раньше), `flags=[…]` (глобальный флаг игры
-  поставлен), `levels=[…]` (начало уровня), `custom="lift"` (особый запуск в `ads.LIFT_BLOCK`).
+  поставлен), `levels=[…]` (начало уровня), `custom=…` — особый запуск: `"lift"` (`ads.LIFT_BLOCK`),
+  `"grymforge_lift"` (`ads.GRYMFORGE_LIFT_BLOCK`), `"clear_night"` (`ads.CLEAR_NIGHT_BLOCK`).
 - Триггер — только тот, что игра сама держит зарегистрированным для отряда: подрегионы
   (`DB_Subregion`/`DB_SubregionMarker` в `Act*_Subregions.txt`), триггеры бесед отряда
   (`PROC_RegisterWorldGossipTrigger`). Свою регистрацию мод не делает.
