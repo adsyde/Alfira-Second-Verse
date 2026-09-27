@@ -28,7 +28,9 @@ mod/ повторяет раскладку пака:
 Личная сборка (--voice clone) не публикуется: пак — build/personal/<name>_personal.pak, в dist/ не попадает.
 Аудио в git не лежит: voice-work/game/voice.json (handle → файл, длина) и <handle>.wav 48 кГц моно.
 Генератор ставит фазам этих реплик длину звука (Stager.voice_durations), после конвертации в пак кладутся
-.wem Wwise PCM, банк VoiceMeta и заимствованный липсинк (scripts/voice/game_voice.py → write_takes).
+.wem Wwise PCM, банк VoiceMeta на каждого говорящего и заимствованный липсинк (scripts/voice/game_voice.py →
+write_takes). Handle из voice.json, которых нет в сценах, пропускаются с предупреждением.
+Публичная сборка проверяется на отсутствие голоса клона (public_voice_errors): до упаковки и по готовому паку.
 """
 import argparse
 import json
@@ -112,6 +114,34 @@ def meta_lsx(mod, folder, version):
 '''
 
 
+# файлы голоса в паке: звук, банки VoiceMeta, липсинк и актёры FaceFX (раскладка game_voice.write_takes)
+VOICE_PATH = re.compile(r"/Localization/[^/]+/(Soundbanks|Animation)/", re.I)
+
+
+def public_voice_errors(build, paths=None):
+    """Публичная сборка — без единого клонированного голоса (решение автора 2026-09-27, docs/VOICE.md).
+
+    Нарушения: любой .wem, любой файл в Localization/<язык>/Soundbanks (банк VoiceMeta) или Animation (FX_/MC_,
+    FaceFXActors) и любой файл со звуком RIFF/WAVE или банком с Codec PCM. Звуков и банков голоса у публичного мода
+    нет вообще: реплики игры звучат из её паков, новые — текстом. build — папка сборки (проверка до упаковки),
+    paths — список файлов пака (после)."""
+    errors = []
+    items = paths if paths is not None else [p.relative_to(build).as_posix() for p in build.rglob("*") if p.is_file()]
+    for rel in items:
+        if rel.lower().endswith(".wem") or VOICE_PATH.search("/" + rel):
+            errors.append(f"{rel}: файл голоса в публичной сборке")
+    if build is not None:
+        for p in build.rglob("*"):
+            if not p.is_file():
+                continue
+            head = p.open("rb").read(12)
+            if head[:4] == b"RIFF" and head[8:12] == b"WAVE":
+                errors.append(f"{p.relative_to(build).as_posix()}: звук RIFF/WAVE в публичной сборке")
+            elif p.suffix in (".lsf", ".lsx") and b"VoiceSpeakerMetaData" in p.read_bytes():
+                errors.append(f"{p.relative_to(build).as_posix()}: банк VoiceMeta в публичной сборке")
+    return errors
+
+
 def pak_path(cfg, voice="none"):
     """Пак сборки: публичная — dist/<name>.pak, личная (голос клона) — build/personal/<name>_personal.pak."""
     name = cfg["mod"]["name"]
@@ -135,7 +165,7 @@ def main():
         vdir = resolve(cfg["paths"]["voice_work"]) / "game"
         vj = vdir / "voice.json"
         if not vj.exists():
-            sys.exit(f"Нет {vj}: сначала python scripts/voice/voice_line.py (docs/VOICE.md)")
+            sys.exit(f"Нет {vj}: сначала python scripts/voice/voice_act1.py pick (docs/VOICE.md)")
         takes = {h: (vdir / t["file"], t["seconds"]) for h, t in json.loads(vj.read_text(encoding="utf-8")).items()}
         missing = [str(w) for w, _ in takes.values() if not w.exists()]
         if missing:
@@ -150,8 +180,12 @@ def main():
         sys.exit("Нет build/dialogs/manifest.json: запустите сборку без --no-generate.")
     man = json.loads(manifest.read_text(encoding="utf-8"))
     vanilla = set(man["vanilla_handles"])
-    if set(man.get("voice_clone", [])) != set(takes):
+    # таймлайны в mod/ (фазы по длине звука) должны быть собраны ровно для этих дублей
+    if man.get("voice_clone_input", {}) != {h: s for h, (_, s) in takes.items()}:
         sys.exit("Таймлайны в mod/ собраны для другого набора голоса клона: запустите сборку без --no-generate.")
+    voiced = man.get("voice_clone", {})       # handle → говорящий, приоритет (есть в сценах)
+    if args.voice != "clone" and voiced:
+        sys.exit("Публичная сборка: в манифесте генератора есть голос клона — сборка остановлена.")
 
     folder = f'{mod["name"]}_{mod["uuid"]}'
     src = resolve(cfg["paths"]["mod_src"])
@@ -195,13 +229,30 @@ def main():
     if errors:
         sys.exit("Сборка остановлена:\n  " + "\n  ".join(errors))
 
-    if takes:
+    if args.voice == "clone":
         sys.path.insert(0, str(Path(__file__).resolve().parent / "voice"))
-        from game_voice import write_takes  # scripts/voice/game_voice.py
-        print("Голос клона (личная сборка):")
-        for line in write_takes(build / "Mods" / folder / "Localization" / "English",
-                                [(h, w) for h, (w, _) in sorted(takes.items())], resolve(cfg["paths"]["voice_work"])):
-            print("  " + line)
+        from game_voice import SPEAKER_NAMES, write_takes  # scripts/voice/game_voice.py
+        skipped = man.get("voice_clone_skipped", [])
+        print(f"Голос клона (личная сборка): {len(voiced)} handle из {len(takes)} в voice.json"
+              + (f", пропущено {len(skipped)} (нет в сценах)" if skipped else ""))
+        report, summary = write_takes(
+            build / "Mods" / folder / "Localization" / "English",
+            [(h, takes[h][0], v["speaker"], v["priority"]) for h, v in sorted(voiced.items())],
+            resolve(cfg["paths"]["voice_work"]))
+        for spk, s in summary.items():
+            print(f"  {SPEAKER_NAMES.get(spk, spk)} ({spk}): {s['lines']} реплик, {s['seconds']} с, "
+                  f"с липсинком {s['lipsync']}, без {s['lines'] - s['lipsync']}")
+        # по handle: говорящий, длина, приоритет, донор липсинка — для проверки глазами
+        tsv = pak_path(cfg, "clone").with_name("voice_clone.tsv")
+        tsv.parent.mkdir(parents=True, exist_ok=True)
+        tsv.write_text("handle\tговорящий\tдлина\tприоритет\tдонор липсинка\tего длина\tфайлы\n"
+                       + "\n".join(report) + "\n" + "".join(f"{h}\t-\t-\t-\t-\t-\tпропущен: нет в сценах\n"
+                                                            for h in skipped), encoding="utf-8")
+        print(f"  по репликам: {tsv}")
+    else:
+        errors = public_voice_errors(build)
+        if errors:
+            sys.exit("Публичная сборка без голоса клона — нарушение, сборка остановлена:\n  " + "\n  ".join(errors))
 
     meta = build / "Mods" / folder / "meta.lsx"
     meta.parent.mkdir(parents=True, exist_ok=True)
@@ -226,8 +277,19 @@ def main():
     packed = sum(1 for p in build.rglob("*") if p.is_file())
     if len(listed) != packed:
         sys.exit(f"В паке {len(listed)} файлов из {packed}: Divine что-то пропустил.")
-    for line in listed:
-        print("  " + line.split("\t")[0])
+    paths = [l.split("\t")[0] for l in listed]
+    if args.voice != "clone":
+        # вторая проверка — по самому паку: то, что уйдёт в публикацию
+        errors = public_voice_errors(None, paths)
+        if errors:
+            pak.unlink()
+            sys.exit("Публичный пак содержит голос клона — пак удалён:\n  " + "\n  ".join(errors))
+    voice_files = [p for p in paths if VOICE_PATH.search(p)]
+    for p in paths:
+        if p not in voice_files:
+            print("  " + p)
+    if voice_files:
+        print(f"  + голос клона: {len(voice_files)} файлов в Localization/English/Soundbanks и Animation")
     print(f"{pak}  ({pak.stat().st_size // 1024} КБ, {len(listed)} файлов, версия {args.version})")
 
 

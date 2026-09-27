@@ -734,7 +734,8 @@ def cmd_pick(args):
 
     Файл — выбранный вариант, приведённый к 48 кГц моно 16 бит (tts/normalize.py): такой берёт game_voice.py.
     Одинаковый текст в разных сценах — один звук на все его handle. «переделать» — в voice-work/act1/redo.txt.
-    voice-work/game/voice.json: handle → файл, длина, модель, вариант, группа (для build_pak --voice clone)."""
+    voice-work/game/voice.json: handle → файл, длина, модель, вариант, группа, говорящий (для build_pak --voice clone;
+    говорящего и приоритет VoiceMeta сборка берёт из сцен, speaker_uuid здесь — для справки)."""
     vw, models, act, gen = act1_paths()
     lines = {x["id"]: x for x in load_lines()}
     game = vw / GAME_DIR_NAME
@@ -766,16 +767,17 @@ def cmd_pick(args):
             redo.discard(h)
             for hh in ln["handles"]:
                 jobs.append([str(src), str(game / f"{hh}.wav")])
-                chosen.append((hh, m.group(1), f"{m.group(2)}{m.group(3)}", ln["group"], h))
+                chosen.append((hh, m.group(1), f"{m.group(2)}{m.group(3)}", ln["group"], h,
+                               ln.get("speaker_uuid") or ALFIRA_UUID))
     if jobs:
         nj = act / "pick_normalize.json"
         nj.write_text(json.dumps(jobs, ensure_ascii=False), encoding="utf-8")
         subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "normalize.py"), str(nj)], env=cm.model_env(vw), check=True)
-    for hh, model, k, group, h in chosen:
+    for hh, model, k, group, h, spk in chosen:
         with wave.open(str(game / f"{hh}.wav")) as w:
             length = w.getnframes() / w.getframerate()
         meta[hh] = {"file": f"{hh}.wav", "seconds": round(length, 3), "model": model, "variant": k, "group": group,
-                    "text_handle": h}
+                    "text_handle": h, "speaker_uuid": spk}
     meta_p.write_text(json.dumps(dict(sorted(meta.items())), ensure_ascii=False, indent=1), encoding="utf-8")
     redo_p.write_text("\n".join(sorted(redo)) + ("\n" if redo else ""), encoding="utf-8")
     print(f"выбрано {len({c[4] for c in chosen})} реплик → {len(chosen)} handle в {game}; переделать: {len(redo)}; "

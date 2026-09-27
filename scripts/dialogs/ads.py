@@ -164,6 +164,8 @@ class ADStager:
         self.report = []
         self.added_cams = []
         self._src = {}
+        # голос клона (личная сборка, docs/VOICE.md): uuid узла → длина звука, с; фаза — звук + TAIL
+        self.voice_durations = {}
 
     def _voice(self, node_uuid, start, end, phase, proto=None, actor=None):
         actor = actor or self.actor
@@ -201,15 +203,16 @@ class ADStager:
         from dsl import emotion_keys
         from style import STYLE
         chars = max(len(render(line.en)), len(render(line.ru)))
-        dur = D(min(MAX_PHASE, max(MIN_PHASE, chars / READ_CPS + TAIL)))
+        vdur = self.voice_durations.get(node_uuid)
+        dur = D(vdur) + D(TAIL) if vdur else D(min(MAX_PHASE, max(MIN_PHASE, chars / READ_CPS + TAIL)))
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
         actor = self.actors[line.speaker]
-        self._voice(node_uuid, start, start + dur, phase, actor=actor)
+        self._voice(node_uuid, start, start + (D(vdur) if vdur else dur), phase, actor=actor)
         # у Альфиры — её собственные вариации эмоций по каталогу её реплик у Larian (style.py)
         keys = STYLE.keys(line, float(dur), node_uuid) if line.speaker == ALFIRA else emotion_keys(line.emo, float(dur))
         self._emotions(dur, keys, actor=actor)
-        self.report.append((node_uuid, "текст", float(dur)))
+        self.report.append((node_uuid, "текст, голос клона" if vdur else "текст", float(dur)))
 
     def voiced_phase(self, node_uuid, src_name, src_node, speaker=ALFIRA):
         if src_name not in self._src:

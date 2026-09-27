@@ -94,8 +94,7 @@ class Compiler:
         self.lib, self.b, self.s, self.ids = lib, lib.b, scene, ids
         self.voice_meta = voice_meta             # uuid говорящего → handle его озвучки (VoiceMeta)
         self.voice = voice or {}                 # handle новой реплики → длина голоса клона, с (личная сборка)
-        self.node_handle = {}                    # uuid узла → handle его текста (новые реплики)
-        self.voiced = set()                      # handle из voice, которые есть в этой сцене
+        self.voiced = {}                         # handle из voice, озвученные в этой сцене → говорящий и приоритет
         # сцены глав со входом в разговоре в отряде (hub); главы-события (hub=False) запускает их Osiris
         self.chapters = sorted((c for c in chapters if c.chapter.hub), key=lambda c: c.chapter.number)
         self.slot = {ALFIRA: ALFIRA, PLAYER: PLAYER}   # логический спикер → слот основы (run() уточняет)
@@ -141,7 +140,6 @@ class Compiler:
         h = self.ids.handle(f"{self.s.name}/{key}")
         female = render(ru, True, narrator) if has_gender(ru) else None
         self.loca[h] = (render(en, narrator=narrator), render(ru, narrator=narrator), female)
-        self.node_handle[self.uid(key)] = h      # узел реплики — uid того же ключа (lines())
         return self.b.text_content(h, 1, self.uid(f"{line_key}/line"))
 
     def line_text(self, key, line: Line):
@@ -481,10 +479,7 @@ class Compiler:
                                   lambda k: self.uid(k), other_template=s.other,
                                   base_scene_file=self.base_scene_file(), alfira_base=s.alfira_base, base_name=s.base,
                                   other_base=s.other_base)
-        for nid, h in self.node_handle.items():
-            if h in self.voice:
-                st.voice_durations[nid] = self.voice[h]
-                self.voiced.add(h)
+        self.clone_voice(st, "P1_StoryDialog")
         for nid, line in self.npc:
             seat = self.seat.get(nid, "")
             if line.cinematic:
@@ -521,6 +516,18 @@ class Compiler:
         self.dres, self.tres = dres, tres
         return self
 
+    def clone_voice(self, st, priority):
+        """Голос клона (личная сборка): фазам новых реплик из self.voice — длина звука (Stager.voice_durations).
+
+        Узел реплики — uid её ключа (lines(), join()). Ремарки рассказчика и реплики героя не озвучиваются.
+        Приоритет VoiceMeta — как у Larian: сюжетный диалог P1_StoryDialog, AD над головой P4_RepeatingDialog_AD."""
+        for h, key, ln in self.meta:
+            if h not in self.voice or ln.narrator or ln.speaker == PLAYER:
+                continue
+            st.voice_durations[self.uid(key)] = self.voice[h]
+            self.voiced[h] = {"speaker": self.speaker_uuid[ln.speaker], "priority": priority, "scene": self.s.name,
+                              "seconds": self.voice[h]}
+
     def run_ad(self, tl):
         """AD: категория как у Larian, фазы — ADStager (голос и эмоции, без камер), записи банков."""
         s, lib = self.s, self.lib
@@ -528,6 +535,7 @@ class Compiler:
         if s.category:
             set_attr(dnode, "category", s.category, "LSString")
         self.stager = st = ads.ADStager(lib, tl, lambda k: self.uid(k), self.slot)
+        self.clone_voice(st, "P4_RepeatingDialog_AD")
         for nid, line in self.npc:
             if line.handle:
                 src, src_node, _ = self.voices[line.handle]
@@ -901,9 +909,11 @@ def generate(dump=False, voice=None):
         return vm_cache[speaker_uuid]
     chapters = sorted((s for s in scenes if s.chapter is not None), key=lambda s: s.chapter.number)
     results = [Compiler(lib, s, ids, vm, chapters, voice).run() for s in scenes]
-    voiced = set().union(*(c.voiced for c in results))
-    if set(voice) - voiced:
-        sys.exit("Голос клона для реплик, которых нет в фазах сцен: " + ", ".join(sorted(set(voice) - voiced)))
+    voiced = {h: v for c in results for h, v in c.voiced.items()}
+    skipped = sorted(set(voice) - set(voiced))
+    if skipped:
+        # голос выбран для реплики, которой в сценах больше нет (текст переписан или сцена убрана) — без неё
+        print(f"  ! голос клона пропущен: {len(skipped)} handle из voice.json нет в сценах: " + ", ".join(skipped))
 
     for d in OWNED:
         p = src / d
@@ -990,7 +1000,10 @@ def generate(dump=False, voice=None):
                    for p in places},
         "travel": {"dialog": trv.scene.dialog_id, "name": trv.scene.name, "lines": len(trv.played)},
         "female_variants": sorted(loca_ru_f) if FEMALE_VARIANTS else [],
-        "voice_clone": sorted(voiced),        # реплики с голосом клона (только личная сборка)
+        # голос клона (только личная сборка): вход (handle → длина из voice.json), озвученные реплики, пропущенные
+        "voice_clone_input": dict(sorted(voice.items())),
+        "voice_clone": dict(sorted(voiced.items())),
+        "voice_clone_skipped": skipped,
         "bg3moddinglib": lib.commit,
     }
     out = resolve(cfg["paths"]["build"]) / "dialogs"

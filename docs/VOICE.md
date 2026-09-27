@@ -190,17 +190,17 @@ python scripts/voice/label_emotions.py --speaker <guid> --name lakrissa # voice-
 подзаголовками сцен и плашкой говорящего. NPC озвучиваются по своим образцам (нет нужной эмоции —
 нейтраль), похожесть считается к эталону их собственного голоса.
 
-### Конвейер в игру (исследование; в сборке с 27.09 — ниже)
+### Конвейер в игру (в сборке с 27.09, проба в игре: звучит, рот двигается)
 
-По данным игры (Patch 8 Hotfix 9) у озвученной реплики её голоса пять частей:
+По данным игры (Patch 8 Hotfix 9) у озвученной реплики пять частей (`<id>` — uuid говорящего без дефисов):
 
 | Что | Где в игре | Что делаем мы |
 |---|---|---|
 | звук | `Localization/Voice.pak → Mods/Gustav/Localization/English/Soundbanks/v<id>_<handle>.wem`, Wwise Vorbis 48 кГц моно | `.wem` Wwise **PCM** (fmt 0xFFFE) — пишется без Wwise |
-| VoiceMeta | `VoiceMeta.pak → …/Soundbanks/4a405fba30004c6397e5a8001ebb883c.lsf`: `VoiceSpeakerMetaData` (MapKey — её uuid) → `VoiceTextMetaData` (MapKey — handle) → `Codec`, `Length`, `Priority`, `Source` | свой банк с тем же именем в папке мода, только новые handle, `Codec=PCM` |
-| липсинк | `English_Animations.pak → …/English/Animation/FX_v<id>_<handle>.ffxanim` (FaceFX) | заимствуется её `.ffxanim` реплики близкой длины |
+| VoiceMeta | `VoiceMeta.pak → …/Soundbanks/<id>.lsf`, банк на говорящего: `VoiceSpeakerMetaData` (MapKey — его uuid с дефисами) → `VoiceTextMetaData` (MapKey — handle) → `Codec`, `Length`, `Priority`, `Source` (имя `.wem`) | свой банк с тем же именем на каждого говорящего в папке мода, только новые handle, `Codec=PCM` |
+| липсинк | `English_Animations.pak → …/English/Animation/FX_v<id>_<файл>.ffxanim` (FaceFX; имя — по `Source`, не по handle) | заимствуется `.ffxanim` реплики того же говорящего близкой длины |
 | жесты | там же `MC_v<id>_<handle>.gr2` (мокап; у 7 её реплик нет — необязателен) | заимствуется там же |
-| актёр FaceFX | `…/Animation/FaceFXActors/4a405fba-3000-4c63-97e5-a8001ebb883c.ffxactor/.ffxbones` | копия её файлов в папку мода |
+| актёр FaceFX | `…/Animation/FaceFXActors/<uuid>.ffxactor/.ffxbones` | копия файлов говорящего в папку мода |
 
 `Length` в VoiceMeta = число сэмплов / 48000 (совпало у всех 545 её `.wem`). `TLVoice` в таймлайне
 на файл не ссылается: узел диалога → handle → VoiceMeta.
@@ -209,17 +209,17 @@ python scripts/voice/label_emotions.py --speaker <guid> --name lakrissa # voice-
 - **Wwise Vorbis без Wwise не сделать**: открытого кодировщика нет (ww2ogg и vgmstream только
   читают). Wwise скачивается через Audiokinetic Launcher, для него нужен аккаунт — не создаём.
   Обход — Wwise PCM: vgmstream читает наш `.wem` как «Audiokinetic Wwise RIFF, 16-bit PCM»,
-  кодек `PCM` есть в списке кодеков `bg3_dx11.exe`. Примет ли его игра — **первая проверка в игре**.
+  кодек `PCM` есть в списке кодеков `bg3_dx11.exe`. **Проба в игре: игра его принимает, голос звучит.**
   Файлы в 6 раз больше Vorbis (~94 КБ на секунду).
 - **Липсинк**: `.ffxanim` — скомпилированные данные FaceFX (магия `__ffx`), открытых
-  инструментов нет, сам FaceFX платный. Варианты: (а) заимствованный её `.ffxanim` — рот
-  двигается, но не по словам (прототип так делает); (б) по руководству сообщества — Rhubarb Lip Sync
+  инструментов нет, сам FaceFX платный. Варианты: (а) заимствованный `.ffxanim` — рот
+  двигается, но не по словам (так делает сборка; в пробе рот двигался); (б) по руководству сообщества — Rhubarb Lip Sync
   + Blender + ригги BG3, экспорт GR2 через LSLib, в таймлайн `TLAdditiveAnimation` слот 1;
   (в) без липсинка рот не двигается.
 - Голос звучит только в английской озвучке (русский текст — субтитрами, как у реплик игры).
 
-Прототип: `scripts/voice/game_voice.py` собирает для одного handle в `voice-work/pipeline/proto/`
-`.wem` + VoiceMeta (.lsx/.lsf через Divine) + заимствованные FX_/MC_ + FaceFXActors.
+Прототип: `scripts/voice/game_voice.py --handle h… --wav … [--speaker <uuid>]` собирает для одного handle в
+`voice-work/pipeline/proto/` `.wem` + VoiceMeta (.lsx/.lsf через Divine) + заимствованные FX_/MC_ + FaceFXActors.
 Для VoiceMeta в генераторе можно взять `soundbank_object` из bg3moddinglib (MIT; там Codec
 жёстко VORBIS — поле нужно менять).
 
@@ -239,22 +239,23 @@ python scripts/install.py [--voice clone]     # ставит одну из дв�
   (IndexTTS 7 ГБ, Breeze 9,5 ГБ), модель считается на процессоре (`--device auto`; `gpu` — ждать памяти).
   Breeze на процессоре идёт через `model.generate` (потоковый рантайм — только CUDA) с тем же CFG.
 - Выбранные дубли лежат в `voice-work/game/<handle>.wav` (48 кГц моно) и `voice-work/game/voice.json`
-  (handle → файл, длина, модель, метрики). В `mod/` (git) клон не попадает никогда.
+  (handle → файл, длина, модель, вариант, группа, говорящий). В `mod/` (git) клон не попадает никогда.
 - `--voice clone`: генератор (`scripts/dialogs/build.py`, `generate(voice=…)`) заполняет
   `Stager.voice_durations[uuid узла]` длинами дублей; `Stager.phase_duration()` даёт фазу «длина звука +
-  TAIL 0,6 с» вместо длины по тексту, `TLVoice` — на длину звука. `build/dialogs/manifest.json → voice_clone`
-  — список озвученных handle; `build_pak --no-generate` проверяет, что таймлайны в `mod/` собраны для
-  того же набора. После конвертации `build_pak` кладёт в `Mods/<папка>/Localization/English/` файлы
+  TAIL 0,6 с» вместо длины по тексту, `TLVoice` — на длину звука (у AD — `ADStager.voice_durations`, так же).
+  `build/dialogs/manifest.json`: `voice_clone_input` — вход (handle → длина), `voice_clone` — озвученные handle
+  с говорящим, приоритетом и сценой, `voice_clone_skipped` — handle из voice.json, которых нет в сценах;
+  `build_pak --no-generate` проверяет, что таймлайны в `mod/` собраны для тех же дублей той же длины. После конвертации `build_pak` кладёт в `Mods/<папка>/Localization/English/` файлы
   `game_voice.write_takes()`: `Soundbanks/v<id>_<handle>.wem`, `Soundbanks/<id>.lsf`, `Animation/FX_/MC_`,
   `Animation/FaceFXActors/`.
 - Путь проверен по пакам игры 27.09: все 184 978 `.wem` `Voice.pak` лежат в
   `Mods/Gustav/Localization/English/Soundbanks/`, её банк VoiceMeta — там же в `VoiceMeta.pak`, `Source`
   — только имя файла. В `bg3_dx11.exe` есть строка `Localization/English/Soundbanks` (путь внутри папки
   модуля), поэтому наш `.wem` лежит рядом с нашим банком в папке нашего модуля.
-- Для AD-реплик (над головой) — приоритет `P4_RepeatingDialog_AD`, для сюжетных — `P1_StoryDialog`
-  (пока все — `P1`, AD генератор с голосом клона ещё не связывает).
+- Приоритет — по виду сцены, как у Larian: сюжетный диалог `P1_StoryDialog`, AD над головой (места, путь,
+  беседы отряда) — `P4_RepeatingDialog_AD` (у неё в VoiceMeta так 100 AD-реплик: песни, лагерь, праздник).
 
-### Первая проба в игре: одна реплика (27.09, в игре ещё не проверено)
+### Первая проба в игре: одна реплика (27.09; проверено в игре: звучит, рот двигается)
 
 **Реплика** — первая, которую герой слышит в нашей вербовке: приветствие `A1_duet`
 (`scenes/recruitment.py`), handle `habe18d85g7bf6g5207gbb65g98953eaaf91c`, узел
@@ -311,6 +312,76 @@ metre…»), FaceFXActors. Фаза 43 — 6,939 с (6,339 + 0,6), `TLVoice` —
    - нет ли лишних жестов от MC_ донора;
    - после реплики — меню A2 как обычно, остальные реплики ✍️ — без голоса, реплики игры — с её голосом.
 4. Выйти без сохранения, закрыть игру, `python scripts/test_mode.py off`.
+
+**Итог пробы:** Wwise PCM 48 кГц моно звучит, рот двигается. Потом автор выбрал для этой реплики на странице
+акта 1 другой дубль — `breeze_v1`, 7,84 с; сборка пересчитывает всё сама: фаза 43 — 8,44 с (7,84 + 0,6),
+`TLVoice` — 7,84 с, липсинк — от её реплики `hd478ade9…` (7,841 с).
+
+### Личная сборка со всем голосом акта 1 (28.09, в игре не проверено)
+
+`build_pak.py --voice clone` озвучивает **все** handle из `voice-work/game/voice.json`, которые есть в сценах:
+
+```text
+python scripts/build_pak.py --voice clone     # build/personal/AlfiraSecondVerse_personal.pak + voice_clone.tsv
+python scripts/build_pak.py                   # публичная: dist/AlfiraSecondVerse.pak (собирать последней: mod/ — снова без голоса)
+python scripts/install.py --voice clone       # при закрытых BG3 и BG3 Mod Manager; ставит личный пак вместо публичного
+```
+
+- **Говорящий и приоритет** — из сцены, а не из voice.json: генератор (`Compiler.clone_voice`) берёт говорящего
+  реплики (Альфира, `other` сцены — Ашарак, Лакрисса, Даммон — или спутник в беседе отряда) и приоритет по виду
+  сцены. Ремарки рассказчика и реплики героя не озвучиваются.
+- **.wem** — `Soundbanks/v<id>_<handle>.wem`, Wwise PCM 48 кГц моно, как в пробе.
+- **VoiceMeta** — свой банк на каждого говорящего, как у игры (проверено по `VoiceMeta.pak` 28.09: у Ашарака
+  `02025646347a4235aef7e46b7c94b435.lsf` — 195 реплик, у Лакриссы `23129d6c…` — 232, у Даммона `e2ad06ec…` — 319;
+  в каждом один `VoiceSpeakerMetaData`, MapKey — uuid с дефисами, `Source` — `v<id>_<handle>.wem`, у Даммона 87 handle
+  делят чужие `.wem`).
+- **Липсинк** — `FX_`/`MC_` реплики того же говорящего: не короче новой и ближайшая по длине (как в пробе; нет
+  длиннее — самая длинная), без пения, «Разговора с мёртвыми» и рыдания (`labels.csv` его датасета, если есть).
+  Донор ищется по его банку VoiceMeta, файлы FaceFX названы по `Source`. В `English_Animations.pak` FaceFX есть у всех
+  трёх NPC (FX_: 191, 228, 232) и у неё (545). У говорящего без FaceFX — реплика без липсинка (только звук и банк).
+  Файлы говорящего извлекаются один раз в `voice-work/pipeline/vanilla_anim/` (метка `.<id>.extracted`).
+- **Длина фазы** — по звуку (`voice_durations`, фаза = звук + 0,6 с, `TLVoice` = звук), в диалогах и в AD.
+- Handle из voice.json, которого нет в сценах (текст переписан, сцена убрана), **пропускается с предупреждением**
+  `! голос клона пропущен`; реплики сцен без голоса остаются текстом.
+- `build/personal/voice_clone.tsv` — по каждому handle: говорящий, длина, приоритет, донор липсинка, его длина.
+
+**Сборка 28.09** (voice.json — 321 handle Альфиры): озвучено 320, все с липсинком; пропущен
+`h812c0880…` (второй handle текста «Good.» в главе 8, в текущих сценах его нет). Личный пак — 164 МБ, 1549 файлов
+(+963: 320 `.wem`, 320 FX_, 320 MC_, банк, актёр FaceFX), публичный — 3,3 МБ, 586 файлов. Ветка NPC/AD проверена
+пробным прогоном без записи в voice.json: реплики Ашарака, Лакриссы, Даммона (P1, свои банки и доноры), AD Альфиры и
+спутников в беседах отряда (P4), говорящий без FaceFX — без липсинка.
+
+**Публичная сборка — ни одного клона (проверка в `build_pak`).** Без `--voice clone` сборка падает, если в папке
+сборки или в готовом паке есть `.wem`, любой файл в `Localization/<язык>/Soundbanks/` или `…/Animation/`, файл со
+звуком RIFF/WAVE (под любым именем) или банк VoiceMeta, а также если манифест генератора собран с голосом клона.
+Пак с нарушением удаляется. Проверено 28.09 подложенными `.wem` в `mod/` и `.wav` под чужим именем — сборка
+остановилась, `dist/` не тронут.
+
+#### Как добавить новые реплики
+
+1. Реплики — в сценах `scripts/dialogs/scenes/*.py` (сценарий согласован), `python scripts/build_pak.py` —
+   `build/dialogs/voice_lines.json` со всеми новыми репликами и говорящими.
+2. Список для озвучки: `python scripts/voice/list_lines.py` (главы, вербовка, отряд → `voice-work/act1/lines.json`);
+   «Разговоры», в том числе NPC, — `voice-work/act1/lines_talks.json` с `speaker_uuid` (раздел «Голоса NPC»).
+3. Генерация и страница: `python scripts/voice/voice_act1.py all` (или `gen`/`score`/`page` по группам) →
+   `Загрузки\Альфира — голос акт 1\index.html`.
+4. Автор слушает и выбирает; «Скопировать выбор» → файл со строками `handle=вариант`.
+5. `python scripts/voice/voice_act1.py pick <файл>` → `voice-work/game/<handle>.wav` и `voice.json`
+   (с `speaker_uuid` для справки); «переделать» — в `redo.txt`, варианты — через `redo_act1.json`.
+6. `python scripts/build_pak.py --voice clone`, потом `python scripts/build_pak.py` (публичная, последней),
+   `check_story.py`, `dialogs/validate.py`, `dialogs/tree.py`. Посмотреть «пропущено» в выводе и `voice_clone.tsv`.
+
+#### Что проверить в игре (личный пак; `test_mode.py on`, `install.py --voice clone`, только `bg3_dx11.exe`)
+
+1. Вербовка (сохранение «Леший — Лес — 5ч 02м»): «There they are…» — новый дубль 7,84 с, рот двигается, после
+   звука нет длинной немой паузы; остальные её реплики вербовки — тоже с голосом.
+2. Главы 1–8 и разговор в отряде (`Osi.PROC_ALFSV_Debug_UnlockChapter()` — следующая глава, docs/STAGE4.md): голос на каждой её
+   новой реплике, звук не обрывается до конца фазы, субтитр держится до конца звука; рот двигается у всех.
+3. Реплики героя и ремарки рассказчика — без звука, как раньше; её реплики игры (🔊) — её настоящим голосом.
+4. Сцена главы 4 с Лакриссой (`ALFSV_Alfira_Ch04_Lakrissa`, после их флирта на празднике): у Альфиры голос; реплики Лакриссы, пока их нет
+   в voice.json, — текстом.
+5. Лишние жесты от чужих `MC_` (руки не к месту) — записать номера реплик для автора.
+6. Выйти без сохранения, закрыть игру, `python scripts/test_mode.py off`.
 
 ### Видеокарта
 
