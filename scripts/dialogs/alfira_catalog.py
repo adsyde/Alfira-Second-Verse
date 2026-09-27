@@ -462,7 +462,7 @@ def main():
                            {x for e in style["emotions"].values() for x, _ in e["poses"]}
                            | {x for e in style["remarks"].values() for x, _ in e["poses"]}
                            | {x for x, _ in style["poses_standing"]}}
-    STYLE.write_text(json.dumps(style, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    STYLE.write_text(json.dumps(style, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
     print(f"реплик {len(lines)}, фаз без голоса с анимацией {len(cine)}, пропущено {len(errors)}")
     print(f"  {OUT / 'alfira_catalog.json'}\n  {OUT / 'alfira_catalog.md'}\n  {STYLE}")
 
