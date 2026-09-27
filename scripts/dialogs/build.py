@@ -17,6 +17,7 @@
   Mods/_MOD_/Localization/English|Russian/AlfiraSecondVerse_*.xml    тексты
   Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt                 Osiris глав разговоров (этап 4)
   Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt                    Osiris реплик на местах и в пути (AD, этап 5)
+  Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Reactions.txt                Osiris реакций на поступки (reactions.py)
   build/dialogs/manifest.json                                        ванильные handle (для build_pak)
 """
 from __future__ import annotations
@@ -38,9 +39,10 @@ sys.path.insert(0, str(HERE.parent))
 from common import config, enable_utf8_stdout, resolve  # noqa: E402
 import bg3lib  # noqa: E402
 import dsl  # noqa: E402
-from dsl import ALFIRA, PLAYER, Flag, FlagRef, Line, Option, has_gender, render  # noqa: E402
+from dsl import ACT_LEVELS, ALFIRA, OTHER, PLAYER, Flag, FlagRef, Line, Option, Osi, has_gender, render  # noqa: E402
 from staging import Stager  # noqa: E402
 import ads  # noqa: E402
+import reactions as act_reactions  # noqa: E402
 from vanilla import ALFIRA_ORIGIN, ALFIRA_TEMPLATE, APPROVAL_SP1, NARRATOR_SPEAKER, PLAYER_SPEAKER, F  # noqa: E402
 
 enable_utf8_stdout()
@@ -49,6 +51,7 @@ enable_utf8_stdout()
 SCENES = ["recruitment", "inparty"] + sorted(p.stem for p in (HERE / "scenes").glob("ch[0-9][0-9]_*.py"))
 CHAPTERS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt"
 WORLD_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt"
+REACTIONS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Reactions.txt"
 # Женские формы обращения к героине: отдельный файл <имя>_to_F.xml рядом с русским (как
 # russian_to_F.loca у игры). Проверить в игре; если игра не различает — выключить.
 FEMALE_VARIANTS = True
@@ -60,6 +63,7 @@ OWNED = ["Mods/_MOD_/Story/DialogsBinary", "Public/_MOD_/Timeline", "Public/_MOD
          "Public/_MOD_/ApprovalRatings", "Public/_MOD_/Flags", "Mods/_MOD_/Globals"]
 SPEAKER_UUID = {ALFIRA: ALFIRA_TEMPLATE, PLAYER: PLAYER_SPEAKER}
 NULL = "NULL_00000000-0000-0000-0000-000000000000"
+ALFIRA_OSI_NAME = "S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c"
 FLAG_USAGE = {"Global": 5, "Object": 4, "Dialog": 6}
 
 
@@ -83,10 +87,13 @@ class Ids:
 class Compiler:
     """Одна сцена → диалог, таймлайн, сцена, записи банков, тексты."""
 
-    def __init__(self, lib: bg3lib.Lib, scene: dsl.Scene, ids: Ids, voice_meta: set[str], chapters=()):
+    def __init__(self, lib: bg3lib.Lib, scene: dsl.Scene, ids: Ids, voice_meta, chapters=()):
         self.lib, self.b, self.s, self.ids = lib, lib.b, scene, ids
-        self.voice_meta = voice_meta
-        self.chapters = sorted(chapters, key=lambda c: c.chapter.number)   # сцены глав (для входов)
+        self.voice_meta = voice_meta             # uuid говорящего → handle его озвучки (VoiceMeta)
+        # сцены глав со входом в разговоре в отряде (hub); главы-события (hub=False) запускает их Osiris
+        self.chapters = sorted((c for c in chapters if c.chapter.hub), key=lambda c: c.chapter.number)
+        self.slot = {ALFIRA: ALFIRA, PLAYER: PLAYER}   # логический спикер → слот основы (run() уточняет)
+        self.speaker_uuid = dict(SPEAKER_UUID)
         self.loca = {}           # handle → (en, ru_m, ru_f | None)
         self.vanilla_handles = set()
         self.reactions = set()
@@ -109,7 +116,7 @@ class Compiler:
                 raise TypeError(f"{self.s.name}: ожидался флаг вида FLAG(спикер), получено {r!r}")
             if r.flag.new:
                 self.flags.add(r.flag)
-            spk = None if r.flag.kind == "Global" else r.speaker
+            spk = None if r.flag.kind == "Global" else self.slot[r.speaker]
             by.setdefault(r.flag.kind, []).append(self.b.flag(self.ids.flag(r.flag), r.value, spk))
         return [self.b.flag_group(k, v) for k, v in by.items()]
 
@@ -131,8 +138,9 @@ class Compiler:
         if line.handle:
             if line.handle not in self.voices:
                 raise RuntimeError(f"{self.s.name}: реплика {line.handle} не найдена в {self.s.voice_from}")
-            if line.handle not in self.voice_meta:
-                raise RuntimeError(f"{self.s.name}: у реплики {line.handle} нет озвучки Альфиры (VoiceMeta)")
+            if line.handle not in self.voice_meta(self.speaker_uuid[line.speaker]):
+                raise RuntimeError(f"{self.s.name}: у реплики {line.handle} нет озвучки говорящего "
+                                   f"{self.speaker_uuid[line.speaker]} (VoiceMeta)")
             _, _, version = self.voices[line.handle]
             self.vanilla_handles.add(line.handle)
             return self.b.text_content(line.handle, version, self.uid(f"{key}/line"))
@@ -179,7 +187,7 @@ class Compiler:
             children = self.after(nx, prefix) if last else [ids[i + 1]]
             sets = list(line.set) + (list(first_set) if i == 0 else []) + (list(nx.set) if last else [])
             self.d.create_standard_dialog_node(
-                nid, NARRATOR_SPEAKER if line.narrator else ALFIRA_TEMPLATE, children,
+                nid, NARRATOR_SPEAKER if line.narrator else self.speaker_uuid[line.speaker], children,
                 self.line_text(f"{prefix}.{i}", line),
                 constructor=self.b.dialog_object.GREETING if root and i == 0 else self.b.dialog_object.ANSWER,
                 setflags=self.groups(sets), checkflags=self.groups(when) if i == 0 else [],
@@ -206,7 +214,7 @@ class Compiler:
             fail = self.lines(f"{key}.fail", r.failure.reply, r.failure.next, first_set=r.failure.set,
                               first_approve=r.failure.approve)
             self.d.create_roll_dialog_node(
-                nid, PLAYER_SPEAKER, SPEAKER_UUID[r.target], r.ability, r.skill, r.dc, ok, fail, text,
+                nid, PLAYER_SPEAKER, self.speaker_uuid[r.target], r.ability, r.skill, r.dc, ok, fail, text,
                 checkflags=self.groups(o.when), transition_mode=True, show_once=True, validated_has_value=False)
             return nid
         nx = o.next
@@ -261,13 +269,16 @@ class Compiler:
                 if ch.approval not in APPROVAL_SP1:
                     raise ValueError(f"глава {ch.number}: порога одобрения {ch.approval} у игры нет; есть {sorted(APPROVAL_SP1)}")
                 when.append(APPROVAL_SP1[ch.approval](ALFIRA))
-            entry, nested, end = self.uid(key), self.uid(f"{key}.nested"), self.uid(f"{key}.end")
+            nested, end = self.uid(f"{key}.nested"), self.uid(f"{key}.end")
             self.d.create_standard_dialog_node(end, ALFIRA_TEMPLATE, [], None, end_node=True)
             self.nested_node(nested, sc.dialog_id, [end], [])
-            self.d.create_standard_dialog_node(
-                entry, ALFIRA_TEMPLATE, [nested], None, constructor=self.b.dialog_object.GREETING,
-                checkflags=self.groups(when), root=True)
-            out.append(entry)
+            # when_any — «или» как у Larian: по корню на каждый вариант, под ними один и тот же вложенный диалог
+            for i, extra in enumerate(ch.when_any or [[]]):
+                entry = self.uid(key if i == 0 else f"{key}.any{i}")
+                self.d.create_standard_dialog_node(
+                    entry, ALFIRA_TEMPLATE, [nested], None, constructor=self.b.dialog_object.GREETING,
+                    checkflags=self.groups(when + list(extra)), root=True)
+                out.append(entry)
         return out
 
     def nested_node(self, nid, nested, children, checkflags):
@@ -281,11 +292,17 @@ class Compiler:
             + "".join(et.tostring(g.to_xml()).decode() for g in checkflags)
             + '</children></node><node id="SpeakerLinking"><children>'
             + "".join(f'<node id="SpeakerLinkingEntry"><attribute id="Key" type="int32" value="{k}" />'
-                      f'<attribute id="Value" type="int32" value="{k}" /></node>' for k in (ALFIRA, PLAYER))
+                      f'<attribute id="Value" type="int32" value="{k}" /></node>'
+                      for k in (self.slot[ALFIRA], self.slot[PLAYER]))
             + '</children></node></children></node>')
         self.d.add_dialog_node(n)
 
     # --- сцена целиком ---
+
+    def base_scene_file(self):
+        tl_uuid = self.lib.assets.index.get_entry(self.s.base)["timeline_uuid"]
+        src = self.lib.assets.index.get_timeline_resource(tl_uuid).find('./attribute[@id="SourceFile"]').get("value")
+        return src[:-4] + "_Scene.lsf"
 
     def index_voices(self):
         for name in self.s.voice_from:
@@ -304,6 +321,30 @@ class Compiler:
         bundle = lib.assets.create_new_empty_dialog_from_another(s.base, s.name, s.dialog_id, timeline_id, s.subfolder)
         self.bundle = bundle
         self.d = b.dialog_object(bundle.dialog)
+        # AD-основа на двоих с другим собеседником: её спикер other_base заменяется на other (как у Larian, у
+        # спикера в speakerlist — только uuid персонажа; актёры таймлайна привязаны к номеру спикера)
+        if s.other_base:
+            for sp in bundle.dialog.root_node.iter("node"):
+                if sp.get("id") == "speaker":
+                    a = sp.find('./attribute[@id="list"]')
+                    if a is not None and a.get("value") == s.other_base:
+                        a.set("value", s.other)
+                        break
+            else:
+                raise RuntimeError(f"{s.name}: в основе {s.base} нет спикера {s.other_base}")
+            self.d = b.dialog_object(bundle.dialog)
+        # слоты спикеров — из основы: у основ на двоих Альфира 0 и герой 1, у сцены на троих — как у Larian
+        speakers = list(self.d.get_speakers())
+        want = {ALFIRA: ALFIRA_TEMPLATE} if s.kind == "ad" else {ALFIRA: ALFIRA_TEMPLATE, PLAYER: PLAYER_SPEAKER}
+        if s.other:
+            want[OTHER] = s.other
+            self.speaker_uuid[OTHER] = s.other
+        for role, u in want.items():
+            if u not in speakers:
+                raise RuntimeError(f"{s.name}: в основе {s.base} нет спикера {u} (спикеры: {speakers})")
+            self.slot[role] = speakers.index(u)
+        if len(speakers) != len(want):
+            raise RuntimeError(f"{s.name}: у основы {s.base} {len(speakers)} спикеров, в сцене описано {len(want)}")
         # актёр-«таймлайн» (если есть в основе) должен указывать на новый таймлайн
         base_tl_id = lib.assets.index.get_entry(s.base)["timeline_uuid"]
         for actor in bundle.timeline.root_node.iter("node"):
@@ -333,7 +374,8 @@ class Compiler:
         base_tl = lib.assets.get_timeline_object(s.base)
         base_d = lib.assets.get_dialog_object(s.base)
         self.stager = st = Stager(lib, tl, self.d, base_tl, base_d, ALFIRA_TEMPLATE, PLAYER_SPEAKER,
-                                  lambda k: self.uid(k))
+                                  lambda k: self.uid(k), other_template=s.other,
+                                  base_scene_file=self.base_scene_file())
         for nid, line in self.npc:
             if line.handle:
                 src, src_node, _ = self.voices[line.handle]
@@ -352,7 +394,7 @@ class Compiler:
             ch.remove(old)
         nested = list(s.nested)
         if any(b.chapters for b in s.blocks.values()):
-            nested += [c.dialog_id for c in self.chapters]
+            nested += [c.dialog_id for c in self.chapters]      # только главы со входом в отряде (hub)
         for n in nested:
             et.SubElement(et.SubElement(ch, "node", {"id": "childResources"}), "attribute",
                           {"id": "Object", "type": "guid", "value": n})
@@ -373,11 +415,11 @@ class Compiler:
         dnode = self.bundle.dialog.root_node.find('./region[@id="dialog"]/node[@id="dialog"]')
         if s.category:
             set_attr(dnode, "category", s.category, "LSString")
-        self.stager = st = ads.ADStager(lib, tl, lambda k: self.uid(k))
+        self.stager = st = ads.ADStager(lib, tl, lambda k: self.uid(k), self.slot)
         for nid, line in self.npc:
             if line.handle:
                 src, src_node, _ = self.voices[line.handle]
-                st.voiced_phase(nid, src, src_node)
+                st.voiced_phase(nid, src, src_node, line.speaker)
             else:
                 st.text_phase(nid, line)
         dres = lib.assets.get_dialog_resource(s.dialog_id)
@@ -504,8 +546,9 @@ def check_vanilla(lib, scenes):
                 if roll:
                     stack.extend([roll.success, roll.failure])
         if s.chapter is not None:
-            for r in s.chapter.story + s.chapter.when:
-                used.add(r.flag)
+            for r in s.chapter.story + s.chapter.story_any + s.chapter.when + [x for w in s.chapter.when_any for x in w]:
+                if isinstance(r, FlagRef):
+                    used.add(r.flag)
             if s.chapter.approval is not None:
                 used.add(APPROVAL_SP1[s.chapter.approval])
     for fl in [v for v in vars(F).values() if isinstance(v, Flag)]:
@@ -542,21 +585,32 @@ def check_vanilla(lib, scenes):
     return errors
 
 
-def voice_meta_handles(lib):
-    sb = lib.files.get_soundbank_file(ALFIRA_TEMPLATE)
+def voice_meta_handles(lib, speaker=ALFIRA_TEMPLATE):
+    sb = lib.files.get_soundbank_file(speaker)
     return {n.find('./attribute[@id="MapKey"]').get("value") for n in sb.root_node.iter("node")
             if n.get("id") == "VoiceTextMetaData"}
 
 
 # --- main --------------------------------------------------------------------------------------
 
+OSIRIS_FLAGS = []   # новые флаги, которые ставит или читает только Osiris (файлы флагов нужны всё равно)
+
+
 def load_scenes():
+    """Сцены из SCENES. Модуль сцены может добавить EXTRA_SCENES (ещё диалоги той же главы, например
+    сцену на троих) и OSIRIS_FLAGS (флаги, которые ставит только его Osiris)."""
     out = []
+    OSIRIS_FLAGS.clear()
     for name in SCENES:
         mod = importlib.import_module(f"scenes.{name}")
         out.append(mod.SCENE)
+        out += list(getattr(mod, "EXTRA_SCENES", []))
+        OSIRIS_FLAGS.extend(getattr(mod, "OSIRIS_FLAGS", []))
     places, trv = load_world()
     out += [p.scene for p in places] + [trv.scene]
+    import scenes.banter as bt                 # беседы отряда (scenes/banter.py): AD на двоих
+    out += list(bt.EXTRA_SCENES)
+    OSIRIS_FLAGS.extend(bt.OSIRIS_FLAGS)
     chapters = [s for s in out if s.chapter is not None]
     nums = sorted(s.chapter.number for s in chapters)
     if nums != list(range(1, len(nums) + 1)):
@@ -585,14 +639,26 @@ def chapters_goal(chapters, ids) -> str:
     Правила, а не факты INIT: при обновлении мода Osiris заменяет правила в уже начатой игре
     (story patching), а INIT существующего goal повторно не выполняет. Поэтому новые главы
     доходят до старых сохранений. Единственный вызов в INIT — для сохранений, где goal новый.
+
+    Очередь (scripts/dialogs/README.md, «Очередь глав»): глава N открывается, когда никакая глава не
+    ждёт (Available и не Done), сыграны все обязательные главы до неё, выполнены story/story_any, акт тот
+    и (after_rest) это проверка после отдыха. Правила глав идут по номерам: первая открывшаяся глава
+    «ждёт», и следующие в той же проверке уже не открываются — одна новая глава за проверку.
     """
     def fl(f):
         return f"(FLAG){f.name}_{ids.flag(f)}"
 
+    def cond(r):
+        if isinstance(r, Osi):
+            return r.condition
+        return f"{'' if r.value else 'NOT '}DB_GlobalFlag({fl(r.flag)})"
+
+    acts = sorted({sc.chapter.act for sc in chapters if sc.chapter.act is not None})
     out = ["Version 1", "SubGoalCombiner SGC_AND", "INITSECTION",
            "// GENERATED by scripts/dialogs/build.py from scripts/dialogs/scenes/ch*.py (chapter(...)).",
            "// Do not edit: change the chapter declaration and rebuild. See scripts/dialogs/README.md.",
-           "// Alfira's conversation chapters (design/APPROVAL.md section 4): ordered, one new chapter at a time,",
+           "// Alfira's conversation chapters (design/APPROVAL.md section 4): one new chapter at a time, in order;",
+           "// optional chapters whose story condition is not met do not hold the queue.",
            "// ALFSV_ChapterNN_Available is set here, ALFSV_ChapterNN_Done by the chapter dialog itself.",
            "// A save made before chapters existed (Alfira already recruited): the goal is new there, so this",
            "// INIT runs on story patching and opens the chapters that do not wait for a rest.",
@@ -607,25 +673,96 @@ def chapters_goal(chapters, ids) -> str:
     for sc in chapters:
         out += ["IF", f"FlagSet({fl(sc.chapter.done_flag)}, {NULL}, _)", "AND", "DB_ALFSV_IsCompanion(1)",
                 "THEN", "PROC_ALFSV_Chapters_Unlock(0);", ""]
+    # главы, которые не ждут отдыха, открываются, как только наступило их событие сюжета (флаг)
+    seen = set()
+    for sc in chapters:
+        if sc.chapter.after_rest:
+            continue
+        for r in sc.chapter.story + sc.chapter.story_any:
+            if isinstance(r, FlagRef) and r.value and r.flag not in seen:
+                seen.add(r.flag)
+                out += [f"// Chapter {sc.chapter.number} does not wait for a rest: its story event opens it",
+                        "IF", f"FlagSet({fl(r.flag)}, {NULL}, _)", "AND", "DB_ALFSV_IsCompanion(1)",
+                        "THEN", "PROC_ALFSV_Chapters_Unlock(0);", ""]
+    if acts:
+        out += ["// A new level (e.g. the next act): act-bound chapters stop waiting",
+                "IF", "LevelGameplayStarted(_, _)", "AND", "DB_ALFSV_IsCompanion(1)", "THEN",
+                "PROC_ALFSV_Chapters_Unlock(0);", ""]
     out += ["// Debug (Script Extender console): Osi.PROC_ALFSV_Debug_UnlockChapter() - as if a long rest had passed",
             "PROC", "PROC_ALFSV_Debug_UnlockChapter()", "THEN", "PROC_ALFSV_Chapters_Unlock(1);", "",
-            "//END_REGION", "", "//REGION Chapters", ""]
-    prev = None
+            "//END_REGION", "", "//REGION Queue: a chapter is waiting (unlocked, not played yet)", ""]
     for sc in chapters:
         ch = sc.chapter
+        out += ["QRY", "QRY_ALFSV_Chapters_Waiting()", "AND", f"DB_GlobalFlag({fl(ch.available_flag)})", "AND",
+                f"NOT DB_GlobalFlag({fl(ch.done_flag)})", "THEN", "DB_NOOP(1);", ""]
+    out += ["//END_REGION", ""]
+    if any(sc.chapter.optional and (sc.chapter.approval or 0) > 0 for sc in chapters):
+        out += ["//REGION Approval of any avatar (DB_ApprovalRating) for optional chapters with an entry threshold", "",
+                "QRY", "QRY_ALFSV_Chapters_Approval((INTEGER)_AtLeast)", "AND", "DB_Avatars(_Avatar)", "AND",
+                f"DB_ApprovalRating({ALFIRA_OSI_NAME}, _Avatar, _Value)", "AND", "_Value >= _AtLeast", "THEN",
+                "DB_NOOP(1);", "", "//END_REGION", ""]
+    if acts:
+        out += ["//REGION Acts (DB_CurrentLevel; levels per act - scripts/dialogs/dsl.py ACT_LEVELS)", ""]
+        for a in acts:
+            for lvl in ACT_LEVELS[a]:
+                out += ["QRY", "QRY_ALFSV_Chapters_InAct((INTEGER)_Act)", "AND", f"_Act == {a}", "AND",
+                        f'DB_CurrentLevel("{lvl}")', "THEN", "DB_NOOP(1);", ""]
+        out += ["//END_REGION", ""]
+    out += ["//REGION Chapters", ""]
+    for sc in chapters:
+        ch = sc.chapter
+        if ch.story_any:
+            out.append(f"// Chapter {ch.number}: any of these story events")
+            for r in ch.story_any:
+                out += ["QRY", f"QRY_ALFSV_Chapter{ch.number:02d}_StoryAny()", "AND", cond(r), "THEN", "DB_NOOP(1);", ""]
+    for sc in chapters:
+        ch = sc.chapter
+        # закрыть главу, которая открылась, но больше не может быть сыграна: кончился её акт или снят флаг story
+        if ch.act is not None:
+            out += [f"// Chapter {ch.number} is bound to act {ch.act}: unlocked but not played before the act ended -"
+                    " it no longer waits",
+                    "PROC", "PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)", "AND",
+                    f"DB_GlobalFlag({fl(ch.available_flag)})", "AND", f"NOT DB_GlobalFlag({fl(ch.done_flag)})", "AND",
+                    f"NOT QRY_ALFSV_Chapters_InAct({ch.act})", "THEN",
+                    f"PROC_GlobalClearFlagAndCache({fl(ch.available_flag)});", ""]
+        if ch.expire:
+            for r in ch.story:
+                if isinstance(r, FlagRef) and r.value:
+                    out += [f"// Chapter {ch.number} expires: its story flag is cleared before it was played",
+                            "IF", f"FlagCleared({fl(r.flag)}, {NULL}, _)", "AND",
+                            f"DB_GlobalFlag({fl(ch.available_flag)})", "AND",
+                            f"NOT DB_GlobalFlag({fl(ch.done_flag)})", "THEN",
+                            f"PROC_GlobalClearFlagAndCache({fl(ch.available_flag)});", ""]
+    for sc in sorted(chapters, key=lambda c: (-c.chapter.priority, c.chapter.number)):
+        ch = sc.chapter
+        required = [p.chapter for p in chapters if p.chapter.number < ch.number and not p.chapter.optional]
         when = "after a long rest" if ch.after_rest else "immediately"
-        out.append(f"// Chapter {ch.number}: {sc.name} - unlocks {when}"
-                   + (f", after chapter {prev.number}" if prev else ""))
-        cond = ["PROC", "PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)", "AND", "DB_ALFSV_IsCompanion(1)",
-                "AND", f"NOT DB_GlobalFlag({fl(ch.available_flag)})"]
-        if prev is not None:
-            cond += ["AND", f"DB_GlobalFlag({fl(prev.done_flag)})"]
+        head = f"// Chapter {ch.number}: {sc.name} - {'optional, ' if ch.optional else ''}unlocks {when}"
+        if required:
+            head += f", after chapter{'s' if len(required) > 1 else ''} {', '.join(str(p.number) for p in required)}"
+        if ch.act is not None:
+            head += f", only in act {ch.act}"
+        if ch.priority:
+            head += f", priority {ch.priority} (checked before the others)"
+        out.append(head)
+        c = ["PROC", "PROC_ALFSV_Chapters_Unlock((INTEGER)_AtRest)", "AND", "DB_ALFSV_IsCompanion(1)",
+             "AND", f"NOT DB_GlobalFlag({fl(ch.available_flag)})",
+             "AND", f"NOT DB_GlobalFlag({fl(ch.done_flag)})",
+             "AND", "NOT QRY_ALFSV_Chapters_Waiting()"]
+        for p in required:
+            c += ["AND", f"DB_GlobalFlag({fl(p.done_flag)})"]
         if ch.after_rest:
-            cond += ["AND", "_AtRest == 1"]
+            c += ["AND", "_AtRest == 1"]
         for r in ch.story:
-            cond += ["AND", f"{'' if r.value else 'NOT '}DB_GlobalFlag((FLAG){r.flag.name}_{ids.flag(r.flag)})"]
-        out += cond + ["THEN", f"PROC_GlobalSetFlagAndCache({fl(ch.available_flag)});", ""]
-        prev = ch
+            c += ["AND", cond(r)]
+        if ch.story_any:
+            c += ["AND", f"QRY_ALFSV_Chapter{ch.number:02d}_StoryAny()"]
+        if ch.act is not None:
+            c += ["AND", f"QRY_ALFSV_Chapters_InAct({ch.act})"]
+        if ch.optional and ch.approval is not None and ch.approval > 0:
+            # порог входа проверяется и при открытии: иначе необязательная глава ждала бы одобрения, держа очередь
+            c += ["AND", f"QRY_ALFSV_Chapters_Approval({ch.approval})"]
+        out += c + ["THEN", f"PROC_GlobalSetFlagAndCache({fl(ch.available_flag)});", ""]
     out += ["//END_REGION", "EXITSECTION", "", "ENDEXITSECTION", ""]
     return "\n".join(out)
 
@@ -640,7 +777,12 @@ def generate(dump=False):
     errors = check_vanilla(lib, scenes)
     if errors:
         sys.exit("Данные сцен не сходятся с игрой:\n  " + "\n  ".join(errors))
-    vm = voice_meta_handles(lib)
+    vm_cache = {}
+
+    def vm(speaker_uuid):
+        if speaker_uuid not in vm_cache:
+            vm_cache[speaker_uuid] = voice_meta_handles(lib, speaker_uuid)
+        return vm_cache[speaker_uuid]
     chapters = sorted((s for s in scenes if s.chapter is not None), key=lambda s: s.chapter.number)
     results = [Compiler(lib, s, ids, vm, chapters).run() for s in scenes]
 
@@ -691,10 +833,20 @@ def generate(dump=False):
         goal.unlink()
     # реплики на местах и в пути (AD) — свой goal
     places, trv = load_world()
-    (src / WORLD_GOAL).write_text(ads.world_goal(places, trv, ids), encoding="utf-8", newline="\n")
+    import scenes.banter as bt
+    (src / WORLD_GOAL).write_text(ads.world_goal(places, trv, ids, bt.BANTERS, bt.EXTRA_OSI, bt.EXTRA_OSI_FLAGS),
+                                  encoding="utf-8", newline="\n")
+    # реакции на поступки (акт 1) — свой goal (scripts/dialogs/reactions.py)
+    (src / REACTIONS_GOAL).write_text(act_reactions.goal(ids), encoding="utf-8", newline="\n")
     from scenes.recruitment import ROMANCE as romance_flag        # флаг только из Osiris: файл нужен всё равно
-    if romance_flag not in flags:
-        write_xml(flag_xml(ids.flag(romance_flag), romance_flag), src / f"Public/_MOD_/Flags/{ids.flag(romance_flag)}.lsx")
+    osiris_only = [romance_flag] + list(act_reactions.FLAGS.values()) + OSIRIS_FLAGS + [r.flag for s in chapters for r in s.chapter.story + s.chapter.story_any
+                                                   if isinstance(r, FlagRef)]
+    # флаги глав есть в goal глав всегда, а в диалогах Available — только у глав со входом в отряде
+    osiris_only += [f for s in chapters for f in (s.chapter.available_flag, s.chapter.done_flag)]
+    for f in osiris_only:
+        if f.new and f not in flags:
+            flags.add(f)
+            write_xml(flag_xml(ids.flag(f), f), src / f"Public/_MOD_/Flags/{ids.flag(f)}.lsx")
     loc = src / "Mods/_MOD_/Localization"
     write_xml(loca_xml(loca_en), loc / "English" / f"{LOCA_NAME}_en.xml")
     write_xml(loca_xml(loca_ru), loc / "Russian" / f"{LOCA_NAME}_ru.xml")
@@ -710,7 +862,8 @@ def generate(dump=False):
                    for c in results},
         "chapters": {s.chapter.number: {"scene": s.name, "dialog": s.dialog_id, "title": s.chapter.title,
                                          "available": ids.flag(s.chapter.available_flag),
-                                         "done": ids.flag(s.chapter.done_flag)} for s in chapters},
+                                         "done": ids.flag(s.chapter.done_flag), "optional": s.chapter.optional,
+                                         "act": s.chapter.act, "hub": s.chapter.hub} for s in chapters},
         "places": {p.key: {"dialog": p.scene.dialog_id, "name": p.scene.name, "act": p.act, "title": p.title,
                            "triggers": p.triggers, "flags": p.flags, "levels": p.levels, "custom": p.custom}
                    for p in places},

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="863d579a-5b6f-54f0-bd6e-72d23310346d" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Song_FirstVerse" />
+			<attribute id="Description" type="LSString" value="Alfira showed the hero the first verse of his song (chapter 3)" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

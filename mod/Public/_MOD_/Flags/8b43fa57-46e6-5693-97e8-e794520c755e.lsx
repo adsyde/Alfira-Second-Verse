@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="8b43fa57-46e6-5693-97e8-e794520c755e" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Celebration_Shoulder" />
+			<attribute id="Description" type="LSString" value="Alfira fell asleep on the hero's shoulder by the fire" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

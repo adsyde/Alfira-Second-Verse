@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="108f45b7-3ec2-58a5-a24f-71390f8175b8" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Celebration_Theme_Courage" />
+			<attribute id="Description" type="LSString" value="Celebration song theme: courage, prowess, battle" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

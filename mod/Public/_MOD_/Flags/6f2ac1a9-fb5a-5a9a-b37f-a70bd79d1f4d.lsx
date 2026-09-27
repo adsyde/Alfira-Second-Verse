@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="6f2ac1a9-fb5a-5a9a-b37f-a70bd79d1f4d" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Romance_Postponed" />
+			<attribute id="Description" type="LSString" value="R3: postponed ('let's see where the road takes us' / 'wanted to see how you'd react')" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="50b0932e-a727-5f87-87b4-0e7b70b32834" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Celebration_Theme_OtherHero" />
+			<attribute id="Description" type="LSString" value="Celebration song theme: someone else (Blade of Frontiers, Mystra, Vlaakith, a god)" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

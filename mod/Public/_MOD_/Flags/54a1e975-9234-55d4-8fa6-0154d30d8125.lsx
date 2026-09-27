@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="54a1e975-9234-55d4-8fa6-0154d30d8125" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Celebration_Deferred" />
+			<attribute id="Description" type="LSString" value="R2: the hero didn't interrupt - the choice is postponed" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

@@ -18,6 +18,10 @@ PROC_ALFSV_Travel_Start();
 PROC
 PROC_ALFSV_World_Data()
 THEN
+DB_ALFSV_Place("React_GroveHeld", (DIALOGRESOURCE)ALFSV_AD_Place_React_GroveHeld_f9c1086f-dbe4-5b5b-b361-3e6e03ae102a);
+DB_ALFSV_Place("React_TieflingsOut", (DIALOGRESOURCE)ALFSV_AD_Place_React_TieflingsOut_c887d6ec-2d36-53f7-8157-8e0c8fe1556d);
+DB_ALFSV_Place("React_Children", (DIALOGRESOURCE)ALFSV_AD_Place_React_Children_9aa434ca-55a2-5524-b057-03b864fb9eb9);
+DB_ALFSV_Place("React_TieflingKilled", (DIALOGRESOURCE)ALFSV_AD_Place_React_TieflingKilled_d9bc5671-9094-53a7-8c4f-5bef4b3f240a);
 DB_ALFSV_Place("CRE_LiftStart", (DIALOGRESOURCE)ALFSV_AD_Place_CRE_LiftStart_8c34c5f6-7e21-57c3-b5f2-f113c83b265f);
 DB_ALFSV_Place("CRE_LiftMid", (DIALOGRESOURCE)ALFSV_AD_Place_CRE_LiftMid_2381622c-f1da-5dcc-9c57-311f8dd27902);
 DB_ALFSV_Place("CRE_LiftTop", (DIALOGRESOURCE)ALFSV_AD_Place_CRE_LiftTop_9f978edd-2dde-5a69-846b-486947c037de);
@@ -29,16 +33,22 @@ DB_ALFSV_Place("UnderdarkFirst", (DIALOGRESOURCE)ALFSV_AD_Place_UnderdarkFirst_6
 DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_Underdark_SUB_b379a862-a59f-4e52-9166-23fbe0e8976e, "UnderdarkFirst");
 DB_ALFSV_Place("Myconids", (DIALOGRESOURCE)ALFSV_AD_Place_Myconids_1466428e-25b8-5c9a-85bc-e47d34bfc3eb);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_MyconidCircle_SUB_4b5cc8fc-88f4-465e-bf82-4c20b055c019, "Myconids");
+DB_ALFSV_Place("SeluneOutpost", (DIALOGRESOURCE)ALFSV_AD_Place_SeluneOutpost_a690a920-99a0-5c2b-9727-9714ceeb4e1d);
+DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_SharFortBox_3419cfbf-5ad0-473b-bfa6-f10cb1e4a415, "SeluneOutpost");
 DB_ALFSV_Place("AdamantineForge", (DIALOGRESOURCE)ALFSV_AD_Place_AdamantineForge_1e7f78db-b183-5bf2-802d-0923a23074bb);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_UND_AdamantineForge_SUB_5fd81ed1-b91b-413e-91de-360715aba962, "AdamantineForge");
+DB_ALFSV_Place("GrymforgeLift", (DIALOGRESOURCE)ALFSV_AD_Place_GrymforgeLift_2b1e5cfa-8c51-546d-a1a4-17b032805b09);
 DB_ALFSV_Place("SacredPool", (DIALOGRESOURCE)ALFSV_AD_Place_SacredPool_86cb32bd-69d1-560a-ac45-8b2c8b46de67);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_DEN_SacredPond_SUB_2303e19f-549f-434f-bee0-b886fb34c46a, "SacredPool");
+DB_ALFSV_Place("ClearNight", (DIALOGRESOURCE)ALFSV_AD_Place_ClearNight_705f1325-2936-566b-bcc1-66de00411232);
 DB_ALFSV_Place("RisenRoad", (DIALOGRESOURCE)ALFSV_AD_Place_RisenRoad_0d26b4a5-584a-552b-b035-bdbfeedcb2eb);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_PLA_Plains_SUB_bcc3efa5-bfe1-4224-9df1-6758cac764cd, "RisenRoad");
 DB_ALFSV_Place("BlightedVillage", (DIALOGRESOURCE)ALFSV_AD_Place_BlightedVillage_f5160284-2684-5620-adc4-0b6da781448f);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_FOR_ForestVillage_SUB_21e6bfbf-c5c9-4e99-97f8-2df7143967c4, "BlightedVillage");
 DB_ALFSV_Place("CrashSite", (DIALOGRESOURCE)ALFSV_AD_Place_CrashSite_f280674a-59c1-51e7-a304-59ff71b87eaa);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_CRA_Beach_SUB_a78bd6f2-9c61-4866-a6d7-74a46ebd82b0, "CrashSite");
+DB_ALFSV_Place("WaukeensRest", (DIALOGRESOURCE)ALFSV_AD_Place_WaukeensRest_9edec833-733c-5cb9-b6ae-93b5effc699e);
+DB_ALFSV_PlaceFlag((FLAG)PLA_Tavern_Knows_Burning_f1d6e5cf-e8d4-4095-a6ef-17dfcd4521b0, "WaukeensRest");
 DB_ALFSV_Place("Teahouse", (DIALOGRESOURCE)ALFSV_AD_Place_Teahouse_9bdea1ab-243d-557a-9796-f632309cca12);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_HAG_House_SUB_a54033ab-fc50-476b-99c6-5d6ad01bcf18, "Teahouse");
 DB_ALFSV_Place("GoblinCamp", (DIALOGRESOURCE)ALFSV_AD_Place_GoblinCamp_be424106-6ed5-5a34-b130-291a5648585a);
@@ -54,6 +64,8 @@ DB_ALFSV_Place("SCLFirst", (DIALOGRESOURCE)ALFSV_AD_Place_SCLFirst_8901821c-ae5b
 DB_ALFSV_PlaceLevel("SCL_Main_A", "SCLFirst");
 DB_ALFSV_Place("LastLight", (DIALOGRESOURCE)ALFSV_AD_Place_LastLight_0580dc08-6ca8-5a0e-a64a-d92d3c31a41f);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_HAV_Haven_SUB_6ac001f4-9c56-4a1b-963d-a509e158ffab, "LastLight");
+DB_ALFSV_Place("Reithwin", (DIALOGRESOURCE)ALFSV_AD_Place_Reithwin_d0ff03c8-cd80-509a-aae2-8897f5b6af5e);
+DB_ALFSV_PlaceTrigger((TRIGGER)S_TWN_MainSub_169edf4a-bd51-4964-adb0-4d47956d5fae, "Reithwin");
 DB_ALFSV_Place("Gauntlet", (DIALOGRESOURCE)ALFSV_AD_Place_Gauntlet_0879240d-4d32-5fc4-9fdf-d95bdc62955b);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_SHA_Temple_SUB_348b76ee-33d8-471b-a95d-7ded0d6cdfd5, "Gauntlet");
 DB_ALFSV_Place("GauntletLift", (DIALOGRESOURCE)ALFSV_AD_Place_GauntletLift_173937ff-3025-557a-b057-0e748c7b777e);
@@ -92,6 +104,27 @@ DB_ALFSV_Place("AstralPlane", (DIALOGRESOURCE)ALFSV_AD_Place_AstralPlane_5aaca66
 DB_ALFSV_PlaceTrigger((TRIGGER)S_END_AstralPrism_SUB_adf44e33-ae27-4186-aff7-84d61dbedcae, "AstralPlane");
 DB_ALFSV_PlaceTrigger((TRIGGER)S_INT_AstralPlane_SUB_98791ae8-8cac-489f-8451-9f1a3d85cb19, "AstralPlane");
 DB_ALFSV_TravelAD((DIALOGRESOURCE)ALFSV_AD_Travel_b3006aa9-fc6d-5023-b11a-7d72b6b8602c);
+
+//END_REGION
+
+//REGION Grymforge lift: line on arrival after the level swap (the ride is behind the loading screen)
+PROC
+PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToSCLFromUnderdark")
+THEN
+DB_ALFSV_LiftArrival("SCL_Main_A");
+
+PROC
+PROC_GLO_LevelSwap_LeavingFromTo(_, "ReadyCheck_ToWLDFromSCL")
+THEN
+DB_ALFSV_LiftArrival("WLD_Main_A");
+
+IF
+LevelGameplayStarted(_Level, _)
+AND
+DB_ALFSV_LiftArrival(_Level)
+THEN
+NOT DB_ALFSV_LiftArrival(_Level);
+PROC_ALFSV_Place_Request("GrymforgeLift");
 
 //END_REGION
 
@@ -378,6 +411,61 @@ NOT DB_ALFSV_Lift_Ride(_X, _Y, _Z, _Half);
 
 //END_REGION
 
+//REGION Clear night: the first free evening in the forest camp (open sky, act 1)
+IF
+FlagSet(GLO_CAMP_State_NightMode_fb53edc2-9a89-4ad2-af83-20b5fe425cdd, NULL_00000000-0000-0000-0000-000000000000, _)
+AND
+QRY_ALFSV_Place_Wanted("ClearNight")
+THEN
+DB_ALFSV_ClearNight_Wait(1);
+TimerCancel("ALFSV_ClearNight");
+TimerLaunch("ALFSV_ClearNight", 5000);
+
+QRY
+QRY_ALFSV_AvatarInDialog()
+AND
+DB_Avatars(_Avatar)
+AND
+DB_InteractiveDialogSpeaker(_, _Avatar)
+THEN
+DB_NOOP(1);
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+AND
+NOT DB_Camp_NightMode(1)
+THEN
+NOT DB_ALFSV_ClearNight_Wait(1);
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+AND
+DB_ActiveCamp("WLDMAIN")
+AND
+DB_InCamp(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+NOT DB_Camp_Faded(_, _)
+AND
+NOT DB_GlobalFlag((FLAG)ALFSV_Celebration_Tonight_286ff093-d8b0-584d-9e8d-7c92853e9b5c)
+AND
+NOT QRY_ALFSV_AvatarInDialog()
+THEN
+NOT DB_ALFSV_ClearNight_Wait(1);
+PROC_ALFSV_Place_Request("ClearNight");
+
+IF
+TimerFinished("ALFSV_ClearNight")
+AND
+DB_ALFSV_ClearNight_Wait(1)
+THEN
+TimerLaunch("ALFSV_ClearNight", 5000);
+
+//END_REGION
+
 //REGION Travel lines: every 3-6 min while she walks with the party; each line once (flags in the dialog)
 
 PROC
@@ -432,6 +520,288 @@ AND
 DB_ALFSV_Place(_, _Dialog)
 THEN
 PROC_ALFSV_Travel_Start();
+
+//END_REGION
+
+//REGION Party banters (design/banter/03_act1_party.md): two speakers over their heads, each once
+// Every 20 s look for one; at most one per 5 min; not in combat or a dialog (QRY_SpeakerIsAvailable); road - both in the active party, close; camp - both in camp, a hero passing by
+
+PROC
+PROC_ALFSV_Banter_Data()
+THEN
+DB_ALFSV_Banter("B1_2", (DIALOGRESOURCE)CAMP_Bard_AD_Astarion_8072bdb9-de5d-5f1c-a759-c690c4b39cdd, (CHARACTER)S_Player_Astarion_c7c13742-bacd-460a-8f65-f864fe41f255, "camp", 2);
+DB_ALFSV_Banter("B3", (DIALOGRESOURCE)ALFSV_Banter_B3_9951821f-1cbf-5f90-9d2a-8c875c6dee25, (CHARACTER)S_Player_Astarion_c7c13742-bacd-460a-8f65-f864fe41f255, "road", 1);
+DB_ALFSV_Banter("B4", (DIALOGRESOURCE)ALFSV_Banter_B4_ae87a2b3-c6cf-5d94-ac90-04119c6ab16b, (CHARACTER)S_Player_Astarion_c7c13742-bacd-460a-8f65-f864fe41f255, "road", 1);
+DB_ALFSV_Banter("B5", (DIALOGRESOURCE)CAMP_Bard_AD_GaleTressym_283fb1de-0587-991a-58e4-eb7d412b3813, (CHARACTER)S_GLO_Gale_Tressym_ada7ee81-829d-48c7-ba73-9c9ec191d236, "camp", 2);
+DB_ALFSV_Banter("B6", (DIALOGRESOURCE)ALFSV_Banter_B6_8cfe4117-6d8d-5720-968b-cda8fd4d4e29, (CHARACTER)S_Player_Gale_ad9af97d-75da-406a-ae13-7071c563f604, "road", 1);
+DB_ALFSV_Banter("B7", (DIALOGRESOURCE)CAMP_Bard_AD_Wyll_e56f19d9-db4c-198d-320d-59175acfe2a3, (CHARACTER)S_Player_Wyll_c774d764-4a17-48dc-b470-32ace9ce447d, "camp", 1);
+DB_ALFSV_Banter("B8", (DIALOGRESOURCE)ALFSV_Banter_B8_ab6ce15a-5e13-515b-bace-b487f70cec4c, (CHARACTER)S_Player_Wyll_c774d764-4a17-48dc-b470-32ace9ce447d, "road", 1);
+DB_ALFSV_Banter("B9", (DIALOGRESOURCE)ALFSV_Banter_B9_77e90d8d-7459-5e40-81ba-1ae98f94353e, (CHARACTER)S_Player_ShadowHeart_3ed74f06-3c60-42dc-83f6-f034cb47c679, "road", 1);
+DB_ALFSV_Banter("B10", (DIALOGRESOURCE)ALFSV_Banter_B10_3f38477e-2ee9-55c8-917e-c9f579df973a, (CHARACTER)S_Player_Laezel_58a69333-40bf-8358-1d17-fff240d7fb12, "road", 1);
+DB_ALFSV_Banter("B11", (DIALOGRESOURCE)ALFSV_Banter_B11_410b30bb-edf8-51cb-84d8-e191da39b6fb, (CHARACTER)S_Player_Karlach_2c76687d-93a2-477b-8b18-8a14b549304c, "camp", 1);
+DB_ALFSV_Banter("B12", (DIALOGRESOURCE)ALFSV_Banter_B12_9412b936-4da7-553f-bd50-bd13f9add70a, (CHARACTER)S_Player_Karlach_2c76687d-93a2-477b-8b18-8a14b549304c, "road", 1);
+DB_ALFSV_Banter("B13", (DIALOGRESOURCE)ALFSV_Banter_B13_71cce9d1-86f3-5257-8b88-67912f7e0e59, (CHARACTER)S_GLO_Halsin_7628bc0e-52b8-42a7-856a-13a6fd413323, "camp", 1);
+DB_ALFSV_Banter("B14", (DIALOGRESOURCE)CAMP_Bard_AD_Volo_b5a2ed4f-7bb0-5bb1-bb78-0a2fbaa0d921, (CHARACTER)S_GLO_Volo_2af25a85-5b9a-4794-85d3-0bd4c4d262fa, "camp", 2);
+
+IF
+LevelGameplayStarted(_, _)
+THEN
+PROC_ALFSV_Banter_Data();
+NOT DB_ALFSV_Banter_Cooling(1);
+PROC_ALFSV_Banter_StartTick();
+
+IF
+DB_ALFSV_IsCompanion(1)
+THEN
+PROC_ALFSV_Banter_Data();
+PROC_ALFSV_Banter_StartTick();
+
+PROC
+PROC_ALFSV_Banter_StartTick()
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+TimerCancel("ALFSV_Banter_Tick");
+TimerLaunch("ALFSV_Banter_Tick", 20000);
+
+// a request that did not start is forgotten on the next tick
+IF
+TimerFinished("ALFSV_Banter_Tick")
+AND
+DB_ALFSV_Banter_Requested(_Dialog, _Key)
+THEN
+NOT DB_ALFSV_Banter_Requested(_Dialog, _Key);
+
+IF
+TimerFinished("ALFSV_Banter_Tick")
+THEN
+PROC_ALFSV_Banter_Try();
+PROC_ALFSV_Banter_StartTick();
+
+PROC
+PROC_ALFSV_Banter_Try()
+AND
+DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_ALFSV_Banter_Cooling(1)
+AND
+QRY_ALFSV_AD_Free()
+AND
+NOT DB_ALFSV_PlacePending(_, _)
+AND
+DB_ALFSV_Banter(_Key, _Dialog, _Partner, _Where, _Plays)
+AND
+NOT DB_ALFSV_Banter_Requested(_, _)
+AND
+QRY_ALFSV_Banter_Left(_Key, _Plays)
+AND
+QRY_ALFSV_Banter_Ok(_Key)
+AND
+QRY_ALFSV_Banter_Where(_Where, _Partner)
+AND
+QRY_SpeakerIsAvailable(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+QRY_SpeakerIsAvailable(_Partner)
+AND
+IsInCombat(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0)
+THEN
+DB_ALFSV_Banter_Requested(_Dialog, _Key);
+PROC_TryStartAD(_Dialog, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Partner);
+
+QRY
+QRY_ALFSV_Banter_Left((STRING)_Key, (INTEGER)_Plays)
+AND
+NOT DB_ALFSV_BanterPlayed(_Key, _)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Left((STRING)_Key, (INTEGER)_Plays)
+AND
+DB_ALFSV_BanterPlayed(_Key, _N)
+AND
+_N < _Plays
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Where("road", (CHARACTER)_Partner)
+AND
+DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_Players(_Partner)
+AND
+NOT DB_InCamp(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+GetDistanceTo(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Partner, _Dist)
+AND
+_Dist < 10.0
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Where("camp", (CHARACTER)_Partner)
+AND
+DB_InCamp(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+GetDistanceTo(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Partner, _Dist)
+AND
+_Dist < 20.0
+AND
+DB_Avatars(_Avatar)
+AND
+GetDistanceTo(_Avatar, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Near)
+AND
+_Near < 10.0
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B1_2")
+AND
+DB_PartOfTheTeam(S_Player_Astarion_c7c13742-bacd-460a-8f65-f864fe41f255)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B3")
+AND
+DB_ALFSV_BanterPlayed("B1_2", _After)
+AND
+_After >= 2
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B4")
+AND
+DB_Avatars(_Avatar)
+AND
+GetFlag((FLAG)ALFSV_Romance_Started_1fa672d6-9d12-5018-9492-6af2b7ed484b, _Avatar, 1)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B5")
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B6")
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B7")
+AND
+DB_PartOfTheTeam(S_Player_Wyll_c774d764-4a17-48dc-b470-32ace9ce447d)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B8")
+AND
+DB_ALFSV_BanterPlayed("B7", _After)
+AND
+_After >= 1
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B9")
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B10")
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B11")
+AND
+DB_PartOfTheTeam(S_Player_Karlach_2c76687d-93a2-477b-8b18-8a14b549304c)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B12")
+AND
+DB_Avatars(_Avatar)
+AND
+GetFlag((FLAG)ALFSV_Elturel_AngrySong_d430ee4b-dbe8-52de-b96f-14d198609aa7, _Avatar, 1)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B13")
+AND
+DB_PartOfTheTeam(S_GLO_Halsin_7628bc0e-52b8-42a7-856a-13a6fd413323)
+THEN
+DB_NOOP(1);
+
+QRY
+QRY_ALFSV_Banter_Ok("B14")
+THEN
+DB_NOOP(1);
+
+// started: count it, cool down
+IF
+AutomatedDialogStarted(_Dialog, _)
+AND
+DB_ALFSV_Banter_Requested(_Dialog, _Key)
+THEN
+NOT DB_ALFSV_Banter_Requested(_Dialog, _Key);
+DB_ALFSV_AD_Playing(_Dialog);
+PROC_ALFSV_Banter_Played(_Key);
+DB_ALFSV_Banter_Cooling(1);
+TimerCancel("ALFSV_Banter_Cooldown");
+TimerLaunch("ALFSV_Banter_Cooldown", 300000);
+
+PROC
+PROC_ALFSV_Banter_Played((STRING)_Key)
+AND
+NOT DB_ALFSV_BanterPlayed(_Key, _)
+THEN
+DB_ALFSV_BanterPlayed(_Key, 0);
+
+PROC
+PROC_ALFSV_Banter_Played((STRING)_Key)
+AND
+DB_ALFSV_BanterPlayed(_Key, _N)
+AND
+IntegerSum(_N, 1, _Next)
+THEN
+NOT DB_ALFSV_BanterPlayed(_Key, _N);
+DB_ALFSV_BanterPlayed(_Key, _Next);
+
+IF
+TimerFinished("ALFSV_Banter_Cooldown")
+THEN
+NOT DB_ALFSV_Banter_Cooling(1);
+
+// Debug (Script Extender console): Osi.PROC_ALFSV_Debug_Banter("B3") - the banter now (ignores count and cooldown)
+PROC
+PROC_ALFSV_Debug_Banter((STRING)_Key)
+AND
+DB_ALFSV_BanterPlayed(_Key, _N)
+THEN
+NOT DB_ALFSV_BanterPlayed(_Key, _N);
+
+PROC
+PROC_ALFSV_Debug_Banter((STRING)_Key)
+AND
+DB_ALFSV_Banter(_Key, _Dialog, _Partner, _, _)
+THEN
+NOT DB_ALFSV_Banter_Cooling(1);
+DB_ALFSV_Banter_Requested(_Dialog, _Key);
+PROC_TryStartAD(_Dialog, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Partner);
+
+// Lakrissa dead: the game has no flag (DB_Dead, as Act3b_LOW_ElfsongTavern.txt checks it)
+IF
+DB_Dead(S_DEN_Tiefling_010_23129d6c-8d39-4a4c-a4f6-cfc6637b597c)
+THEN
+PROC_GlobalSetFlagAndCache((FLAG)ALFSV_LakrissaDead_dae7049c-6d02-561d-8c6f-d615e6657603);
 
 //END_REGION
 

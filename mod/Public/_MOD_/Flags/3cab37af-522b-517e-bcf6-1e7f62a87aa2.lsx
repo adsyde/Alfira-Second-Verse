@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="3cab37af-522b-517e-bcf6-1e7f62a87aa2" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Unseen_Tadpole" />
+			<attribute id="Description" type="LSString" value="Unseen bravery: waking up with a tadpole every morning" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

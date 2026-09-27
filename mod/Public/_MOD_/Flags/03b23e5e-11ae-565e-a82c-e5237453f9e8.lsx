@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="03b23e5e-11ae-565e-a82c-e5237453f9e8" />
+			<attribute id="Name" type="FixedString" value="ALFSV_React_Mayrina" />
+			<attribute id="Description" type="LSString" value="Reaction 8: Mayrina freed / Auntie Ethel dead, Mayrina alive" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

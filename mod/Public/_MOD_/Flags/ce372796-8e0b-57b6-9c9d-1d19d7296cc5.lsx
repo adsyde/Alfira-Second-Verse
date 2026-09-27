@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="ce372796-8e0b-57b6-9c9d-1d19d7296cc5" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Romance_Act1Candidate" />
+			<attribute id="Description" type="LSString" value="Some hero opened the romance or was asked to ask again (chapter 5) - chapter 8 can open" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

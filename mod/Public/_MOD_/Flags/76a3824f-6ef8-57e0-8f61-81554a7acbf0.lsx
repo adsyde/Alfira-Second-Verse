@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="76a3824f-6ef8-57e0-8f61-81554a7acbf0" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Celebration_Said_Lovely" />
+			<attribute id="Description" type="LSString" value="Drunk Alfira: Lakrissa's lovely, everyone's lovely, you're lovely" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="c8f87a78-6e53-59f0-a0f3-6c8eb7f4fc9c" />
+			<attribute id="Name" type="FixedString" value="ALFSV_React_RockAtBear" />
+			<attribute id="Description" type="LSString" value="Reaction 16: rocks thrown at the bear in the goblin pens" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>
