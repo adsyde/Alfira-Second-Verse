@@ -8,6 +8,7 @@
   python scripts/voice/voice_act1.py score ch01_first_night ch02_lute # метрики и предотбор
   python scripts/voice/voice_act1.py page                    # страница по всему, что оценено
   python scripts/voice/voice_act1.py all                     # все группы по очереди: gen → score → page
+  python scripts/voice/voice_act1.py pick voice-work/act1/picks/ch01-02.txt   # выбор автора → voice-work/game/
 
 На реплику: Breeze — 2 варианта (v1 клон по образцу эмоции, v2 то же + инструкция подачи, cfg 4;
 у похмелья инструкция «hungover, groggy» поверх образца «усталость»); IndexTTS — 2 (v1 эмоция из
@@ -17,8 +18,8 @@
 Предотбор: брак отбрасывается — WER Whisper > 0,15 (у реплик до 6 слов — больше одного слова ошибки),
 длина не по тексту, клиппинг, обрыв в конце, пауза длиннее 2 с (3 с, если в тексте «...»); имена мира
 (NAMES) подсказываются Whisper и не считаются ошибкой. Из остальных по умолчанию выбран
-самый похожий на неё (ECAPA + WavLM к центру её голоса). Если брак у всех — выбран лучший из брака,
-с пометкой.
+самый похожий на неё (ECAPA + WavLM к центру её голоса) вариант Breeze; IndexTTS — только если у Breeze брак
+(автор по главам 1–2 выбрал Breeze в 40 репликах из 41). Если брак у всех — выбран лучший из брака, с пометкой.
 
 Выход:
   voice-work/act1/gen/<группа>/<модель>/line<handle>_v<k>.wav, gpu.csv, run.log; score.json группы;
@@ -47,6 +48,8 @@ import compare_models as cm  # noqa: E402
 enable_utf8_stdout()
 
 MODELS = ("breeze", "indextts")
+PREFERRED = "breeze"          # решение автора по главам 1–2 (voice-work/act1/picks/ch01-02.txt)
+GAME_DIR_NAME = "game"        # voice-work/game/<handle>.wav — отсюда голос берёт build_pak --voice clone
 TITLE = {"breeze": "Breeze TTS 2", "indextts": "IndexTTS-2.5"}
 EMO_RU = {**cm.EMO_RU, "hungover": "похмелье", "grateful": "тепло"}
 PAGE_DIR = Path.home() / "Downloads" / "Альфира — голос акт 1"
@@ -153,6 +156,17 @@ def audio_checks(path, text):
     return dur, probs
 
 
+def default_pick(cands):
+    """Предотбор ★. Выбор автора по главам 1–2: Breeze 40 из 41 (v1 19, v2 21), IndexTTS 1. Поэтому ★ — у самого
+    похожего варианта Breeze без брака; IndexTTS — только если у Breeze брак; брак у всех — лучший из всех."""
+    ok = [c for c in cands if not c["reject"]]
+    pool = [c for c in ok if c["model"] == PREFERRED] or ok or cands
+    if not pool:
+        return ""
+    c = max(pool, key=lambda c: c["sim"])
+    return f"{c['model']}_v{c['k']}"
+
+
 def cmd_score(args):
     vw, models, act, gen = act1_paths()
     lines = load_lines()
@@ -193,9 +207,7 @@ def cmd_score(args):
                               "sim": round(0.5 * m["sim_ecapa"] + 0.5 * m["sim_wavlm"], 4), "sim_ecapa": round(m["sim_ecapa"], 4),
                               "asr": m["asr"], "reject": probs})
             ok = [c for c in cands if not c["reject"]]
-            pick = max(ok or cands, key=lambda c: c["sim"]) if cands else None
-            score[ln["id"]] = {"cands": cands, "default": f"{pick['model']}_v{pick['k']}" if pick else "",
-                               "all_rejected": bool(cands) and not ok}
+            score[ln["id"]] = {"cands": cands, "default": default_pick(cands), "all_rejected": bool(cands) and not ok}
         (gen / group / "score.json").write_text(json.dumps(score, ensure_ascii=False, indent=1), encoding="utf-8")
         rej = sum(1 for s in score.values() for c in s["cands"] if c["reject"])
         tot = sum(len(s["cands"]) for s in score.values())
@@ -289,6 +301,7 @@ def cmd_page(_args):
             s = score.get(ln["id"])
             if not s or not s["cands"]:
                 continue
+            s["default"] = default_pick(s["cands"])
             total += 1
             emo = ln["ref_emotion"]
             if emo not in ref_rel:
@@ -356,6 +369,59 @@ def cmd_page(_args):
     print(f"страница: {total} реплик, групп {len(ready)} из {len(order)} → {PAGE_DIR / 'index.html'}")
 
 
+def cmd_pick(args):
+    """Выбор автора (строки handle=вариант, как даёт «Скопировать выбор») → voice-work/game/<handle>.wav.
+
+    Файл — выбранный вариант, приведённый к 48 кГц моно 16 бит (tts/normalize.py): такой берёт game_voice.py.
+    Одинаковый текст в разных сценах — один звук на все его handle. «переделать» — в voice-work/act1/redo.txt.
+    voice-work/game/voice.json: handle → файл, длина, модель, вариант, группа (для build_pak --voice clone)."""
+    vw, models, act, gen = act1_paths()
+    lines = {x["id"]: x for x in load_lines()}
+    game = vw / GAME_DIR_NAME
+    game.mkdir(parents=True, exist_ok=True)
+    meta_p = game / "voice.json"
+    meta = json.loads(meta_p.read_text(encoding="utf-8")) if meta_p.exists() else {}
+    redo_p = act / "redo.txt"
+    redo = set(redo_p.read_text(encoding="utf-8").split()) if redo_p.exists() else set()
+    jobs, chosen, bad = [], [], []
+    for f in args.files:
+        for row in Path(f).read_text(encoding="utf-8-sig").splitlines():
+            if "=" not in row.strip():
+                continue
+            h, v = (x.strip() for x in row.split("=", 1))
+            ln = lines.get(h)
+            if ln is None:
+                bad.append(f"{h}: нет в lines.json")
+                continue
+            if v == "переделать":
+                redo.add(h)
+                continue
+            m = re.fullmatch(r"(breeze|indextts)_v(\d)", v)
+            src = gen / ln["group"] / m.group(1) / f"line{h}_v{m.group(2)}.wav" if m else None
+            if not src or not wav_ok(src):
+                bad.append(f"{h}={v}: нет файла")
+                continue
+            redo.discard(h)
+            for hh in ln["handles"]:
+                jobs.append([str(src), str(game / f"{hh}.wav")])
+                chosen.append((hh, m.group(1), int(m.group(2)), ln["group"], h))
+    if jobs:
+        nj = act / "pick_normalize.json"
+        nj.write_text(json.dumps(jobs, ensure_ascii=False), encoding="utf-8")
+        subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "normalize.py"), str(nj)], env=cm.model_env(vw), check=True)
+    for hh, model, k, group, h in chosen:
+        with wave.open(str(game / f"{hh}.wav")) as w:
+            length = w.getnframes() / w.getframerate()
+        meta[hh] = {"file": f"{hh}.wav", "seconds": round(length, 3), "model": model, "variant": k, "group": group,
+                    "text_handle": h}
+    meta_p.write_text(json.dumps(dict(sorted(meta.items())), ensure_ascii=False, indent=1), encoding="utf-8")
+    redo_p.write_text("\n".join(sorted(redo)) + ("\n" if redo else ""), encoding="utf-8")
+    print(f"выбрано {len({c[4] for c in chosen})} реплик → {len(chosen)} handle в {game}; переделать: {len(redo)}; "
+          f"всего в voice.json: {len(meta)}")
+    for b in bad:
+        print("  !", b)
+
+
 def cmd_all(args):
     lines = load_lines()
     for g in groups_order(lines):
@@ -377,8 +443,10 @@ def main():
     sub.add_parser("page")
     a = sub.add_parser("all")
     a.add_argument("--skip-done", action="store_true", default=True)
+    k = sub.add_parser("pick")
+    k.add_argument("files", nargs="+", help="файлы с выбором автора: строки handle=вариант")
     args = ap.parse_args()
-    {"gen": cmd_gen, "score": cmd_score, "page": cmd_page, "all": cmd_all}[args.cmd](args)
+    {"gen": cmd_gen, "score": cmd_score, "page": cmd_page, "all": cmd_all, "pick": cmd_pick}[args.cmd](args)
 
 
 if __name__ == "__main__":
