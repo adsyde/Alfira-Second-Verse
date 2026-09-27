@@ -258,6 +258,36 @@ NOT DB_GLO_LevelTraveler(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level
 
 //END_REGION
 
+//REGION Kiss and hug context (in-party dialog, design/dialogs/10_romance_kiss.md, docs/STAGE4.md section 13)
+
+// Underdark: the kiss special plays once per descent. The subregion trigger is registered for the party by the game
+// (DB_Subregion, _GLOBAL_Subregions.txt); ALFSV_InUnderdark and ALFSV_KissUnderdark are flags on Alfira.
+IF
+EnteredTrigger(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (TRIGGER)S_UND_Underdark_SUB_b379a862-a59f-4e52-9166-23fbe0e8976e)
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+SetFlag((FLAG)ALFSV_InUnderdark_da7f0efd-0b61-550e-8128-9be0053b9102, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+
+IF
+LeftTrigger(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (TRIGGER)S_UND_Underdark_SUB_b379a862-a59f-4e52-9166-23fbe0e8976e)
+THEN
+ClearFlag((FLAG)ALFSV_InUnderdark_da7f0efd-0b61-550e-8128-9be0053b9102, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+ClearFlag((FLAG)ALFSV_KissUnderdark_6768005e-a3bc-5300-95de-9b26e1100469, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+
+// Camp-evening specials: once per evening
+PROC
+PROC_LongRest()
+AND
+DB_ALFSV_IsCompanion(1)
+THEN
+ClearFlag((FLAG)ALFSV_KissNight_1_1c1da58a-fb34-5722-9d2c-637888b0baed, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+ClearFlag((FLAG)ALFSV_KissNight_2_27fcfe51-7b9e-5f95-9b11-98649a4e64a9, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+ClearFlag((FLAG)ALFSV_KissNight_3_f7b4fae8-d565-59e4-b3fb-350c80e1b4c8, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+ClearFlag((FLAG)ALFSV_HugNight_c8f220a9-16a1-5e0c-bbd9-f6dd98035132, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+
+//END_REGION
+
 //REGION Act 1: tiefling celebration with Alfira as a companion (chapter 4, docs/STAGE4.md section 8)
 
 // Act1_CAMP_GoblinHuntCelebration.txt, PROC_CAMP_GoblinHuntCelebration_SetupTieflings: for every fact of

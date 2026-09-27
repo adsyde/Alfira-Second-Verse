@@ -87,9 +87,9 @@ class Ids:
 class Compiler:
     """Одна сцена → диалог, таймлайн, сцена, записи банков, тексты."""
 
-    def __init__(self, lib: bg3lib.Lib, scene: dsl.Scene, ids: Ids, voice_meta: set[str], chapters=()):
+    def __init__(self, lib: bg3lib.Lib, scene: dsl.Scene, ids: Ids, voice_meta, chapters=()):
         self.lib, self.b, self.s, self.ids = lib, lib.b, scene, ids
-        self.voice_meta = voice_meta
+        self.voice_meta = voice_meta             # uuid говорящего → handle его озвучки (VoiceMeta)
         # сцены глав со входом в разговоре в отряде (hub); главы-события (hub=False) запускает их Osiris
         self.chapters = sorted((c for c in chapters if c.chapter.hub), key=lambda c: c.chapter.number)
         self.slot = {ALFIRA: ALFIRA, PLAYER: PLAYER}   # логический спикер → слот основы (run() уточняет)
@@ -138,8 +138,9 @@ class Compiler:
         if line.handle:
             if line.handle not in self.voices:
                 raise RuntimeError(f"{self.s.name}: реплика {line.handle} не найдена в {self.s.voice_from}")
-            if line.handle not in self.voice_meta:
-                raise RuntimeError(f"{self.s.name}: у реплики {line.handle} нет озвучки Альфиры (VoiceMeta)")
+            if line.handle not in self.voice_meta(self.speaker_uuid[line.speaker]):
+                raise RuntimeError(f"{self.s.name}: у реплики {line.handle} нет озвучки говорящего "
+                                   f"{self.speaker_uuid[line.speaker]} (VoiceMeta)")
             _, _, version = self.voices[line.handle]
             self.vanilla_handles.add(line.handle)
             return self.b.text_content(line.handle, version, self.uid(f"{key}/line"))
@@ -320,6 +321,18 @@ class Compiler:
         bundle = lib.assets.create_new_empty_dialog_from_another(s.base, s.name, s.dialog_id, timeline_id, s.subfolder)
         self.bundle = bundle
         self.d = b.dialog_object(bundle.dialog)
+        # AD-основа на двоих с другим собеседником: её спикер other_base заменяется на other (как у Larian, у
+        # спикера в speakerlist — только uuid персонажа; актёры таймлайна привязаны к номеру спикера)
+        if s.other_base:
+            for sp in bundle.dialog.root_node.iter("node"):
+                if sp.get("id") == "speaker":
+                    a = sp.find('./attribute[@id="list"]')
+                    if a is not None and a.get("value") == s.other_base:
+                        a.set("value", s.other)
+                        break
+            else:
+                raise RuntimeError(f"{s.name}: в основе {s.base} нет спикера {s.other_base}")
+            self.d = b.dialog_object(bundle.dialog)
         # слоты спикеров — из основы: у основ на двоих Альфира 0 и герой 1, у сцены на троих — как у Larian
         speakers = list(self.d.get_speakers())
         want = {ALFIRA: ALFIRA_TEMPLATE} if s.kind == "ad" else {ALFIRA: ALFIRA_TEMPLATE, PLAYER: PLAYER_SPEAKER}
@@ -402,11 +415,11 @@ class Compiler:
         dnode = self.bundle.dialog.root_node.find('./region[@id="dialog"]/node[@id="dialog"]')
         if s.category:
             set_attr(dnode, "category", s.category, "LSString")
-        self.stager = st = ads.ADStager(lib, tl, lambda k: self.uid(k))
+        self.stager = st = ads.ADStager(lib, tl, lambda k: self.uid(k), self.slot)
         for nid, line in self.npc:
             if line.handle:
                 src, src_node, _ = self.voices[line.handle]
-                st.voiced_phase(nid, src, src_node)
+                st.voiced_phase(nid, src, src_node, line.speaker)
             else:
                 st.text_phase(nid, line)
         dres = lib.assets.get_dialog_resource(s.dialog_id)
@@ -572,8 +585,8 @@ def check_vanilla(lib, scenes):
     return errors
 
 
-def voice_meta_handles(lib):
-    sb = lib.files.get_soundbank_file(ALFIRA_TEMPLATE)
+def voice_meta_handles(lib, speaker=ALFIRA_TEMPLATE):
+    sb = lib.files.get_soundbank_file(speaker)
     return {n.find('./attribute[@id="MapKey"]').get("value") for n in sb.root_node.iter("node")
             if n.get("id") == "VoiceTextMetaData"}
 
@@ -595,6 +608,9 @@ def load_scenes():
         OSIRIS_FLAGS.extend(getattr(mod, "OSIRIS_FLAGS", []))
     places, trv = load_world()
     out += [p.scene for p in places] + [trv.scene]
+    import scenes.banter as bt                 # беседы отряда (scenes/banter.py): AD на двоих
+    out += list(bt.EXTRA_SCENES)
+    OSIRIS_FLAGS.extend(bt.OSIRIS_FLAGS)
     chapters = [s for s in out if s.chapter is not None]
     nums = sorted(s.chapter.number for s in chapters)
     if nums != list(range(1, len(nums) + 1)):
@@ -761,7 +777,12 @@ def generate(dump=False):
     errors = check_vanilla(lib, scenes)
     if errors:
         sys.exit("Данные сцен не сходятся с игрой:\n  " + "\n  ".join(errors))
-    vm = voice_meta_handles(lib)
+    vm_cache = {}
+
+    def vm(speaker_uuid):
+        if speaker_uuid not in vm_cache:
+            vm_cache[speaker_uuid] = voice_meta_handles(lib, speaker_uuid)
+        return vm_cache[speaker_uuid]
     chapters = sorted((s for s in scenes if s.chapter is not None), key=lambda s: s.chapter.number)
     results = [Compiler(lib, s, ids, vm, chapters).run() for s in scenes]
 
@@ -812,7 +833,9 @@ def generate(dump=False):
         goal.unlink()
     # реплики на местах и в пути (AD) — свой goal
     places, trv = load_world()
-    (src / WORLD_GOAL).write_text(ads.world_goal(places, trv, ids), encoding="utf-8", newline="\n")
+    import scenes.banter as bt
+    (src / WORLD_GOAL).write_text(ads.world_goal(places, trv, ids, bt.BANTERS, bt.EXTRA_OSI, bt.EXTRA_OSI_FLAGS),
+                                  encoding="utf-8", newline="\n")
     # реакции на поступки (акт 1) — свой goal (scripts/dialogs/reactions.py)
     (src / REACTIONS_GOAL).write_text(act_reactions.goal(ids), encoding="utf-8", newline="\n")
     from scenes.recruitment import ROMANCE as romance_flag        # флаг только из Osiris: файл нужен всё равно

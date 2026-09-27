@@ -2702,7 +2702,7 @@
 						</node>
 						<node id="node" key="UUID">
 							<attribute id="constructor" type="FixedString" value="TagAnswer" />
-							<attribute id="UUID" type="FixedString" value="6a3d3ae3-78b5-5e23-b679-deade27d2654" />
+							<attribute id="UUID" type="FixedString" value="dc8c9a41-5ed2-5b56-8c39-f1e0c01f0b83" />
 							<attribute id="speaker" type="int32" value="0" />
 							<children>
 								<node id="children">
@@ -2730,8 +2730,8 @@
 												<node id="TagTexts">
 													<children>
 														<node id="TagText">
-															<attribute id="TagText" type="TranslatedString" handle="h308e3fd8g1a5dg5810g97ddg826d63410ffc" version="1" />
-															<attribute id="LineId" type="guid" value="096a09cd-d08a-5020-8889-609c595020df" />
+															<attribute id="TagText" type="TranslatedString" handle="hdb6b9e9dg72b1g5930gb0e7g13133f30c725" version="1" />
+															<attribute id="LineId" type="guid" value="60bb69ad-4756-54f6-a680-6c0303fe53e8" />
 															<attribute id="stub" type="bool" value="True" />
 														</node>
 													</children>
@@ -2750,14 +2750,14 @@
 						</node>
 						<node id="node" key="UUID">
 							<attribute id="constructor" type="FixedString" value="TagQuestion" />
-							<attribute id="UUID" type="FixedString" value="c91af3c5-0b1c-515a-98f0-f7b5491249f9" />
+							<attribute id="UUID" type="FixedString" value="2f4bc218-b15e-5079-a24b-27f9566c2cac" />
 							<attribute id="speaker" type="int32" value="1" />
 							<attribute id="ApprovalRatingID" type="guid" value="1b2739bd-2d29-5121-86ed-91dcac751c18" />
 							<children>
 								<node id="children">
 									<children>
 										<node id="child">
-											<attribute id="UUID" type="FixedString" value="6a3d3ae3-78b5-5e23-b679-deade27d2654" />
+											<attribute id="UUID" type="FixedString" value="dc8c9a41-5ed2-5b56-8c39-f1e0c01f0b83" />
 										</node>
 									</children>
 								</node>
@@ -2814,8 +2814,8 @@
 												<node id="TagTexts">
 													<children>
 														<node id="TagText">
-															<attribute id="TagText" type="TranslatedString" handle="h9b4346adg3bfcg5a2fgbb26g06d7563fc044" version="1" />
-															<attribute id="LineId" type="guid" value="410257b7-1993-5f2e-bd6b-8f1195a45964" />
+															<attribute id="TagText" type="TranslatedString" handle="h38d3b0a3g3115g5ba8g87dag6aa2fcad882a" version="1" />
+															<attribute id="LineId" type="guid" value="f118737e-a1d6-576a-a14d-64999ae7c0e0" />
 															<attribute id="stub" type="bool" value="True" />
 														</node>
 													</children>
@@ -2837,7 +2837,7 @@
 						</node>
 						<node id="node" key="UUID">
 							<attribute id="constructor" type="FixedString" value="TagAnswer" />
-							<attribute id="UUID" type="FixedString" value="d1aef000-db54-54ae-8d3c-b9aaa20432aa" />
+							<attribute id="UUID" type="FixedString" value="2ac8a3c2-163c-5c2b-bf68-107c4ba41ea0" />
 							<attribute id="speaker" type="int32" value="0" />
 							<children>
 								<node id="children">
@@ -2865,8 +2865,8 @@
 												<node id="TagTexts">
 													<children>
 														<node id="TagText">
-															<attribute id="TagText" type="TranslatedString" handle="he40a6d69g11d6g5903ga255g3e826d296e68" version="1" />
-															<attribute id="LineId" type="guid" value="462285c4-3961-557e-bcd8-57a46e2ac0ad" />
+															<attribute id="TagText" type="TranslatedString" handle="h706cdbbcg1a82g5461ga6f1g66f32c84fce1" version="1" />
+															<attribute id="LineId" type="guid" value="49f3328a-b0c6-56b7-b7e3-354e9bfd9a1e" />
 															<attribute id="stub" type="bool" value="True" />
 														</node>
 													</children>
@@ -2885,14 +2885,14 @@
 						</node>
 						<node id="node" key="UUID">
 							<attribute id="constructor" type="FixedString" value="TagQuestion" />
-							<attribute id="UUID" type="FixedString" value="3313afad-2940-5083-9f93-b9ca9e41e530" />
+							<attribute id="UUID" type="FixedString" value="65c310ff-3a14-57ed-b832-cfa65e26915f" />
 							<attribute id="speaker" type="int32" value="1" />
 							<attribute id="ApprovalRatingID" type="guid" value="1b2739bd-2d29-5121-86ed-91dcac751c18" />
 							<children>
 								<node id="children">
 									<children>
 										<node id="child">
-											<attribute id="UUID" type="FixedString" value="d1aef000-db54-54ae-8d3c-b9aaa20432aa" />
+											<attribute id="UUID" type="FixedString" value="2ac8a3c2-163c-5c2b-bf68-107c4ba41ea0" />
 										</node>
 									</children>
 								</node>
@@ -2932,6 +2932,11 @@
 										<node id="flaggroup" key="type">
 											<attribute id="type" type="FixedString" value="Tag" />
 											<children>
+												<node id="flag" key="UUID">
+													<attribute id="UUID" type="FixedString" value="1ae7017c-4884-4a43-bc4a-742fa0d201c0" />
+													<attribute id="value" type="bool" value="False" />
+													<attribute id="paramval" type="int32" value="1" />
+												</node>
 												<node id="flag" key="UUID">
 													<attribute id="UUID" type="FixedString" value="02913f9a-f696-40cf-acdf-32032afab32c" />
 													<attribute id="value" type="bool" value="True" />
@@ -2949,8 +2954,8 @@
 												<node id="TagTexts">
 													<children>
 														<node id="TagText">
-															<attribute id="TagText" type="TranslatedString" handle="he50bcc25g8627g59ceg9043gbf16fd4e7078" version="1" />
-															<attribute id="LineId" type="guid" value="ac0f1788-8ad9-578e-b56c-636a5584ca56" />
+															<attribute id="TagText" type="TranslatedString" handle="h651f8efbgc9a8g5182g989bg430888ec9549" version="1" />
+															<attribute id="LineId" type="guid" value="fcf6ac1e-e41c-5025-aa00-a52f26bd3ed4" />
 															<attribute id="stub" type="bool" value="True" />
 														</node>
 													</children>
@@ -2972,7 +2977,7 @@
 						</node>
 						<node id="node" key="UUID">
 							<attribute id="constructor" type="FixedString" value="TagAnswer" />
-							<attribute id="UUID" type="FixedString" value="5db58598-7fbc-5eef-a062-1ca0dc3b4828" />
+							<attribute id="UUID" type="FixedString" value="c4a2c270-a804-5b44-bdae-cc47f46df998" />
 							<attribute id="speaker" type="int32" value="0" />
 							<children>
 								<node id="children">
@@ -3000,8 +3005,8 @@
 												<node id="TagTexts">
 													<children>
 														<node id="TagText">
-															<attribute id="TagText" type="TranslatedString" handle="hcfc4c907g0b47g5ce1gad01gf3142729c74f" version="1" />
-															<attribute id="LineId" type="guid" value="8f37181c-2a3c-55b3-b2e5-f8ac3fe49c67" />
+															<attribute id="TagText" type="TranslatedString" handle="h914485acgbeb5g5e26ga8eegc18fc3cf9486" version="1" />
+															<attribute id="LineId" type="guid" value="d40cc3df-fd04-58bd-9d2f-892e4719b5f3" />
 															<attribute id="stub" type="bool" value="True" />
 														</node>
 													</children>
@@ -3020,14 +3025,14 @@
 						</node>
 						<node id="node" key="UUID">
 							<attribute id="constructor" type="FixedString" value="TagQuestion" />
-							<attribute id="UUID" type="FixedString" value="9974314c-850b-5473-b711-2f702bd7e416" />
+							<attribute id="UUID" type="FixedString" value="48a4de05-632a-5d64-be92-7cdcd6aa445d" />
 							<attribute id="speaker" type="int32" value="1" />
 							<attribute id="ApprovalRatingID" type="guid" value="1b2739bd-2d29-5121-86ed-91dcac751c18" />
 							<children>
 								<node id="children">
 									<children>
 										<node id="child">
-											<attribute id="UUID" type="FixedString" value="5db58598-7fbc-5eef-a062-1ca0dc3b4828" />
+											<attribute id="UUID" type="FixedString" value="c4a2c270-a804-5b44-bdae-cc47f46df998" />
 										</node>
 									</children>
 								</node>
@@ -3068,6 +3073,16 @@
 											<attribute id="type" type="FixedString" value="Tag" />
 											<children>
 												<node id="flag" key="UUID">
+													<attribute id="UUID" type="FixedString" value="1ae7017c-4884-4a43-bc4a-742fa0d201c0" />
+													<attribute id="value" type="bool" value="False" />
+													<attribute id="paramval" type="int32" value="1" />
+												</node>
+												<node id="flag" key="UUID">
+													<attribute id="UUID" type="FixedString" value="02913f9a-f696-40cf-acdf-32032afab32c" />
+													<attribute id="value" type="bool" value="False" />
+													<attribute id="paramval" type="int32" value="1" />
+												</node>
+												<node id="flag" key="UUID">
 													<attribute id="UUID" type="FixedString" value="6d85ab2d-5c23-498c-a61e-98f05a00177a" />
 													<attribute id="value" type="bool" value="True" />
 													<attribute id="paramval" type="int32" value="1" />
@@ -3084,8 +3099,8 @@
 												<node id="TagTexts">
 													<children>
 														<node id="TagText">
-															<attribute id="TagText" type="TranslatedString" handle="hf9b936dcg4accg5db8ga8a9g02626439ad55" version="1" />
-															<attribute id="LineId" type="guid" value="ae26a30d-834f-5604-b314-90a399145efd" />
+															<attribute id="TagText" type="TranslatedString" handle="hdb030ba3gc9eag5ee0ga0aag1cfaef781709" version="1" />
+															<attribute id="LineId" type="guid" value="f55015fe-efba-5c8d-9e61-057a62ce4e70" />
 															<attribute id="stub" type="bool" value="True" />
 														</node>
 													</children>
@@ -3737,13 +3752,13 @@
 											<attribute id="UUID" type="FixedString" value="4aea912d-ed8b-5828-b95a-251b8f0055b0" />
 										</node>
 										<node id="child">
-											<attribute id="UUID" type="FixedString" value="c91af3c5-0b1c-515a-98f0-f7b5491249f9" />
+											<attribute id="UUID" type="FixedString" value="2f4bc218-b15e-5079-a24b-27f9566c2cac" />
 										</node>
 										<node id="child">
-											<attribute id="UUID" type="FixedString" value="3313afad-2940-5083-9f93-b9ca9e41e530" />
+											<attribute id="UUID" type="FixedString" value="65c310ff-3a14-57ed-b832-cfa65e26915f" />
 										</node>
 										<node id="child">
-											<attribute id="UUID" type="FixedString" value="9974314c-850b-5473-b711-2f702bd7e416" />
+											<attribute id="UUID" type="FixedString" value="48a4de05-632a-5d64-be92-7cdcd6aa445d" />
 										</node>
 										<node id="child">
 											<attribute id="UUID" type="FixedString" value="985fc183-c9ff-5ae2-acef-21ee823f7e42" />

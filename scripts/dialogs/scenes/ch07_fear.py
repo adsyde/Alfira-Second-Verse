@@ -99,12 +99,15 @@ S.menu("S3",
                         say("...Fine. I'll call mine \"luck\" too. See how you like it.",
                             "…Ладно. Тогда и я буду свою звать «везением». Посмотрим, как тебе понравится.", emo="happy/2")],
                  go="S4"),
-       # 🏷️ воин, варвар, паладин — по варианту на тег (у мультикласса может быть два одинаковых)
-       *[opt("Отступление — тоже тактика. Оно спасает армии.", "Retreat is a tactic. It saves armies.", when=[tag(PLAYER)],
-             approve=+1, set=[CH.done, BRAVE_TACTIC(PLAYER)],
+       # 🏷️ воин, варвар или паладин — «или» тремя взаимоисключающими узлами: у мультикласса вариант один
+       *[opt("Отступление — тоже тактика. Оно спасает армии.", "Retreat is a tactic. It saves armies.", when=when,
+             approve=+1, set=[CH.done, BRAVE_TACTIC(PLAYER)], key=f"S3.tactic{i}",
              reply=[say("*Tactical* retreat. I'm having that carved into my lute. Right next to the pig farm.",
                         "*Тактическое* отступление. Вырежу на грифе. Рядом со свинофермой.", emo="happy/2")],
-             go="S4") for tag in (T.FIGHTER, T.BARBARIAN, T.PALADIN)],
+             go="S4") for i, when in enumerate([
+                 [T.FIGHTER(PLAYER)],
+                 [~T.FIGHTER(PLAYER), T.BARBARIAN(PLAYER)],
+                 [~T.FIGHTER(PLAYER), ~T.BARBARIAN(PLAYER), T.PALADIN(PLAYER)]])],
        opt("Держись сзади. Так и надо.", "Stay at the back. That's where you belong.", set=[CH.done],
            reply=[voice("h0db432d4gf83fg45b1gb675g0fdbcd8ae82b"),          # Hardly going to be much use in a battle, am I?
                   say("...That wasn't a question you were meant to *agree* with.",

@@ -31,6 +31,7 @@ ANGER = new_flag("ALFSV_Elturel_Anger", "Dialog", "The hero saw Alfira's anger a
 MOTHER_SONG = new_flag("ALFSV_Elturel_MotherSong", "Object", "'Write about her, the candles' - the song about her mother (acts 2-3)")
 HUMMED = new_flag("ALFSV_Elturel_HummedTune", "Object", "Hero hummed her mother's tune (Performance success)")
 LIHALA_CITY = new_flag("ALFSV_Elturel_LihalaCity", "Object", "'Some songs don't need writing' - Lihala's own city (personal quest, stage 7)")
+ANGRY_SONG = new_flag("ALFSV_Elturel_AngrySong", "Object", "Hero told Alfira to sing an angry song, loudly (chapter 6; banter B12 with Karlach)")
 DEVIL_PROMISE = new_flag("ALFSV_DevilPromise", "Object", "Hero promised Alfira not to take a devil's deal (act 3 reaction)")
 
 # --- E1. Приветствие: Рафаил (если были обе встречи), иначе Карлах ---
@@ -144,6 +145,7 @@ S.block("E3",
                           "Нет-нет, это вообще другая песня. Застольная. Ей бы *понравилось*.", emo="sad>happy/2",
                           note="(смеётся сквозь слёзы)")], go="E4")),
             opt("Так спой злую песню. Громко.", "Then sing an angry one. Loudly.", when=[ANGER(PLAYER)], approve=+2,
+                set=[ANGRY_SONG(PLAYER)],
                 reply=[say("An angry song.", "Злую песню.", emo="thinking", note="(пробует слово на вкус)"),
                        say("...Karlach would sing along. Karlach would sing along *very* loudly.",
                            "…Карлах бы подпевала. Карлах бы подпевала *очень* громко.", emo="happy/2")],

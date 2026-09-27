@@ -1107,6 +1107,213 @@
 						</node>
 					</children>
 				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="9951821f-1cbf-5f90-9d2a-8c875c6dee25" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B3" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B3.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="ae87a2b3-c6cf-5d94-ac90-04119c6ab16b" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B4" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B4.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="8cfe4117-6d8d-5720-968b-cda8fd4d4e29" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B6" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B6.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="ab6ce15a-5e13-515b-bace-b487f70cec4c" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B8" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B8.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="77e90d8d-7459-5e40-81ba-1ae98f94353e" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B9" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B9.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="3f38477e-2ee9-55c8-917e-c9f579df973a" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B10" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B10.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="410b30bb-edf8-51cb-84d8-e191da39b6fb" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B11" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B11.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="9412b936-4da7-553f-bd50-bd13f9add70a" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B12" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B12.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="71cce9d1-86f3-5257-8b88-67912f7e0e59" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_Banter_B13" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_Banter_B13.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
 			</children>
 		</node>
 	</region>

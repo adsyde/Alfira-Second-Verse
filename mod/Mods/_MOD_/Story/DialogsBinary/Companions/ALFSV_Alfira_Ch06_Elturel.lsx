@@ -1639,7 +1639,20 @@
 									</children>
 								</node>
 								<node id="Tags" />
-								<node id="setflags" />
+								<node id="setflags">
+									<children>
+										<node id="flaggroup" key="type">
+											<attribute id="type" type="FixedString" value="Object" />
+											<children>
+												<node id="flag" key="UUID">
+													<attribute id="UUID" type="FixedString" value="d430ee4b-dbe8-52de-b96f-14d198609aa7" />
+													<attribute id="value" type="bool" value="True" />
+													<attribute id="paramval" type="int32" value="1" />
+												</node>
+											</children>
+										</node>
+									</children>
+								</node>
 								<node id="checkflags">
 									<children>
 										<node id="flaggroup" key="type">

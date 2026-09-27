@@ -105,8 +105,9 @@ def say(en: str, ru: str, *, emo="neutral", shot=None, set=(), approve=0, note="
     return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note, speaker=speaker)
 
 
-def voice(handle: str, *, set=(), approve=0, note="") -> Line:
-    return Line(handle=handle, set=list(set), approve=approve, note=note)
+def voice(handle: str, *, set=(), approve=0, note="", speaker=ALFIRA) -> Line:
+    """Озвученная реплика игры по handle. speaker=OTHER — реплика третьего участника сцены (его голос)."""
+    return Line(handle=handle, set=list(set), approve=approve, note=note, speaker=speaker)
 
 
 def narrate(en: str, ru: str, *, emo="neutral", shot="alfira", set=(), approve=0, note="") -> Line:
@@ -319,6 +320,7 @@ class Scene:
     chapter: Chapter | None = None                   # сцена — глава разговора (вложенный диалог)
     other: str = ""                                  # uuid третьего участника (спикер основы), say(speaker=OTHER)
     other_name: str = ""                             # его имя — для распечаток
+    other_base: str = ""                             # спикер основы, на место которого встаёт other (AD-основа на двоих)
     kind: str = "dialog"                             # "ad" — реплика над головой (scripts/dialogs/ads.py)
     category: str = ""                               # категория диалога (у AD — как у Larian, см. ads.py)
     blocks: dict = field(default_factory=dict)

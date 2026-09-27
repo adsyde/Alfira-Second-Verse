@@ -151,19 +151,22 @@ class ADStager:
     из сценария.
     """
 
-    def __init__(self, lib, tl, uid):
+    def __init__(self, lib, tl, uid, slots=None):
         self.lib, self.tl, self.uid = lib, tl, uid
         tc = tl.xml.find('./region[@id="TimelineContent"]/node[@id="TimelineContent"]/children')
         spk = {}
         for s in tc.find('./node[@id="TimelineSpeakers"]').iter("node"):
             if _attr(s, "MapKey") is not None and _attr(s, "MapValue") is not None:
                 spk[int(_attr(s, "MapKey"))] = _attr(s, "MapValue")
-        self.actor = spk[0]
+        # актёр говорящего по логической роли (ALFIRA, OTHER — второй собеседник беседы)
+        self.actors = {role: spk[idx] for role, idx in (slots or {ALFIRA: 0}).items() if idx in spk}
+        self.actor = self.actors[ALFIRA]
         self.report = []
         self.added_cams = []
         self._src = {}
 
-    def _voice(self, node_uuid, start, end, phase, proto=None):
+    def _voice(self, node_uuid, start, end, phase, proto=None, actor=None):
+        actor = actor or self.actor
         from staging import set_attr, del_attr
         import copy
         import xml.etree.ElementTree as et
@@ -184,14 +187,14 @@ class ADStager:
                 set_attr(e, n, 0, "double")
             ch = et.SubElement(e, "children")
             a = et.SubElement(ch, "node", {"id": "Actor"})
-            et.SubElement(a, "attribute", {"id": "UUID", "type": "guid", "value": self.actor})
+            et.SubElement(a, "attribute", {"id": "UUID", "type": "guid", "value": actor})
         else:
-            set_attr(e.find('./children/node[@id="Actor"]'), "UUID", self.actor, "guid")
+            set_attr(e.find('./children/node[@id="Actor"]'), "UUID", actor, "guid")
         self.tl.insert_new_tl_node(e)
 
-    def _emotions(self, dur, keys):
+    def _emotions(self, dur, keys, actor=None):
         ks = [self.tl.create_emotion_key(float(t), code, variation=var) for t, code, var in keys]
-        self.tl.create_tl_actor_node("TLEmotionEvent", self.actor, "0", dur, ks,
+        self.tl.create_tl_actor_node("TLEmotionEvent", actor or self.actor, "0", dur, ks,
                                      node_uuid=self.uid(f"tl/emo/{len(self.report)}"), is_snapped_to_end=True)
 
     def text_phase(self, node_uuid, line):
@@ -200,11 +203,12 @@ class ADStager:
         dur = D(min(MAX_PHASE, max(MIN_PHASE, chars / READ_CPS + TAIL)))
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
-        self._voice(node_uuid, start, start + dur, phase)
-        self._emotions(dur, emotion_keys(line.emo, float(dur)))
+        actor = self.actors[line.speaker]
+        self._voice(node_uuid, start, start + dur, phase, actor=actor)
+        self._emotions(dur, emotion_keys(line.emo, float(dur)), actor=actor)
         self.report.append((node_uuid, "текст", float(dur)))
 
-    def voiced_phase(self, node_uuid, src_name, src_node):
+    def voiced_phase(self, node_uuid, src_name, src_node, speaker=ALFIRA):
         if src_name not in self._src:
             self._src[src_name] = self.lib.assets.get_timeline_object(src_name)
         src = self._src[src_name]
@@ -232,8 +236,8 @@ class ADStager:
         dur = ve - vs + D(TAIL)
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
-        self._voice(node_uuid, start, start + (ve - vs), phase, proto=v)
-        self._emotions(dur, keys)
+        self._voice(node_uuid, start, start + (ve - vs), phase, proto=v, actor=self.actors[speaker])
+        self._emotions(dur, keys, actor=self.actors[speaker])
         self.report.append((node_uuid, f"{src_name} (голос)", float(dur)))
 
 
@@ -306,7 +310,8 @@ NOT DB_ALFSV_Lift_Ride(_X, _Y, _Z, _Half);
 """
 
 
-def world_goal(places, trv: Travel, ids) -> str:
+def world_goal(places, trv: Travel, ids, banters=(), banter_extra=(), banter_extra_flags=None) -> str:
+    banter_extra_flags = banter_extra_flags or {}
     """ALFSV_World.txt: реплики на местах (разово) и фразы в пути (по таймеру)."""
     def fl(f):
         return f"(FLAG){f.name}_{ids.flag(f)}"
@@ -403,6 +408,8 @@ def world_goal(places, trv: Travel, ids) -> str:
           "// After a place line the next travel line waits a full interval",
           "IF", "AutomatedDialogStarted(_Dialog, _)", "AND", "DB_ALFSV_Place(_, _Dialog)", "THEN",
           "PROC_ALFSV_Travel_Start();", "", "//END_REGION", "",
+          *(banter_goal_block(banters, fl, [ln.format(**{k: fl(v) for k, v in banter_extra_flags.items()})
+                                            for ln in banter_extra]) if banters else []),
           "//REGION Debug (Script Extender console)",
           "// Osi.PROC_ALFSV_Debug_Place(\"CRE_LiftMid\") - play a place line now (ignores 'done')",
           "PROC", "PROC_ALFSV_Debug_Place((STRING)_Key)", "AND", "DB_ALFSV_PlaceDone(_Key)", "THEN",
@@ -415,3 +422,122 @@ def world_goal(places, trv: Travel, ids) -> str:
 
 
 ROMANCE_ICON = "romance > spark > cold > normal"
+
+
+# --- Беседы отряда (этап 5): перепалка двоих над головами ---------------------------------------
+
+# Основа наших бесед: её ванильная беседа с Астарионом в лагере (AD на двоих: Альфира — спикер 0,
+# собеседник — 1, по фазе на реплику, без сцены). Для другого собеседника его uuid встаёт на место
+# Астариона в speakerlist копии (Scene.other_base).
+BANTER_BASE = "CAMP_Bard_AD_Astarion"
+BANTER_BASE_OTHER = "c7c13742-bacd-460a-8f65-f864fe41f255"      # S_Player_Astarion в основе
+BANTER_CATEGORY = "Repeated automated NPC Dialog"               # как у её ванильных бесед CAMP_Bard_AD_*
+BANTER_TICK_MS = 20000          # как часто искать беседу
+BANTER_COOLDOWN_MS = 300000     # не чаще одной беседы за 5 минут
+ROAD_PARTNER_M = 10.0           # в пути: собеседник рядом с ней
+CAMP_PARTNER_M = 20.0           # в лагере: собеседник недалеко (стоят на своих местах)
+CAMP_HERO_M = 10.0              # в лагере: герой проходит мимо неё
+
+
+@dataclass
+class Banter:
+    key: str                             # не менять: по нему счётчик в сохранениях
+    title: str
+    partner: str                         # Osiris-имя собеседника (S_Player_Astarion_…)
+    where: str                           # "road" (в пути, оба в отряде) | "camp" (в лагере, герой рядом)
+    dialog: str                          # Osiris-имя диалога (ванильного) — или пусто, тогда scene
+    scene: Scene | None = None           # наш AD беседы
+    plays: int = 1                       # сколько раз запускать (ванильные беседы из двух корней — 2)
+    after: tuple = ()                    # (ключ, сколько раз сыграна) — идёт после другой беседы
+    requires: list = field(default_factory=list)   # условия Osiris (текст), например роман у кого-то из аватаров
+    source: str = ""
+
+
+def banter(key, title, partner, where, *lines, plays=1, after=(), requires=(), vanilla="", variants=(), source=""):
+    """Беседа. vanilla="Имя_uuid" — ванильный AD как есть (голоса обеих сторон, постановка Larian);
+    иначе — наш AD из lines (say/voice, реплики собеседника — speaker=OTHER) или variants [(when, lines), …]."""
+    if where not in ("road", "camp"):
+        raise ValueError(f"{key}: where — road или camp")
+    scene = None
+    if not vanilla:
+        other = partner.rsplit("_", 1)[1]
+        scene = Scene(name=f"ALFSV_Banter_{key}", dialog_id=str(uuid.uuid5(MOD_NS, f"banter/{key}")), base=BANTER_BASE,
+                      subfolder="Companions/ADs", voice_from=[BANTER_BASE] + list(BANTER_VOICE_FROM), kind="ad",
+                      category=BANTER_CATEGORY, other=other, other_base=BANTER_BASE_OTHER, status="согласовано 2026-09-27")
+        vs = list(variants) or [((), lines)]
+        for i, (when, ls) in enumerate(vs):
+            scene.greeting(f"b{i}", *ls, when=list(when), end=True)
+    return Banter(key, title, partner, where, vanilla, scene, plays, tuple(after), list(requires), source)
+
+
+# где искать озвученные реплики бесед: её сцены в Роще и лагерная сцена ночи Соблазна (реплика Карлах)
+BANTER_VOICE_FROM = ["DEN_TieflingBard_Bard", "CAMP_DarkUrge_MurderOfAlfira_CFM_AlfiraArrives"]
+
+
+def banter_goal_block(banters, fl, extra=()) -> list:
+    """Регион goal ALFSV_World.txt: беседы отряда. fl(Flag) — Osiris-имя флага мода."""
+    A = ALFIRA_OSI
+
+    def dlg(b):
+        return b.dialog or f"{b.scene.name}_{b.scene.dialog_id}"
+
+    o = ["//REGION Party banters (design/banter/03_act1_party.md): two speakers over their heads, each once",
+         f"// Every {BANTER_TICK_MS // 1000} s look for one; at most one per {BANTER_COOLDOWN_MS // 60000} min; not in combat or "
+         "a dialog (QRY_SpeakerIsAvailable); road - both in the active party, close; camp - both in camp, a hero passing by", "",
+         "PROC", "PROC_ALFSV_Banter_Data()", "THEN"]
+    for b in banters:
+        o.append(f'DB_ALFSV_Banter("{b.key}", (DIALOGRESOURCE){dlg(b)}, (CHARACTER){b.partner}, "{b.where}", {b.plays});')
+    o += ["", "IF", "LevelGameplayStarted(_, _)", "THEN", "PROC_ALFSV_Banter_Data();", "NOT DB_ALFSV_Banter_Cooling(1);",
+          "PROC_ALFSV_Banter_StartTick();", "", "IF", "DB_ALFSV_IsCompanion(1)", "THEN", "PROC_ALFSV_Banter_Data();",
+          "PROC_ALFSV_Banter_StartTick();", "",
+          "PROC", "PROC_ALFSV_Banter_StartTick()", "AND", "DB_ALFSV_IsCompanion(1)", "THEN",
+          'TimerCancel("ALFSV_Banter_Tick");', f'TimerLaunch("ALFSV_Banter_Tick", {BANTER_TICK_MS});', "",
+          "// a request that did not start is forgotten on the next tick",
+          "IF", 'TimerFinished("ALFSV_Banter_Tick")', "AND", "DB_ALFSV_Banter_Requested(_Dialog, _Key)", "THEN",
+          "NOT DB_ALFSV_Banter_Requested(_Dialog, _Key);", "",
+          "IF", 'TimerFinished("ALFSV_Banter_Tick")', "THEN", "PROC_ALFSV_Banter_Try();", "PROC_ALFSV_Banter_StartTick();", "",
+          "PROC", "PROC_ALFSV_Banter_Try()", "AND", "DB_ALFSV_IsCompanion(1)", "AND", "NOT DB_ALFSV_Banter_Cooling(1)", "AND",
+          "QRY_ALFSV_AD_Free()", "AND", "NOT DB_ALFSV_PlacePending(_, _)", "AND",
+          "DB_ALFSV_Banter(_Key, _Dialog, _Partner, _Where, _Plays)", "AND", "NOT DB_ALFSV_Banter_Requested(_, _)", "AND",
+          "QRY_ALFSV_Banter_Left(_Key, _Plays)", "AND", "QRY_ALFSV_Banter_Ok(_Key)", "AND",
+          "QRY_ALFSV_Banter_Where(_Where, _Partner)", "AND", f"QRY_SpeakerIsAvailable({A})", "AND",
+          "QRY_SpeakerIsAvailable(_Partner)", "AND", f"IsInCombat({A}, 0)", "THEN",
+          "DB_ALFSV_Banter_Requested(_Dialog, _Key);", f"PROC_TryStartAD(_Dialog, {A}, _Partner);", "",
+          "QRY", "QRY_ALFSV_Banter_Left((STRING)_Key, (INTEGER)_Plays)", "AND", "NOT DB_ALFSV_BanterPlayed(_Key, _)", "THEN",
+          "DB_NOOP(1);", "",
+          "QRY", "QRY_ALFSV_Banter_Left((STRING)_Key, (INTEGER)_Plays)", "AND", "DB_ALFSV_BanterPlayed(_Key, _N)", "AND",
+          "_N < _Plays", "THEN", "DB_NOOP(1);", "",
+          "QRY", 'QRY_ALFSV_Banter_Where("road", (CHARACTER)_Partner)', "AND", f"DB_Players({A})", "AND", "DB_Players(_Partner)",
+          "AND", f"NOT DB_InCamp({A})", "AND", f"GetDistanceTo({A}, _Partner, _Dist)", "AND", f"_Dist < {ROAD_PARTNER_M}",
+          "THEN", "DB_NOOP(1);", "",
+          "QRY", 'QRY_ALFSV_Banter_Where("camp", (CHARACTER)_Partner)', "AND", f"DB_InCamp({A})", "AND",
+          f"GetDistanceTo({A}, _Partner, _Dist)", "AND", f"_Dist < {CAMP_PARTNER_M}", "AND", "DB_Avatars(_Avatar)", "AND",
+          f"GetDistanceTo(_Avatar, {A}, _Near)", "AND", f"_Near < {CAMP_HERO_M}", "THEN", "DB_NOOP(1);", ""]
+    for b in banters:
+        conds = []
+        if b.after:
+            k, n = b.after
+            conds += [f'DB_ALFSV_BanterPlayed("{k}", _After)', f"_After >= {n}"]
+        for r in b.requires:
+            if isinstance(r, Flag):            # у кого-то из аватаров стоит флаг мода
+                conds += ["DB_Avatars(_Avatar)", f"GetFlag({fl(r)}, _Avatar, 1)"]
+            else:
+                conds.append(r)
+        o += ["QRY", f'QRY_ALFSV_Banter_Ok("{b.key}")'] + [x for c in conds for x in ("AND", c)] + ["THEN", "DB_NOOP(1);", ""]
+    o += ["// started: count it, cool down",
+          "IF", "AutomatedDialogStarted(_Dialog, _)", "AND", "DB_ALFSV_Banter_Requested(_Dialog, _Key)", "THEN",
+          "NOT DB_ALFSV_Banter_Requested(_Dialog, _Key);", "DB_ALFSV_AD_Playing(_Dialog);", "PROC_ALFSV_Banter_Played(_Key);",
+          "DB_ALFSV_Banter_Cooling(1);", 'TimerCancel("ALFSV_Banter_Cooldown");',
+          f'TimerLaunch("ALFSV_Banter_Cooldown", {BANTER_COOLDOWN_MS});', "",
+          "PROC", "PROC_ALFSV_Banter_Played((STRING)_Key)", "AND", "NOT DB_ALFSV_BanterPlayed(_Key, _)", "THEN",
+          "DB_ALFSV_BanterPlayed(_Key, 0);", "",
+          "PROC", "PROC_ALFSV_Banter_Played((STRING)_Key)", "AND", "DB_ALFSV_BanterPlayed(_Key, _N)", "AND",
+          "IntegerSum(_N, 1, _Next)", "THEN", "NOT DB_ALFSV_BanterPlayed(_Key, _N);", "DB_ALFSV_BanterPlayed(_Key, _Next);", "",
+          "IF", 'TimerFinished("ALFSV_Banter_Cooldown")', "THEN", "NOT DB_ALFSV_Banter_Cooling(1);", "",
+          "// Debug (Script Extender console): Osi.PROC_ALFSV_Debug_Banter(\"B3\") - the banter now (ignores count and cooldown)",
+          "PROC", "PROC_ALFSV_Debug_Banter((STRING)_Key)", "AND", "DB_ALFSV_BanterPlayed(_Key, _N)", "THEN",
+          "NOT DB_ALFSV_BanterPlayed(_Key, _N);", "",
+          "PROC", "PROC_ALFSV_Debug_Banter((STRING)_Key)", "AND", "DB_ALFSV_Banter(_Key, _Dialog, _Partner, _, _)", "THEN",
+          "NOT DB_ALFSV_Banter_Cooling(1);", "DB_ALFSV_Banter_Requested(_Dialog, _Key);", f"PROC_TryStartAD(_Dialog, {A}, _Partner);",
+          ""] + list(extra) + ["//END_REGION", ""]
+    return o
