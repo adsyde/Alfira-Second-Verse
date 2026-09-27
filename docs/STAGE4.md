@@ -1,4 +1,4 @@
-# Этап 4. Главы разговоров: основа и главы 1–4
+# Этап 4. Главы разговоров: основа и главы 1–8, реакции акта 1
 
 Статус: **собрано, в игре не проверено.** Этап закрывается только после проверки по §4
 (CLAUDE.md §2).
@@ -318,3 +318,146 @@ python scripts/dialogs/tree.py       # build/dialogs/ALFSV_Alfira_Ch03_FirstVers
   фазы сохранены, движения её локальных камер убраны). Проверить планы и позы.
 - Реплики героя в копии разговора — handle Larian одним текстом; у основы есть тексты с правилами по тегам
   (`RuleGroup`), у нас их нет (сверка структуры в `validate.py`).
+
+## 10. Главы 5–8
+
+Сценарии `design/dialogs/06`–`09` (согласованы 2026-09-27), файлы `scripts/dialogs/scenes/ch05_morning_after.py`,
+`ch06_elturel.py`, `ch07_fear.py`, `ch08_first_kiss.py`. Все четыре — необязательные, только в акте 1, основа
+`DEN_Bard_InParty`. Новое в механизме глав: `when_any` (вход «или»: по корню в разговоре в отряде на каждый
+вариант, под ними один вложенный диалог), `priority` (в одной проверке глава открывается раньше других) и порог
+одобрения необязательной главы проверяется ещё и при открытии (`QRY_ALFSV_Chapters_Approval`: кто-то из аватаров
+с одобрением N+), чтобы глава не ждала одобрения, держа очередь.
+
+| Глава | Открытие | Вход | Сыграна |
+|---|---|---|---|
+| 5 «Утро после» (141 узел) | отдых, `ALFSV_Chapter04_Done`, приоритет 1 — открывается на утро после праздника раньше глав 3, 6, 7 | любой разговор | ответ в U2 |
+| 6 «Элтуриэль» (66) | отдых, одобрение 10+, `ORI_Karlach_HasMet` или `GLO_TheMonitor_HasMet_TheMonitor` | одобрение 10+ | ответ в E2 |
+| 7 «Страх» (68) | отдых, одобрение 10+, `GLO_Underdark_EverEnteredBefore`, `GLO_DuergarCamp_EverEnteredBefore`, `VISITEDREGION_CRE_Main_A` или сейчас `CRE_Main_A` | одобрение 10+ | ответ в S3 |
+| 8 «Первый поцелуй» (84) | отдых, одобрение 40+, глобальный `ALFSV_Romance_Act1Candidate` | вечер в лагере, 40+, у героя `Romance_Open` (K1а) или `AskAgain` / `Postponed` (K1б) | поцелуй или отказ; «Не сейчас» — нет |
+
+Озвученные реплики игры по handle: «This is embarrassing. Gods.» (`DEN_TieflingBard_Bard`), «Oh, hush - I know you
+love me really» (`LOW_Elfsong_Alfira`), «They were hot enough…» и «Sorry. I didn't mean to snap» (`CAMP_Bard_AD_Volo` —
+AD с Воло, фаза по длине голоса: `staging.py` теперь считает AD любой источник без героя), «talent and courage», «not
+ashamed of running» (`HAV_AlfiraTale_Bard`), «Hardly going to be much use in a battle» (`DEN_AttackOnDen_Bard`).
+
+**Глава 5.** U1 — по концу ночи (`Celebration_Cloak / _Shoulder / _GaveToLakrissa`, «иди проспись» =
+`LateNightDone` без них; ночи без F3 — без фразы). U2 — «рассказать?» по `Said_*` (три варианта с условием —
+у героя одна фраза), «предложение, дважды» один раз и снова меню. U3 — куплет по `Celebration_Theme_*` (без темы —
+«храбрость»), зачёркнутая строчка видна только после успеха Проницательности (романтическая — если роман возможен).
+«Роман возможен» = `Celebration_ChoseHer` / `Romance_Spark` / одобрение 40+ (три узла «или»; порядок: танец →
+искра → 40+, от него зависит «танец» или «у костра» в её вопросе). Порог «роман открыт» — 30. U5 «Ты покраснела» —
+только в ветках, где роман открыт. Лакрисса мертва — по `ALFSV_Celebration_LakrissaHere`, как в главе 4.
+
+**Глава 6.** E1 — Рафаил, если встреча с ним была (при обеих — он), иначе Карлах. «Мотив матери» и «её злость» —
+флаги диалога на герое; 🎲 Исполнение в E3 — только после «мотива». «Он уже предлагал мне сделку» — по
+`GLO_Monitor_State_FirstDealOffered`. 💞 «Я буду рядом» — при `ALFSV_Romance_Open`. 🏷️ тифлинг — `REALLY_TIEFLING`,
+Уилл — `REALLY_WYLL`.
+
+**Глава 7.** S1 — перевал, если `VISITEDREGION_CRE_Main_A`, иначе Подземье [решение сборки: что было последним, игра
+не хранит]. 🏷️ «Отступление — тактика» — по варианту на тег `FIGHTER`, `BARBARIAN`, `PALADIN` (у мультикласса
+два одинаковых варианта). Проницательность → «сбегу от *нас*» при открытом романе. S5 — «приди за мной» после
+успеха, добавка про первую ночь — при `ALFSV_HeroRule_Loyalty`.
+
+**Глава 8.** K1б — «спроси снова» и «пусть дорога покажет» (тот же вход и для «хотел(а) посмотреть, как ты
+отреагируешь» — у обоих `Romance_Postponed`). «Мне тоже» ставит `Romance_Open`. K2 — «ты её прочитал(а)» при
+`MorningAfter_ReadLine`; «проверила проход» — если сыграна глава 7. Все варианты поцелуя: `ALFSV_Romance_Started`
+(его ждут 💞-варианты мест и пути), `Romance_Open`, `CH.done`. Дуэт — при `ALFSV_PlayedTogether` из главы 2.
+«Не сейчас» — конец без `Done`. «Не уверен(а)» — `Done`; «ты мне друг» и «передумал(а)» — `Done` +
+`ALFSV_Romance_Closed`. «А Лакрисса?» — при `LakrissaHere`.
+
+### Флаги-воспоминания глав 5–8 (на герое, **не менять**)
+
+| Флаг | Исход |
+|---|---|
+| `ALFSV_Romance_Open` (`451a9df6-…`) | гл. 5: признание при одобрении 30+ (или «Мне тоже» в гл. 8) |
+| `ALFSV_Romance_AskAgain` (`9f992e3e-…`) | гл. 5: признание ниже 30 — «спроси меня снова» |
+| `ALFSV_Romance_Postponed` (`6f2ac1a9-…`) | гл. 5: «пусть дорога покажет» / «хотел(а) посмотреть» |
+| `ALFSV_Romance_Friend` (`2ff92e9b-…`) | гл. 5: «ты мой друг» |
+| `ALFSV_Romance_Forget` (`57b8e432-…`) | гл. 5: «ты была пьяна, забудем» |
+| `ALFSV_MorningAfter_ReadLine` (`86567487-…`) | гл. 5: прочитал(а) зачёркнутую строчку |
+| `ALFSV_MorningAfter_Spared` (`5953b80f-…`) | гл. 5: «спела и уснула» — пощадил(а) |
+| `ALFSV_Elturel_MotherTune`, `_Anger` (Dialog, `27a2ac31-…`, `d27599f4-…`) | гл. 6: мотив матери / её злость (для E3, E5) |
+| `ALFSV_Elturel_MotherSong` (`1a3a38cf-…`) | гл. 6: «напиши о свечах» — песня о матери |
+| `ALFSV_Elturel_HummedTune` (`b64a89f3-…`) | гл. 6: напел мотив матери |
+| `ALFSV_Elturel_LihalaCity` (`45eff083-…`) | гл. 6: «город Лихейлы» (этап 7) |
+| `ALFSV_DevilPromise` (`1e746603-…`) | гл. 6: обещал(а) не заключать сделку с дьяволом (акт 3) |
+| `ALFSV_Brave_KeepUsStanding / _GoingBack / _Luck / _Tactic` (`e83dfca7-…`, `807c453a-…`, `fdd2d4e6-…`, `5f6c62b1-…`) | гл. 7: что такое храбрость |
+| `ALFSV_Fear_RunFromYou` (`a7a21dc8-…`) | гл. 7: её настоящий страх (Проницательность) |
+| `ALFSV_Unseen_Tadpole / _WantedToRun / _StayedWithHer / _Truth / _Resisting / _Surviving` (`3cab37af-…`, `873809c7-…`, `3abee98f-…`, `d307d695-…`, `271d9489-…`, `f69b0e5a-…`) | гл. 7: храбрость, которой никто не видел |
+| `ALFSV_Romance_Started` (уже был) | гл. 8: поцелуй — роман начат |
+| `ALFSV_Romance_Closed` (`89336c1d-…`) | гл. 8: отказ |
+| `ALFSV_Romance_TellLakrissa` (`4644478e-…`) | гл. 8: «скажу Лакриссе сама» (R6) |
+
+Глобальный: `ALFSV_Romance_Act1Candidate` (`ce372796-…`) — ставят ветки главы 5 с `Open`, `AskAgain`, `Postponed`.
+
+| Ресурс | ID | `Available` / `Done` |
+|---|---|---|
+| `ALFSV_Alfira_Ch05_MorningAfter` | `3f0c9a4e-7d21-4b8e-9c5a-1e6b2d8f4a07` | `cfcfb20e-9966-57c0-a8d7-0c69f0386818` / `0f19b318-bae5-5905-bed6-a09bb29c86b9` |
+| `ALFSV_Alfira_Ch06_Elturel` | `8b2e5d71-4c3a-4f9e-a6d0-7e1c9b3f5a28` | `458f6fe4-af1a-5cb5-9f4c-7a86ac060698` / `19e5799f-d0b2-5897-88ce-8c3d924580ff` |
+| `ALFSV_Alfira_Ch07_Fear` | `c47a1e93-2b6d-4f08-8e5c-9d3a6b1f7e42` | `2b447480-af19-5696-ba86-2f0ccf82bf35` / `1b5d7b62-c6ca-5266-b5c0-856502c1440d` |
+| `ALFSV_Alfira_Ch08_FirstKiss` | `5e9d2b47-1a8c-4e36-b0f7-3c6a9d1e8b54` | `75211302-c605-5114-99d7-4ccd72581054` / `7fec2175-cd67-598f-9ef5-25f4b105ef63` |
+
+## 11. Реакции на поступки, акт 1
+
+По `design/reactions/01_act1.md` (согласовано 2026-09-27). Goal `ALFSV_Reactions.txt` генерирует
+`scripts/dialogs/reactions.py` (флаги и события игры, способы «рядом» A/B/C — там же и в
+`docs/research/act1-flags.md`). Одна реакция за игру — глобальный флаг `ALFSV_React_<имя>` (кроме №18, 19);
+одобрение — `PROC_ChangeApprovalRatingForAllAvatars`, как у ванильных спутников. Всё — только пока она спутница.
+
+| # | Событие игры | «Рядом» | Одобрение | Флаг |
+|---|---|---|---|---|
+| 1 | `DEN_AttackOnDen_State_DenVictory` при `DEN_AttackOnDen_Event_Start` | в Роще (`QRY_DEN_IsInDen`) +10 и реплика, иначе +5 | +10 / +5 | `GroveDefended` |
+| 2 | `DEN_AttackOnDen_State_HostileTieflings` | в отряде или в Роще | −10, реплика | `GatesOpened` |
+| 3 / 3б | разоблачение Каги (`StartDenouncingScene` в диалоге с ней или `DEN_State_RitualStopped`, она в Роще) / `GOB_State_LeadersAreDead` | A/B / C | +5 одна на обе | `GroveSaved` |
+| 4 | `DEN_Lockdown_State_Active` | C | −10, реплика | `TieflingsExpelled` |
+| 5 | `DEN_ShadowDruid_State_FreedChild` в диалоге с ней | A | +5, реплика | `Arabella` |
+| 6 | `DEN_ShadowDruid_State_KidDied` | C | −3 | `ArabellaDied` |
+| 7 | `DEN_HarpyMeal_State_HelpedSaveVictim` на ней | игра ставит | +5, реплика | `Mirkon` |
+| 8 | `HAG_HagSpawn_Quest_SurrogateReleased` в диалоге; или `HAG_Hag_State_IsDead`, Майрина жива, без сделки, она в отряде | A/B | +5 | `Mayrina` |
+| 9 | `HAG_Hag_State_HagTookMother` в диалоге | A | −5 | `MayrinaToHag` |
+| 10 | `PLA_KarlachRecruitment_State_HelpingKarlach` / `ORI_Karlach_Quest_AgreedToHelpNotRecruited` в диалоге | A | +5 | `KarlachHelped` |
+| 11 | `…_Event_KarlachHostile` в диалоге / `…_State_KilledKarlach`, она в отряде | A/B | −5 | `KarlachAttacked` |
+| 12 | `GOB_VoloBallad_State_VoloEscaped` при `…_PlayersMetVolo` | C | +2 | `Volo` |
+| 13 / 14 | `UND_State_LeaderFreedGnomes`, `UND_GnomeWorkers_Event_Leave` / `UND_TheDrowNere_State_GnomesExecuted`, `UND_DuergarCamp_State_GnomesHostile` | она в `S_UND_DuergarCamp_SUB` | +5 / −5 | `GnomesFreed` / `GnomesHarmed` |
+| 15, 16, 17 | `GOB_Torturers_Assisted`, `GOB_WolfPens_Event_ThrewRock`, `DEN_CapturedGoblin_State_SteppedInfrontOfCrossbow` в диалоге с ней | A | −5, −2, +2 | `Torture`, `RockAtBear`, `Sazza` |
+| 18 | убит тифлинг: `DB_CompanionCaredFaction(Альфира, ACT1_DEN_Tieflings / ACT1_DEN_AttackOnDen_NPC, −10, 1, 0)` — ванильное правило | C | −10 за каждого, реплика в первый раз | — |
+| 19 | `StatusApplied(_, "PERFORM_POSITIVE")` у участника отряда (не она) вне боя, она в отряде и в диалоговом радиусе, акт 1 | B | +1, не больше +5 (`DB_ALFSV_React_Performed`) | — |
+
+- **До вербовки** — №3, 5, 6, 7 засчитываются один раз в момент вербовки (`PROC_ALFSV_React_BeforeRecruitment`
+  при `DB_ALFSV_IsCompanion`). На сохранении, где она уже спутница, INIT нового goal только регистрирует №18 —
+  без задним числом начисленных реакций.
+- **Реплики над головой** №1, 2/4, 5/7, 18 — места `React_GroveHeld`, `React_TieflingsOut`, `React_Children`,
+  `React_TieflingKilled` в `scenes/places.py` (`custom="reaction"`), запуск — `PROC_ALFSV_Place_Request` из goal
+  реакций: одна AD за раз, ждёт до 60 с, нужна она в активном отряде; каждая — один раз за игру.
+- Флаги `ALFSV_React_*` (глобальные): `GroveDefended` `b2360686-…`, `GatesOpened` `65eca223-…`, `GroveSaved`
+  `e7f06833-…`, `TieflingsExpelled` `6857659d-…`, `Arabella` `dd93c829-…`, `ArabellaDied` `fb8c38c8-…`, `Mirkon`
+  `0f505495-…`, `Mayrina` `03b23e5e-…`, `MayrinaToHag` `f276ee14-…`, `KarlachHelped` `fe0e008c-…`, `KarlachAttacked`
+  `02e87ada-…`, `Volo` `70b36383-…`, `GnomesFreed` `60572369-…`, `GnomesHarmed` `c840a4c9-…`, `Torture` `dc4cf22e-…`,
+  `RockAtBear` `c8f87a78-…`, `Sazza` `d6713254-…`.
+- `check_story.py` теперь сравнивает сообщения компилятора с прогоном без мода: часть ошибок (например, опечатка в
+  имени запроса — «Database X is read, but is never written to») не содержит имени файла и раньше не показывалась.
+
+## 12. Главы 5–8 и реакции: как проверить в игре
+
+1. **Утро после:** праздник с ней и сыгранная глава 4 → долгий отдых → первым открывается глава 5 (даже если
+   ждала глава 3/6/7). U1 по концу ночи (плащ / плечо / Лакрисса / «зануда» / без фразы), U2 по сказанному,
+   куплет по теме, Проницательность и строчка; четыре исхода R3 при одобрении 30+ и ниже; «Ты покраснела».
+2. **Элтуриэль:** после Карлах или Рафаила и отдыха (одобрение 10+); вариант Рафаила при обеих встречах; «он уже
+   предлагал сделку» — после ужина с Рафаилом; голос в «пламени Аверно» (фаза из AD с Воло).
+3. **Страх:** после Подземья / Гримфорджа / перевала; S1 по месту; классы; Соблазн; «приди за мной».
+4. **Первый поцелуй:** роман открыт и одобрение 40+ → вечером в лагере K1а; «спроси снова» / «дорога» → K1б; все
+   варианты поцелуя ставят `ALFSV_Romance_Started` (после — 💞-реплики мест); «Не сейчас» — глава снова;
+   отказы — глава закрыта. Героиня — женские формы.
+5. **Реакции:** всплывающие реакции одобрения и реплики над головой: отбить нападение на Рощу (в Роще и из лагеря),
+   открыть ворота, Кага, вожаки (одна реакция на две), Арабелла и Миркон до и после вербовки, Майрина, Карлах,
+   Воло, гномы, пытки, медведь, Саза, убийство тифлинга (−10 каждый, реплика один раз), выступление (+1, не
+   больше +5).
+
+### Риски
+
+- Глава 8 при «хотел(а) посмотреть, как ты отреагируешь» начинается с «Ну что. Дорога…» — у сценария для этого
+  исхода нет своего входа.
+- №19: «вне боя» — `IsInCombat(исполнитель, 0)`, «рядом» — `QRY_SpeakerIsInDialogRange`; не проверено, срабатывает
+  ли `StatusApplied` для статуса выступления у спутника.
+- №2 «рядом» — она в активном отряде или в Роще; если ворота открывают, а она в лагере, реакции нет (так в сценарии: 👁️).
+- Реплики над головой реакций не звучат, если в этот момент она не в активном отряде (как реплики мест).

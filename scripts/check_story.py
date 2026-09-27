@@ -11,7 +11,7 @@
   2. раскладывает ванильные goals из game-data/ (хотфикс поверх Shared) и goals мода
      в build/story_check/ (литералы перечислений вида DEATHTYPE.DoT заменяются на
      (DEATHTYPE)0 — парсер LSLib их не знает);
-  3. запускает StoryCompiler --check-only и печатает только сообщения о моде.
+  3. запускает StoryCompiler --check-only с модом и без него и печатает сообщения, которых нет без мода.
 Ванильные goals дают около сотни «своих» ошибок (неполный заголовок): они не показываются.
 """
 import glob
@@ -87,13 +87,18 @@ def main():
     for m in (data / "Mods").iterdir():
         (m / "meta.lsx").write_text(META.format(m.name), encoding="utf-8")
 
-    cmd = [str(lslib / "StoryCompiler.exe"), "--game", "bg3", "--no-packages", "--check-only",
-           "--game-data-path", str(data)]
-    for m in VANILLA + [folder]:
-        cmd += ["--mod", m]
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
-    ours = [l.strip() for l in (r.stdout + r.stderr).splitlines()
-            if ("ERR" in l or "WARN" in l) and (folder in l or "ALFSV" in l)]
+    def run(mods):
+        cmd = [str(lslib / "StoryCompiler.exe"), "--game", "bg3", "--no-packages", "--check-only",
+               "--game-data-path", str(data)]
+        for m in mods:
+            cmd += ["--mod", m]
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        return [l.strip() for l in (r.stdout + r.stderr).splitlines() if "ERR" in l or "WARN" in l]
+
+    # Часть сообщений не содержит имени файла (например, «Database "X(2)" is read, but is never written to»
+    # для опечатки в имени запроса), поэтому «наши» — это всё, чего нет в прогоне одних ванильных goals.
+    vanilla = set(run(VANILLA))
+    ours = [l for l in dict.fromkeys(run(VANILLA + [folder])) if l not in vanilla]
     for l in ours:
         print(l)
     errors = [l for l in ours if "ERR" in l]

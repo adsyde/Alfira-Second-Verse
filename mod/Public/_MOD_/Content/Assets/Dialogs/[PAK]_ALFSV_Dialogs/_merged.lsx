@@ -291,6 +291,86 @@
 					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
 					<attribute id="BlockFTB" type="bool" value="True" />
 					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="f9c1086f-dbe4-5b5b-b361-3e6e03ae102a" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_React_GroveHeld" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_React_GroveHeld.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="c887d6ec-2d36-53f7-8157-8e0c8fe1556d" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_React_TieflingsOut" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_React_TieflingsOut.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="9aa434ca-55a2-5524-b057-03b864fb9eb9" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_React_Children" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_React_Children.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
+					<attribute id="ID" type="FixedString" value="d9bc5671-9094-53a7-8c4f-5bef4b3f240a" />
+					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
+					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_React_TieflingKilled" />
+					<attribute id="SourceFile" type="LSString" value="Mods/_MOD_/Story/Dialogs/Companions/ADs/ALFSV_AD_Place_React_TieflingKilled.lsj" />
+					<attribute id="_OriginalFileVersion_" type="int64" value="36028799166447617" />
+					<attribute id="automated" type="bool" value="True" />
+					<attribute id="isBehaviour" type="bool" value="False" />
+					<attribute id="isPrivateDialog" type="bool" value="False" />
+					<attribute id="isSubbedDialog" type="bool" value="False" />
+					<attribute id="isWorld" type="bool" value="False" />
+					<children>
+						<node id="SpeakerSlotsWithLines">
+							<attribute id="HasLines" type="bool" value="True" />
+						</node>
+					</children>
+				</node>
+				<node id="Resource">
+					<attribute id="AllowDeadSpeakers" type="bool" value="False" />
+					<attribute id="BlockFTB" type="bool" value="True" />
+					<attribute id="EnableTimeline" type="bool" value="True" />
 					<attribute id="ID" type="FixedString" value="8c34c5f6-7e21-57c3-b5f2-f113c83b265f" />
 					<attribute id="IsAllowingJoinCombat" type="bool" value="False" />
 					<attribute id="Name" type="LSString" value="ALFSV_AD_Place_CRE_LiftStart" />

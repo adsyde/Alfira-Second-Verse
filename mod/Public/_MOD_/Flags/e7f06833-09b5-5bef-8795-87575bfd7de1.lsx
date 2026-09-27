@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="e7f06833-09b5-5bef-8795-87575bfd7de1" />
+			<attribute id="Name" type="FixedString" value="ALFSV_React_GroveSaved" />
+			<attribute id="Description" type="LSString" value="Reactions 3 / 3b: the Grove saved (Kagha exposed or the goblin leaders killed) - one of the two" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

@@ -18,6 +18,10 @@ PROC_ALFSV_Travel_Start();
 PROC
 PROC_ALFSV_World_Data()
 THEN
+DB_ALFSV_Place("React_GroveHeld", (DIALOGRESOURCE)ALFSV_AD_Place_React_GroveHeld_f9c1086f-dbe4-5b5b-b361-3e6e03ae102a);
+DB_ALFSV_Place("React_TieflingsOut", (DIALOGRESOURCE)ALFSV_AD_Place_React_TieflingsOut_c887d6ec-2d36-53f7-8157-8e0c8fe1556d);
+DB_ALFSV_Place("React_Children", (DIALOGRESOURCE)ALFSV_AD_Place_React_Children_9aa434ca-55a2-5524-b057-03b864fb9eb9);
+DB_ALFSV_Place("React_TieflingKilled", (DIALOGRESOURCE)ALFSV_AD_Place_React_TieflingKilled_d9bc5671-9094-53a7-8c4f-5bef4b3f240a);
 DB_ALFSV_Place("CRE_LiftStart", (DIALOGRESOURCE)ALFSV_AD_Place_CRE_LiftStart_8c34c5f6-7e21-57c3-b5f2-f113c83b265f);
 DB_ALFSV_Place("CRE_LiftMid", (DIALOGRESOURCE)ALFSV_AD_Place_CRE_LiftMid_2381622c-f1da-5dcc-9c57-311f8dd27902);
 DB_ALFSV_Place("CRE_LiftTop", (DIALOGRESOURCE)ALFSV_AD_Place_CRE_LiftTop_9f978edd-2dde-5a69-846b-486947c037de);

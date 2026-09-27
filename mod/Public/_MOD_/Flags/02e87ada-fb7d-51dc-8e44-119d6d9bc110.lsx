@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="02e87ada-fb7d-51dc-8e44-119d6d9bc110" />
+			<attribute id="Name" type="FixedString" value="ALFSV_React_KarlachAttacked" />
+			<attribute id="Description" type="LSString" value="Reaction 11: attacked or killed Karlach" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

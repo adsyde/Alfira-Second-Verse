@@ -48,6 +48,10 @@ NPC спутниками через те же базы Osiris, что и у ор
   ([STAGE5.md](STAGE5.md), [STAGING.md §5b](STAGING.md#5b-реплики-над-головой-ad-этап-5)). Ванильные правила
   не меняются: к `PROC_CRE_Dungeon_ElevatorMove` (фуникулёр Яслей) добавлено своё правило с тем же именем.
 
+- Реакции на поступки (акт 1) — goal `ALFSV_Reactions.txt`, генерирует `scripts/dialogs/reactions.py`: только
+  слушает флаги и события игры (`FlagSet`, `PROC_State_Changed` Рощи, `StatusApplied`), ванильные диалоги не
+  меняются; убийство тифлингов — ванильный механизм `DB_CompanionCaredFaction`, как у Уилла ([STAGE4.md §11](STAGE4.md#11-реакции-на-поступки-акт-1)).
+
 ## Соглашения
 
 - Префикс всего своего: **`ALFSV_`** (goals, флаги, диалоги, базы:

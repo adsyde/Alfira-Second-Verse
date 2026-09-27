@@ -17,6 +17,7 @@
   Mods/_MOD_/Localization/English|Russian/AlfiraSecondVerse_*.xml    тексты
   Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt                 Osiris глав разговоров (этап 4)
   Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt                    Osiris реплик на местах и в пути (AD, этап 5)
+  Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Reactions.txt                Osiris реакций на поступки (reactions.py)
   build/dialogs/manifest.json                                        ванильные handle (для build_pak)
 """
 from __future__ import annotations
@@ -41,6 +42,7 @@ import dsl  # noqa: E402
 from dsl import ACT_LEVELS, ALFIRA, OTHER, PLAYER, Flag, FlagRef, Line, Option, Osi, has_gender, render  # noqa: E402
 from staging import Stager  # noqa: E402
 import ads  # noqa: E402
+import reactions as act_reactions  # noqa: E402
 from vanilla import ALFIRA_ORIGIN, ALFIRA_TEMPLATE, APPROVAL_SP1, NARRATOR_SPEAKER, PLAYER_SPEAKER, F  # noqa: E402
 
 enable_utf8_stdout()
@@ -49,6 +51,7 @@ enable_utf8_stdout()
 SCENES = ["recruitment", "inparty"] + sorted(p.stem for p in (HERE / "scenes").glob("ch[0-9][0-9]_*.py"))
 CHAPTERS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt"
 WORLD_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt"
+REACTIONS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Reactions.txt"
 # Женские формы обращения к героине: отдельный файл <имя>_to_F.xml рядом с русским (как
 # russian_to_F.loca у игры). Проверить в игре; если игра не различает — выключить.
 FEMALE_VARIANTS = True
@@ -810,8 +813,10 @@ def generate(dump=False):
     # реплики на местах и в пути (AD) — свой goal
     places, trv = load_world()
     (src / WORLD_GOAL).write_text(ads.world_goal(places, trv, ids), encoding="utf-8", newline="\n")
+    # реакции на поступки (акт 1) — свой goal (scripts/dialogs/reactions.py)
+    (src / REACTIONS_GOAL).write_text(act_reactions.goal(ids), encoding="utf-8", newline="\n")
     from scenes.recruitment import ROMANCE as romance_flag        # флаг только из Osiris: файл нужен всё равно
-    osiris_only = [romance_flag] + OSIRIS_FLAGS + [r.flag for s in chapters for r in s.chapter.story + s.chapter.story_any
+    osiris_only = [romance_flag] + list(act_reactions.FLAGS.values()) + OSIRIS_FLAGS + [r.flag for s in chapters for r in s.chapter.story + s.chapter.story_any
                                                    if isinstance(r, FlagRef)]
     # флаги глав есть в goal глав всегда, а в диалогах Available — только у глав со входом в отряде
     osiris_only += [f for s in chapters for f in (s.chapter.available_flag, s.chapter.done_flag)]

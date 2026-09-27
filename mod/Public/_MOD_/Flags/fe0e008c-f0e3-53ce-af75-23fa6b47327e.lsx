@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="fe0e008c-f0e3-53ce-af75-23fa6b47327e" />
+			<attribute id="Name" type="FixedString" value="ALFSV_React_KarlachHelped" />
+			<attribute id="Description" type="LSString" value="Reaction 10: agreed to help Karlach" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

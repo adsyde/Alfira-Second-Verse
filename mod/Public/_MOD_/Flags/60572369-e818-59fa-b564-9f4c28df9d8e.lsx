@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="60572369-e818-59fa-b564-9f4c28df9d8e" />
+			<attribute id="Name" type="FixedString" value="ALFSV_React_GnomesFreed" />
+			<attribute id="Description" type="LSString" value="Reaction 13: the deep gnomes of Grymforge freed" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

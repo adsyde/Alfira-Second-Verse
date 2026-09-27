@@ -22,6 +22,23 @@ G1 = "Gustav/Mods/Gustav/Story/RawFiles/Goals/"
 GD = "Gustav/Mods/GustavDev/Story/RawFiles/Goals/"
 
 PLACES = [
+    # ---------------------------------------------------------------- Реакции акта 1 (design/reactions/01_act1.md §2)
+    # Не места: запуск — PROC_ALFSV_Place_Request(ключ) из goal реакций (scripts/dialogs/reactions.py). Ключи не менять.
+    place("React_GroveHeld", "Реакция 1: нападение на Рощу отбито",
+          variant(say("We held. We actually *held*. ...I need to sit down.", "Мы выстояли. Правда *выстояли*. …Мне надо присесть.",
+                      emo="surprise>happy>pain")),
+          act=1, custom="reaction", source="reactions.py №1: DEN_AttackOnDen_Event_Start + DEN_AttackOnDen_State_DenVictory"),
+    place("React_TieflingsOut", "Реакции 2, 4: тифлинги на дороге",
+          variant(say("They're out on the road. With the gnolls. ...I know that road.",
+                      "Они теперь на дороге. С гноллами. …Я знаю эту дорогу.", emo="sad>fear/1", note="(тихо в конце)")),
+          act=1, custom="reaction", source="reactions.py №2 HostileTieflings, №4 DEN_Lockdown_State_Active"),
+    place("React_Children", "Реакции 5, 7: дети спасены",
+          variant(say("The little ones will talk about you for years. I'll make sure of it.",
+                      "Малыши будут рассказывать о тебе годами. Уж я прослежу.", emo="happy>happy/2")),
+          act=1, custom="reaction", source="reactions.py №5 DEN_ShadowDruid_State_FreedChild, №7 DEN_HarpyMeal_State_HelpedSaveVictim"),
+    place("React_TieflingKilled", "Реакция 18: убит тифлинг",
+          variant(say("They were *my* people.", "Это были *мои* люди.", emo="angry>sad")),
+          act=1, custom="reaction", source="reactions.py №18: DB_CompanionReactedToFactionMemberDeath (первый раз)"),
     # ---------------------------------------------------------------- Акт 1
     # ⭐ Фуникулёр в Яслях Иллек — сцена из трёх реплик
     place("CRE_LiftStart", "Ясли Иллек: фуникулёр, начало подъёма",
