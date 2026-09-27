@@ -73,9 +73,77 @@ def act1_paths():
     return vw, models, vw / "act1", vw / "act1" / "gen"
 
 
+ALFIRA_UUID = "4a405fba-3000-4c63-97e5-a8001ebb883c"
+# говорящий → (ключ, имя, папка образцов, датасет) — NPC клонируются только в личную сборку (docs/VOICE.md)
+SPEAKERS = {
+    ALFIRA_UUID: ("alfira", "Альфира", "refs", "dataset"),
+    "02025646-347a-4235-aef7-e46b7c94b435": ("asharak", "Ашарак", "refs_asharak", "dataset_02025646"),
+    "23129d6c-8d39-4a4c-a4f6-cfc6637b597c": ("lakrissa", "Лакрисса", "refs_lakrissa", "dataset_23129d6c"),
+    "e2ad06ec-8034-479a-9f69-b86faea6dc79": ("dammon", "Даммон", "refs_dammon", "dataset_e2ad06ec"),
+}
+TALKS = "talks"                  # группа «Разговоры»: voice-work/act1/lines_talks.json (разговоры по событиям и локальные)
+_lines_cache = None
+
+
+def talks_lines(act):
+    """lines_talks.json → формат lines.json: эмоция и подача — по ремарке и лицу сценария, как в list_lines.py."""
+    p = act / "lines_talks.json"
+    if not p.exists():
+        return []
+    import types
+    import list_lines
+    out = []
+    for x in json.loads(p.read_text(encoding="utf-8")):
+        ln = types.SimpleNamespace(note=x.get("note", ""), emo=x.get("emo") or "neutral", en=x["en"])
+        cat, why = list_lines.category(ln, TALKS, x.get("block", ""))
+        instr, vec = list_lines.STYLE[cat]
+        spk = SPEAKERS.get(x.get("speaker_uuid", ALFIRA_UUID), SPEAKERS[ALFIRA_UUID])
+        out.append({**x, "group": TALKS, "group_title": "Разговоры", "scene_title": x.get("group_title", ""),
+                    "emo": x.get("emo") if isinstance(x.get("emo"), str) else json.dumps(x.get("emo")),
+                    "emotion": cat, "why": why, "ref_emotion": list_lines.REF_OF.get(cat, cat), "instruct": instr,
+                    "emo_vector": vec, "tags": "laugh" if cat == "laugh" else "",
+                    "index_variants": 3 if cat in list_lines.VECTOR_EXTRA else 2,
+                    "speaker_key": spk[0], "speaker_name": spk[1], "ref_dir": spk[2]})
+    return out
+
+
 def load_lines():
-    vw, _m, act, _g = act1_paths()
-    return json.loads((act / "lines.json").read_text(encoding="utf-8"))
+    """Реплики акта 1 (lines.json) и «Разговоров» (lines_talks.json)."""
+    global _lines_cache
+    if _lines_cache is None:
+        vw, _m, act, _g = act1_paths()
+        _lines_cache = json.loads((act / "lines.json").read_text(encoding="utf-8")) + talks_lines(act)
+    return [dict(x) for x in _lines_cache]
+
+
+def pick_ref(vw, ln_or_emotion):
+    """Образец эмоции из папки образцов говорящего; если такой эмоции у NPC нет — нейтраль, потом тепло."""
+    if isinstance(ln_or_emotion, str):
+        return cm.pick_ref(vw, ln_or_emotion)
+    ln = ln_or_emotion
+    d = ln.get("ref_dir", "refs")
+    for emo in (ln["ref_emotion"], "neutral", "grateful"):
+        idx = vw / d / emo / "index.csv"
+        if idx.exists():
+            import csv
+            rows = list(csv.DictReader(idx.open(encoding="utf-8-sig")))
+            ref = next((r for r in rows if float(r["seconds"]) >= 4.0), rows[0])
+            return {"ref_wav": str(idx.parent / ref["file"]), "ref_text": ref["text"], "ref_seconds": float(ref["seconds"]),
+                    "ref_dialog": ref["dialog"], "ref_remark": ref["remark"], "ref_emo_used": emo}
+    raise FileNotFoundError(f"нет образцов в {vw / d}")
+
+
+def speaker_voice_set(vw, ln, n=60):
+    """Эталон голоса для похожести: у Альфиры — датасет дообучения, у NPC — его чистые реплики без исключений."""
+    if ln.get("speaker_key", "alfira") == "alfira":
+        return cm.voice_set(vw, n)
+    import csv
+    import random
+    ds = vw / SPEAKERS[ln["speaker_uuid"]][3]
+    rows = [r for r in csv.DictReader((ds / "labels.csv").open(encoding="utf-8-sig")) if not r["exclude"] and not r["noise"]]
+    files = sorted(str(ds / "wav" / f"{r['handle']}.wav") for r in rows)
+    random.Random(7).shuffle(files)
+    return files[:n]
 
 
 REDO = "_redo"   # группа «Переделка»: реплики из redo_act1.json, варианты breeze_rK / indextts_rK
@@ -94,7 +162,7 @@ SPECIAL = {REDO: "r", EVEN: "e"}
 # Правило автора (выбор all_v7: все реплики похмелья — ровный набор): если одна эмоция идёт в сцене подряд,
 # сразу делается ровный набор — общий образец, одна инструкция, общие seed, и ★ ставится на него.
 # Сцены-главы с этого правила (главы 1–5 автор уже выбрал); места, фразы в пути и беседы — отдельные AD, не сцены.
-EVEN_GROUPS = ("ch06_elturel", "ch07_fear", "ch08_first_kiss", "inparty")
+EVEN_GROUPS = ("ch06_elturel", "ch07_fear", "ch08_first_kiss", "inparty", TALKS)
 EVEN_RUN_MIN = 2
 
 
@@ -106,10 +174,12 @@ def even_runs():
     for g in EVEN_GROUPS:
         grp = [x for x in lines if x["group"] == g]
         i = 0
-        for emo, it in itertools.groupby(grp, key=lambda x: x["emotion"]):
+        # в «Разговорах» серия — внутри одной сцены и одного говорящего
+        key = lambda x: (x.get("scene_title", ""), x.get("speaker_key", "alfira"), x["emotion"])  # noqa: E731
+        for (scene, spk, emo), it in itertools.groupby(grp, key=key):
             run = list(it)
-            if len(run) >= EVEN_RUN_MIN:
-                runs.append((f"{g}/{emo}/{i}", run))
+            if len(run) >= EVEN_RUN_MIN and spk == "alfira":
+                runs.append((f"{g}/{scene}/{emo}/{i}" if scene else f"{g}/{emo}/{i}", run))
             i += len(run)
     return [r for r in runs if r[1]]
 
@@ -200,12 +270,13 @@ def cmd_gen(args):
             out = gen / group / model
             jobs = []
             for ln in todo:
-                emo = ln["ref_emotion"]
-                refs.setdefault(emo, cm.pick_ref(vw, emo))
+                emo = (ln.get("ref_dir", "refs"), ln["ref_emotion"])
+                refs.setdefault(emo, pick_ref(vw, ln))
                 ks = [k for k in model_variants(model, ln) if not wav_ok(out / f"line{ln['id']}_v{k}.wav")]
                 if ks:
+                    ref = {k: v for k, v in refs[emo].items() if k != "ref_emo_used"}
                     job = {"id": ln["id"], "text": ln["text"], "instruct": ln["instruct"], "emo_vector": ln["emo_vector"],
-                           "tags": ln["tags"], "variants": ks, **refs[emo]}
+                           "tags": ln["tags"], "variants": ks, **ref}
                     if ln.get("redo"):
                         base = vw / ln["redo"]["ref"]
                         job.update(ref_wav=str(base), ref_text=base.with_suffix(".txt").read_text(encoding="utf-8").strip(),
@@ -282,27 +353,32 @@ def cmd_score(args):
     lines = all_lines()
     for group in args.groups:
         todo = [x for x in lines if x["group"] == group]
-        items = []
+        items, by_spk = [], {}
         for ln in todo:
-            ref = cm.pick_ref(vw, ln["ref_emotion"])["ref_wav"]
+            ref = pick_ref(vw, ln)["ref_wav"]
             for model in MODELS:
                 for k in model_variants(model, ln):
                     w = gen / group / model / f"line{ln['id']}_v{k}.wav"
                     if wav_ok(w):
-                        items.append({"key": f"{ln['id']}|{model}|{k}", "wav": str(w), "text": ln["text"], "ref": ref})
+                        it = {"key": f"{ln['id']}|{model}|{k}", "wav": str(w), "text": ln["text"], "ref": ref}
+                        items.append(it)
+                        by_spk.setdefault(ln.get("speaker_key", "alfira"), (ln, []))[1].append(it)
         if not items:
             print(f"{group}: нечего оценивать")
             continue
-        ij = gen / group / "metrics_items.json"
-        mj = gen / group / "metrics.json"
-        ij.write_text(json.dumps({"voice_set": cm.voice_set(vw), "items": items, "cache": str(vw / "cache" / "metrics"),
-                                  "names": NAMES},
-                                 ensure_ascii=False), encoding="utf-8")
-        r = subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "metrics.py"), str(ij), str(mj)], env=cm.model_env(vw),
-                           capture_output=True, text=True, encoding="utf-8", errors="replace")
-        if r.returncode != 0:
-            sys.exit(f"{group}: метрики упали\n{r.stdout[-2000:]}\n{r.stderr[-3000:]}")
-        met = {m["key"]: m for m in json.loads(mj.read_text(encoding="utf-8"))["items"]}
+        met = {}
+        for key, (ln0, its) in by_spk.items():
+            suffix = "" if key == "alfira" else f"_{key}"
+            ij = gen / group / f"metrics_items{suffix}.json"
+            mj = gen / group / f"metrics{suffix}.json"
+            ij.write_text(json.dumps({"voice_set": speaker_voice_set(vw, ln0), "items": its,
+                                      "cache": str(vw / "cache" / "metrics"), "names": NAMES},
+                                     ensure_ascii=False), encoding="utf-8")
+            r = subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "metrics.py"), str(ij), str(mj)], env=cm.model_env(vw),
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if r.returncode != 0:
+                sys.exit(f"{group}: метрики упали\n{r.stdout[-2000:]}\n{r.stderr[-3000:]}")
+            met.update({m["key"]: m for m in json.loads(mj.read_text(encoding="utf-8"))["items"]})
         score = {}
         for ln in todo:
             cands = []
@@ -339,7 +415,9 @@ main{max-width:980px;margin:0 auto;padding:8px 16px 80px}h2{margin:28px 0 8px;fo
 .line{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
 .en{font-weight:600;font-size:16px}.ru{color:var(--mute);font-style:italic}.meta{font-size:13px;color:var(--mute);margin:4px 0 8px}
 .emo{display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:1px 10px;margin-right:8px;font-size:15px;font-weight:700}
-.remark{font-style:italic;margin:2px 0 6px;color:var(--ink)}.hid{font-size:11px;color:var(--mute);margin-top:6px}
+.remark{font-style:italic;margin:2px 0 6px;color:var(--ink)}
+.spk{display:inline-block;background:var(--ink);color:var(--bg);border-radius:6px;padding:1px 10px;margin-right:6px;font-size:15px;font-weight:700}
+h3{margin:18px 0 4px;font-size:16px}.hid{font-size:11px;color:var(--mute);margin-top:6px}
 .opt{display:grid;grid-template-columns:22px 170px 1fr;gap:8px;align-items:start;padding:6px;border-radius:6px;border-top:1px solid var(--line)}
 .opt:has(input:checked){background:var(--pick)}.opt label{font-size:14px;font-weight:600}.opt audio{width:100%;height:32px}
 .how{font-size:14px;margin-top:2px}
@@ -510,6 +588,7 @@ def cmd_page(_args):
     redo_ids = (set(redo_spec()) - set(accepted)) if REDO in ready else set()
     if REDO in ready and not redo_ids:
         ready = [x for x in ready if x != REDO]
+    last_scene = ""
     for gi, g in enumerate(ready, 1):
         score = json.loads((gen / g / "score.json").read_text(encoding="utf-8"))
         num = 0 if g == REDO else chapters.index(g) + 1
@@ -556,12 +635,16 @@ def cmd_page(_args):
             s = {**s, "checked": picked if picked and any(f"{c['model']}_{c['_tag']}{c['k']}" == picked
                                                           for c in s["cands"]) else s["default"]}
             total += 1
-            emo = ln["ref_emotion"]
+            spk = ln.get("speaker_key", "alfira")
+            emo = ln["ref_emotion"] if spk == "alfira" else f"{spk}_{ln['ref_emotion']}"
             if emo not in ref_rel:
-                ref = cm.pick_ref(vw, emo)
+                ref = pick_ref(vw, ln)
                 dst = refdir / f"{emo}.wav"
                 norm.append([ref["ref_wav"], str(dst)])
                 ref_rel[emo] = (f"_образцы/{emo}.wav", ref["ref_text"], Path(ref["ref_wav"]).name[:9] + "….wav")
+            if g == TALKS and ln.get("scene_title") and ln["scene_title"] != last_scene:
+                last_scene = ln["scene_title"]
+                body.append(f'<h3>{html.escape(last_scene)}</h3>')
             short = ln["id"][:9]
             # у переделки показываем всё: на обрывках вроде «I - we -» Whisper ошибается чаще модели
             shown = ([c for c in s["cands"] if not c["reject"]] if not (s["all_rejected"] or ln.get("redo"))
@@ -601,8 +684,9 @@ def cmd_page(_args):
                      if ln["why"].startswith("лицо") else f"по сцене: {ln['why']}")
             remark = " · ".join(x for x in [f"ремарка: {ln['note']}" if ln["note"] else "ремарки нет",
                                             f"лицо: {ln['emo']}", f"эмоция {basis}"] if x)
-            refemo = EMO_RU.get(emo, emo)
-            head = (f'<div class="en"><span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
+            refemo = EMO_RU.get(ln["ref_emotion"], ln["ref_emotion"])
+            who = f'<span class="spk">{html.escape(ln["speaker_name"])}</span>' if ln.get("speaker_name") else ""
+            head = (f'<div class="en">{who}<span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
                     f'{html.escape(ln["text"])}</div>'
                     f'<div class="remark">{html.escape(remark)}</div>'
                     f'<div class="ru">{html.escape(re.sub(r"<[^>]+>", "", ln["ru"]))}</div>'
