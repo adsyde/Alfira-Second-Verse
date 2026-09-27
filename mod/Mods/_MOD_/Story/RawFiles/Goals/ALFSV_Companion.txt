@@ -90,6 +90,8 @@ QRY_ALFSV_MayBecomeCompanion()
 AND
 NOT DB_ALFSV_IsCompanion(1)
 AND
+NOT DB_ALFSV_Left(_) // she left the party in act 1 (ALFSV_Talks.txt: S2a with the refugees, S2b to the Grove)
+AND
 NOT DB_ORI_DarkUrge_AlfiraMurderVictim((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
 THEN
 DB_NOOP(1);
@@ -120,6 +122,8 @@ QRY
 QRY_ALFSV_CanOfferRecruitment()
 AND
 NOT DB_ALFSV_IsCompanion(1)
+AND
+NOT DB_ALFSV_Left(_)
 AND
 DB_CurrentLevel("WLD_Main_A")
 AND

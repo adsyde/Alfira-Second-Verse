@@ -1,4 +1,4 @@
-# Этап 5 (начало). Глава 2 «Лютня», реплики на местах и в пути, беседы отряда
+# Этап 5. Глава 2 «Лютня», реплики на местах и в пути, беседы отряда, разговоры акта 1 (§9)
 
 Статус: **собрано, в игре не проверено.** Этап закрывается только после проверки по §6
 (CLAUDE.md §2).
@@ -283,3 +283,116 @@ goals, ни в `Gossips.lsx`, ни в триггерах уровня) — су�
 4. Голос Карлах в Б11, её голоса в Б9 и Б10; текст спутников — над их головами.
 5. Б4 — только после первого поцелуя; Б12 — только после «злой песни» в главе 6; Б8 — после Б7, вариант при мёртвой
    Лакриссе.
+
+## 9. Разговоры акта 1 по событиям и по месту (0.8.0)
+
+Статус: **собрано, в игре не проверено.** Сценарии — `design/dialogs/11_act1_events.md` (С1–С7) и
+`design/dialogs/12_act1_local.md` (Л1–Л8, К1–К15), оба согласованы 2026-09-27. Разбор механики Larian —
+[research/local-dialogs.md](research/local-dialogs.md). Новый goal `ALFSV_Talks.txt` (генерирует
+`scripts/dialogs/talks.py`) и правка `ALFSV_Companion.txt` (после ухода в акте 1 вербовка закрыта) — поэтому 0.8.0.
+Новой игры не нужно: на сохранении 0.7.0 goal новый, его INIT ставит тег и OM; данные вставляются и при каждой
+загрузке уровня.
+
+### 9.1 Как устроено
+
+| Что | Сцены | Запуск |
+|---|---|---|
+| «!» по событию С1–С7 | `scenes/events.py`: `ALFSV_WRD_Event_*`, основа `DEN_Bard_InParty`, стоя | ванильная `PROC_RelationshipDialog(Альфира, диалог, NULL, Альфира)`; `DB_RelationshipDialog_WRD_TriggerInCamp` — знак в мире и в лагере (не ночью), `DB_ExclamationDialog_NeverStop` — не гаснет |
+| «!» по месту Л1, Л5–Л8 | `scenes/local.py`: `ALFSV_WRD_Local_*` | та же процедура, категория `WORLD`: знак гаснет дальше 30 м (как у WRD Larian) |
+| Сцена перед диалогом NPC Л2–Л4 | `ALFSV_OM_Local_Asharak/_Lakrissa/_Dammon`, основа `HAV_AlfiraTale_ReunionWithFlirty` (0 — NPC, 1 — Альфира, 2 — герой: так COM раздаёт спикеров); у Ашарака и Даммона их uuid на месте Лакриссы (`Scene.other_base`) | `PROC_DefineSingleOriginMoment(диалог NPC, ALFIRA, NULL, наша сцена, NULL)` — только COM; после сцены игра сама снимает OM и перезапускает диалог NPC |
+| Реплики над головой К1–К15 | места `Talk_K01…K15` в `scenes/local.py` (конвейер этапа 5, `ads.place`) | К1, К3, К9 — глобальные флаги игры (`ALFSV_World.txt`); остальные — `PROC_ALFSV_Place_Request` из `ALFSV_Talks.txt` |
+
+- **Начало разговора по событию** — общая реплика по тону и выбор героя: «Я слушаю, продолжай.» (реплика героя
+  игры `h13b674ac…`; [решение сборки]: отказ должен быть до разговора) или «Не сейчас.» (`h13b3ab30…`). «Не сейчас»
+  ставит на неё `ALFSV_Talk_Postponed`; когда игра записывает разговор в `DB_RelationshipDialogsFinished`, наше правило
+  снимает запись и ставит знак снова — текст тот же. С2б — прощание без выбора и без отказа.
+- **Условия.** Каждый разговор — один раз (`DB_ALFSV_TalkQueued(ключ)`). По событию — если она спутница в отряде или
+  в лагере (`QRY_ALFSV_Talk_WithUs`); «была рядом» (С3–С6) — спикер того диалога или в отряде в 15 м от его героя
+  (`QRY_ALFSV_Talk_Near`). По месту — она в активном отряде (Л1, Л7 — в 15 м от карты / ящика).
+- **Одобрение за ответ** — реакции диалога (`ApprovalRatingID`), как в главах; −3 — новая реакция.
+- **Эмоции** — по ремаркам сценария (`note=`) через её словарь постановки (`style.py`), как в главах.
+
+### 9.2 Выбранные триггеры
+
+| # | Триггер (данные игры) |
+|---|---|
+| С1 | `DEN_AttackOnDen_State_DenVictory` после `Event_Start` (реакция 1) или `GOB_State_LeadersAreDead` без `Lockdown` и `HostileTieflings` (3б) |
+| С2а | `DEN_Lockdown_State_Active` (реакция 4). Итог — флаг игры `Approval_AtLeast_20_For_Sp1` на ней в конце разговора: одобрение уже с реакцией −10; ±1…2 за ответ в порог не входят ([решение сборки]: флаги порогов Osiris обновляет после узла). Ниже 20 — глобальный флаг `ALFSV_LeftWithRefugees`, `PROC_Origins_CompanionLeaveTemporarily(…, "ALFSV_LeftWithRefugees")` (одобрение и диалог в отряде остаются — для акта 2), уходит пешком (`PROC_DisappearOutOfSight … "Walk"`). `DB_ALFSV_IsCompanion` снимается — ванильные базы акта 2 (выжившие в «Последнем свете») её больше не теряют |
+| С2б | `DEN_AttackOnDen_State_HostileTieflings` (реакция 2), она в отряде или в лагере. `DB_RelationshipDialog_AutostartTryOnce` — прощание начинается само, если может, иначе «!». После прощания (флаг `ALFSV_Talk_GatesFarewell`): `PROC_Origins_CompanionLeavePermanently`, флаг `ALFSV_LeftForGrove`, убегает (`… "Run"`), затем стоит в убежище детей (`S_DEN_AttackKidPos_011`, фракция роли «Hideout» `ACT1_DEN_AttackOnDen_Defenseless`). Резни в убежище ещё не было — её убивает сама игра (`PROC_DEN_AttackOnDen_KillKids`: безусловный `Die(S_DEN_Bard)`, `Act1_DEN_AttackOnDen.txt:3128-3133`), как без вербовки; уже была или налёт кончился (`RaiderVictory`) — `Die(…, DoT)` и лужа крови, как в `KillKids`. Страховка: прощание так и не нажато — при `RaiderVictory` или долгом отдыхе она уходит без него |
+| С3 | `DEN_ShadowDruid_Event_StartDenouncingScene` при ней или `DEN_State_RitualStopped`, она в Роще |
+| С4 | `DEN_ShadowDruid_State_FreedChild` при ней (Арабелла) или `DEN_HarpyMeal_State_HelpedSaveVictim` на ней (Миркон) — кто первый; для Миркона Osiris ставит на неё `ALFSV_Talk_Children_Mirkon` |
+| С5 | `PLA_KarlachRecruitment_State_HelpingKarlach` / `ORI_Karlach_Quest_AgreedToHelpNotRecruited` при ней |
+| С6 | **разговор с Нетти о личинке:** `DEN_Apprentice_Event_RevealedTadpole` на герое при ней (`Act1_DEN_Apprentice.txt:114-120`) — там объясняют цереморфоз. `GLO_Tadpole_TrueSoulCorpse` отвергнут: это диалог с трупом Истинной души, часто без неё и не о цереморфозе. У неё самой личинки нет: `ILLITHID` игра ставит только стартовым героям (`GLO_Tadpole.txt:17-21`), мод — тоже нет |
+| С7 | `DB_CompanionReactedToFactionMemberDeath(Альфира, _)`, первый раз (реакция 18) |
+| Л1 | `UseStarted(_, S_DEN_TieflingLeaderMap)` (`Act1_DEN_TieflingRefugees.txt:190-204`) |
+| Л5 | `PLA_ConflictedFlind_State_RegularGnollsDead` |
+| Л6 | `PLA_KarlachRecruitmentTollhouse_Knows_RefugeesAreCultists` |
+| Л7 | `VoiceBarkEnded/Failed(HAG_Campsite_VB)` (`Act1_HAG_Boosters.txt:14`) |
+| Л8 | конец AD К10 (`AutomatedDialogEnded`) |
+| Л2–Л4 | OM на `DEN_Thieflings_Trainer`, `DEN_General_TieflingGuard10` (до праздника: снимается в `PROC_CAMP_GoblinHuntCelebration_SetupTieflings`), `DEN_Weaponsmith_PostEA`. Даммон: OM стоит, только пока Карлах не в `DB_Players` (у неё свой OM на этом диалоге, `Act1_OriginMoments_Karlach.txt:64`); с Карлах — «!» после `DialogEnded(DEN_Weaponsmith_PostEA)`, клик — наш `QRY_SelectCustomDialog` ставит ту же сцену на троих (Даммон, Альфира, герой); Даммон не рядом — её обычный разговор, знак остаётся |
+| К2 | `VoiceBarkStarted(PLA_DyingHyena_VB_HyenaRunning)` — сразу, в бою, мимо ожидания свободной минуты |
+| К4 | `PROC_FlagReactionAfterDialog(_, DEN_Thieflings_Event_TookGruel/2)`, она в диапазоне диалога с Октой |
+| К5 | `DialogEnded` диалога ритуального друида (`DB_DEN_RitualDialogs`, хотфикс `Act1_DEN_SacredPond.txt`) |
+| К6, К7, К8 | `VoiceBarkEnded(FOR_KidsGame_VB)`; `UseStarted(_, S_FOR_HoleBook)`; `DestroyedBy(S_FOR_DangerousBook_Tome)` — она в 15 м |
+| К9 | `GLO_GoblinHunt_Quest_CampEntered` (пост у ворот, `Act1_GOB_Checkpoint.txt:118-128`) |
+| К10 | `EnteredTrigger(Альфира, S_GOB_VoloBallad_FirstHeardArea)` + `GOB_VoloBallad_State_OnStage` |
+| К11 | `PROC_FlagReactionAfterDialog(_, GOB_Checkpoint_Event_ReactOnPlayerPerformingSong)` |
+| К12 | `GameBookInterfaceClosed` + `DB_UND_ArcaneTower_Poems` |
+| К13 | `PROC_GLO_KnowledgeCheckSuccess(_, "CRE_Exterior_ArrivalStatuePlaque_Religion" / "…CourtyardStatue_Religion", _)` |
+| К14 | `VoiceBarkStarted` реплик учебного зала (`CRE_YouthTraining_VB_TrainingDummyComment` / `…AnatomicalSketchesComment`) |
+| К15 | сразу после её реплики места `UnderdarkFirst` (тот же вход в Подземье) |
+
+**Тег `ALFIRA`.** На её персонаже его нет: шаблон `Tieflings_Female_Asmodeus_Civilian` без тегов Origin, в `Origins.lsx`
+у Origin «Alfira» только `ReallyTags` (`REALLY_ALFIRA`), в goals игры тег не ставится нигде. `SetTag` — в
+`PROC_ALFSV_Talks_Init` (при вербовке, в INIT goal и при загрузке уровня).
+
+**Совпадения, о которых надо знать автору.** К15 и реплика места «Подземье, первый шаг» (`UnderdarkFirst`, «No sky,
+no stars…») звучат одна за другой на одном входе; К9 (ворота лагеря гоблинов) идёт незадолго до места `GoblinCamp`
+(двор) — две реплики подряд при входе в лагерь.
+
+### 9.3 Идентификаторы (не менять)
+
+| Что | ID / ключ |
+|---|---|
+| С1…С7: `ALFSV_WRD_Event_GroveHeld/RoadExpelled/GatesOpened/Kagha/Children/Karlach/Tadpole/Blood` | `1cc0cfa0-…`, `198867ca-…`, `101ef669-…`, `5aa81e7a-…`, `c4d68914-…`, `aa3e67b0-…`, `b2d25c91-…`, `09f9a65a-…` |
+| Л1, Л5–Л8: `ALFSV_WRD_Local_ZevlorMap/Gnolls/Tollhouse/Campsite/Volo` | `92ebdc2b-…`, `500b4d1f-…`, `19b3079b-…`, `d14d576b-…`, `f3914786-…` |
+| Л2–Л4: `ALFSV_OM_Local_Asharak/Lakrissa/Dammon` | `154c85d2-…`, `5858cd09-…`, `f5c9b87d-…` |
+| ключи разговоров (`DB_ALFSV_Talk`, отладка) | `GroveHeld, RoadExpelled, GatesOpened, Kagha, Children, Karlach, Tadpole, Blood, ZevlorMap, Gnolls, Tollhouse, Campsite, Volo, Dammon`; OM — `Asharak, Lakrissa, Dammon` |
+| места К | `Talk_K01_Gnolls … Talk_K15_Underdark` |
+
+### 9.4 Отладка (консоль Script Extender)
+
+| Команда | Что делает |
+|---|---|
+| `Osi.PROC_ALFSV_Debug_Talk("GroveHeld")` | снова поставить «!» разговора (не смотрит на «один раз»; она должна быть спутницей, для разговоров по месту — в отряде) |
+| `Osi.PROC_ALFSV_Debug_TalkNow("Kagha")` | начать разговор сразу, без знака (с героем-хостом); `"Dammon"` — сцена на троих, Даммон рядом |
+| `Osi.PROC_ALFSV_Debug_TalkMirkon()` | С4 начнётся с Миркона (по умолчанию — Арабелла) |
+| `Osi.PROC_ALFSV_Debug_OM("Asharak")` | снова поставить сцену перед диалогом NPC, потом заговорить с ним (Лакрисса — только до праздника, Даммон — без Карлах) |
+| `Osi.PROC_ALFSV_Debug_OMNow("Lakrissa")` | сцена на троих сразу (NPC рядом) |
+| `Osi.PROC_ALFSV_Debug_Place("Talk_K05_Ritual")` | реплика над головой К сразу (общая отладка мест) |
+| порог С2а | одобрение ниже 20: `Osi.ChangeApprovalRating("S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c", Osi.GetHostCharacter(), 0, -40)` **[проверить синтаксис]**, затем `Debug_TalkNow("RoadExpelled")` |
+
+### 9.5 Что проверить в игре
+
+1. **Знак «!» на её модели** (VFX `VFX_UI_ExclamationMark_01` на кости `Dummy_OverheadFX`): `Debug_Talk("GroveHeld")` в мире,
+   потом в лагере днём; ночью в лагере знака нет. Клик — наш диалог; после него знак гаснет и больше не встаёт.
+2. «Не сейчас» — знак возвращается, разговор тот же. Отойти на 50 м от места локального «!» (Л5) — знак гаснет.
+3. Тег `ALFIRA` на ней (`Osi.IsTagged`); сцены Л2–Л4: заговорить с Ашараком, Лакриссой, Даммоном — сначала сцена на
+   троих, потом их обычный диалог; во второй раз — только их диалог. Постановка: камеры `bnz_standing_Px2`, свет основы
+   (сцена из «Последнего света» — не темно ли днём в Роще), реплики NPC пока без голоса.
+4. Даммон при Карлах в отряде: её OM Larian; после разговора с Даммоном — «!» над Альфирой, клик — сцена на троих.
+5. С2а: одобрение ниже 20 → «Не могу…», она уходит пешком, её нет ни в отряде, ни в лагере, стоит `ALFSV_LeftWithRefugees`;
+   20+ → остаётся. С2б на стороне гоблинов: прощание (само или «!»), уход, её тело в убежище детей после налёта.
+6. С6 у Нетти с ней в отряде; С3–С5 — только если она была рядом.
+7. К2 звучит в бою; К10 → Л8; К15 — после «No sky, no stars…».
+
+### 9.6 Ограничения
+
+- **Выход из отряда в С2а/С2б** — ванильные процедуры ухода (`PROC_Origins_CompanionLeave*`), в игре не проверены.
+  Возвращение в акте 2 (С2а) — сценарий акта 2; до него вербовку закрывает `DB_ALFSV_Left(_)` (`ALFSV_Companion.txt`).
+- **С7 «уходит по общим правилам ухода»:** у неё нет `DB_OriginLeavingDialog`, поэтому ванильный уход при −50 ничего не
+  сделает — это отдельная задача.
+- **С2б:** если в момент открытия ворот она в отряде, бой начинается раньше прощания — она может оказаться в бою на
+  стороне героя; прощание придёт после боя («!» после неудачного автостарта).
+- Реплики NPC и новые реплики Альфиры — текст; список для озвучки — `voice-work/act1/lines_talks.json` (вне git),
+  его источник — `build/dialogs/voice_lines.json` (build.py пишет все новые реплики с говорящим, лицом и ремаркой).

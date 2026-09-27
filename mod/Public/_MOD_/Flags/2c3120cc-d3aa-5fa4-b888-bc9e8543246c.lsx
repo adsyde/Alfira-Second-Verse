@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="2c3120cc-d3aa-5fa4-b888-bc9e8543246c" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Talk_LihalaPhrase" />
+			<attribute id="Description" type="LSString" value="L5: she played Lihala's unfinished phrase" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

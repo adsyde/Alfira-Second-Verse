@@ -165,7 +165,7 @@ class TimelineView:
 
 class Stager:
     def __init__(self, lib, tl, dialog, base_tl, base_dialog, alfira_template, player_speaker, uid, other_template="",
-                 base_scene_file="", alfira_base="", base_name=""):
+                 base_scene_file="", alfira_base="", base_name="", other_base=""):
         self.lib = lib
         self.base_name = base_name
         self.base_scene_file = base_scene_file   # _Scene.lsf основы: из неё — общая сцена с камерами
@@ -176,7 +176,8 @@ class Stager:
         self.player_speaker = player_speaker
         self.other_template = other_template
         self.me = TimelineView(tl, dialog, alfira_template, player_speaker, other_template)
-        self.base = TimelineView(base_tl, base_dialog, alfira_template, player_speaker, other_template, alfira_base)
+        # other_base — спикер основы, на место которого встал третий участник (Scene.other_base): в основе он под своим uuid
+        self.base = TimelineView(base_tl, base_dialog, alfira_template, player_speaker, other_base or other_template, alfira_base)
         self.templates = {}                 # роль говорящего → шаблонная фаза основы (_pick_template)
         self.sources = {}                   # имя диалога → (TimelineView, dialog_object)
         # Точка для голоса: uuid узла → длина аудио реплики, с. Если задана, фаза текстовой реплики — по ней
