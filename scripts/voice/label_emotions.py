@@ -25,6 +25,8 @@
   python scripts/voice/label_emotions.py
   python scripts/voice/label_emotions.py --no-timeline     # без bg3moddinglib (только ремарки)
   python scripts/voice/label_emotions.py --refs-per-cat 10
+  python scripts/voice/label_emotions.py --speaker 23129d6c-8d39-4a4c-a4f6-cfc6637b597c --name lakrissa   # NPC:
+      датасет voice-work/dataset_<guid[:8]>/ (extract_voice.py --speaker), образцы voice-work/refs_<имя>/, без дообучения
 """
 import argparse
 import csv
@@ -124,14 +126,14 @@ def node_handles(node):
             for texts in t.get("TagTexts", []) for x in texts.get("TagText", [])]
 
 
-def scan_dialogs(wanted):
-    """handle → список мест, где его говорит Альфира."""
+def scan_dialogs(wanted, speaker=ALFIRA):
+    """handle → список мест, где его говорит speaker (по умолчанию Альфира)."""
     found = defaultdict(list)
     for p in sorted(game_data_dir().rglob("*.lsj")):
         if "Story/Dialogs" not in p.as_posix():
             continue
         raw = p.read_text(encoding="utf-8")
-        if ALFIRA not in raw:
+        if speaker not in raw:
             continue
         regions = json.loads(raw)["save"]["regions"]
         dlg = regions["dialog"]
@@ -142,7 +144,7 @@ def scan_dialogs(wanted):
         her = set()
         for sl in dlg.get("speakerlist", []):
             for s in sl.get("speaker", []):
-                if ALFIRA in s.get("list", {}).get("value", ""):
+                if speaker in s.get("list", {}).get("value", ""):
                     her.add(int(s["index"]["value"]))
         act, block = block_of(p, p.stem)
         for n in dlg["nodes"][0].get("node", []):
@@ -317,15 +319,20 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-timeline", action="store_true", help="не открывать таймлайны (без bg3moddinglib)")
     ap.add_argument("--refs-per-cat", type=int, default=8)
+    ap.add_argument("--speaker", default=ALFIRA, help="GUID говорящего; датасет — от extract_voice.py --speaker")
+    ap.add_argument("--name", default="", help="имя для папки образцов: refs_<имя> (для NPC)")
     args = ap.parse_args()
     cfg = config()
     work = resolve(cfg["paths"]["voice_work"])
-    ds = work / "dataset"
+    npc = args.speaker != ALFIRA
+    if npc and not args.name:
+        sys.exit("для NPC нужно --name (папка voice-work/refs_<имя>)")
+    ds = work / (f"dataset_{args.speaker.replace('-', '')[:8]}" if npc else "dataset")
     meta = list(csv.DictReader((ds / "metadata.csv").open(encoding="utf-8"), delimiter="|"))
     handles = {r["file"][:-4]: r for r in meta}
     print(f"реплик в metadata.csv: {len(handles)}")
 
-    found = scan_dialogs(set(handles))
+    found = scan_dialogs(set(handles), args.speaker)
     print(f"найдено в диалогах: {len(found)}")
     face = {} if args.no_timeline else timeline_emotions([pl for pls in found.values() for pl in pls])
 
@@ -343,7 +350,7 @@ def main():
         line = r["text"]
         dialogs = sorted({pl["dialog"] for pl in places})
         excl = []
-        if h in HOLDOUT:
+        if h in HOLDOUT and not npc:
             excl.append("отложено")
         if any(d == SPEAK_WITH_DEAD for d in dialogs):
             excl.append("мёртвые")
@@ -389,8 +396,9 @@ def main():
         w.writeheader()
         w.writerows(rows)
 
-    build_refs(rows, ds, work / "refs", args.refs_per_cat)
-    build_finetune(rows, ds, ds / "finetune")
+    build_refs(rows, ds, work / (f"refs_{args.name}" if npc else "refs"), args.refs_per_cat)
+    if not npc:          # дообучение — только для Альфиры
+        build_finetune(rows, ds, ds / "finetune")
 
     cats = Counter(r["category"] for r in rows)
     usable = Counter(r["category"] for r in rows if not r["exclude"])
