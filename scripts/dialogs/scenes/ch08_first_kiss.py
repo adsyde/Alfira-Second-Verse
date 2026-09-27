@@ -24,6 +24,7 @@ SCENE = Scene(
     base="DEN_Bard_InParty",
     voice_from=[],
     chapter=CH,
+    seated="fire",          # «Она сидит у огня с лютней на коленях» — вся глава сидя у костра (staging.SEATED)
     status="согласовано 2026-09-27",
 )
 S = SCENE

@@ -1,0 +1,3088 @@
+{
+ "_note": "Сгенерировано scripts/dialogs/alfira_catalog.py из данных игры: её реплики у Larian. Только идентификаторы (коды эмоций, uuid поз и анимаций) и частоты. Руками не править.",
+ "lines": 548,
+ "emotions": {
+  "angry": {
+   "lines": 32,
+   "variations": [
+    [
+     2,
+     17
+    ],
+    [
+     0,
+     11
+    ],
+    [
+     1,
+     11
+    ],
+    [
+     23,
+     4
+    ],
+    [
+     24,
+     2
+    ],
+    [
+     3,
+     1
+    ]
+   ],
+   "keys_per_second": 0.537,
+   "sequences": [
+    [
+     [
+      "angry/2"
+     ],
+     4
+    ],
+    [
+     [
+      "angry/0",
+      "confusion/0"
+     ],
+     2
+    ],
+    [
+     [
+      "confusion/25",
+      "sad/1",
+      "angry/2",
+      "angry/24"
+     ],
+     1
+    ],
+    [
+     [
+      "angry/2",
+      "fear/2"
+     ],
+     1
+    ],
+    [
+     [
+      "angry/0",
+      "sad/1"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/1",
+      "angry/0",
+      "angry/2"
+     ],
+     1
+    ],
+    [
+     [
+      "neutral/0",
+      "angry/2"
+     ],
+     1
+    ],
+    [
+     [
+      "angry/0",
+      "fear/1",
+      "angry/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     5
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     23
+    ],
+    [
+     "Anger",
+     3
+    ],
+    [
+     "Sadness",
+     2
+    ],
+    [
+     "Arrogance",
+     1
+    ],
+    [
+     "Fear",
+     1
+    ],
+    [
+     "Disgust",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N3911",
+    "DEN_TieflingBard_Bard:N4042",
+    "DEN_TieflingBard_Bard:N1658",
+    "DEN_TieflingBard_Bard:N1175",
+    "DEN_TieflingBard_Bard:N1378"
+   ]
+  },
+  "confusion": {
+   "lines": 55,
+   "variations": [
+    [
+     2,
+     37
+    ],
+    [
+     1,
+     27
+    ],
+    [
+     0,
+     15
+    ],
+    [
+     25,
+     1
+    ],
+    [
+     23,
+     1
+    ]
+   ],
+   "keys_per_second": 0.563,
+   "sequences": [
+    [
+     [
+      "confusion/2",
+      "neutral/0"
+     ],
+     2
+    ],
+    [
+     [
+      "confusion/0",
+      "confusion/1"
+     ],
+     2
+    ],
+    [
+     [
+      "sad/0",
+      "neutral/0",
+      "confusion/2",
+      "confusion/1",
+      "happy/1",
+      "fear/0"
+     ],
+     1
+    ],
+    [
+     [
+      "confusion/2",
+      "confusion/1",
+      "angry/0"
+     ],
+     1
+    ],
+    [
+     [
+      "fear/0",
+      "thinking/1",
+      "surprise/0",
+      "confusion/1"
+     ],
+     1
+    ],
+    [
+     [
+      "confusion/1",
+      "confusion/2",
+      "neutral/0"
+     ],
+     1
+    ],
+    [
+     [
+      "confusion/1",
+      "angry/0",
+      "thinking/1",
+      "confusion/2"
+     ],
+     1
+    ],
+    [
+     [
+      "neutral/0",
+      "confusion/1",
+      "confusion/0",
+      "happy/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     12
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     41
+    ],
+    [
+     "Surprise",
+     4
+    ],
+    [
+     "Determination",
+     3
+    ],
+    [
+     "Anger",
+     2
+    ],
+    [
+     "Disgust",
+     2
+    ],
+    [
+     "Happiness",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1669",
+    "DEN_TieflingBard_Bard:N2329",
+    "DEN_TieflingBard_Bard:N2326",
+    "DEN_TieflingBard_Bard:N1043",
+    "DEN_TieflingBard_Bard:N1027"
+   ]
+  },
+  "dead": {
+   "lines": 1,
+   "variations": [
+    [
+     0,
+     1
+    ]
+   ],
+   "keys_per_second": 0.488,
+   "sequences": [
+    [
+     [
+      "dead/0",
+      "thinking/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "labels": [
+    [
+     "Determination",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1313"
+   ]
+  },
+  "disgust": {
+   "lines": 11,
+   "variations": [
+    [
+     1,
+     4
+    ],
+    [
+     0,
+     4
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "keys_per_second": 0.534,
+   "sequences": [
+    [
+     [
+      "disgust/2",
+      "angry/23"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/1",
+      "thinking/1",
+      "fear/2"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/2",
+      "fear/1",
+      "disgust/1"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/0",
+      "neutral/0",
+      "pain/0"
+     ],
+     1
+    ],
+    [
+     [
+      "sad/1",
+      "disgust/2",
+      "fear/1",
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/2"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/0"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/0",
+      "angry/0",
+      "thinking/0",
+      "thinking/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     2
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     8
+    ],
+    [
+     "Sadness",
+     2
+    ],
+    [
+     "Pleading",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1665",
+    "DEN_TieflingBard_Bard:N1563",
+    "DEN_TieflingBard_Bard:N1373",
+    "SCE_Alfira:N128",
+    "HAV_AlfiraTale_Bard:N574"
+   ]
+  },
+  "fear": {
+   "lines": 76,
+   "variations": [
+    [
+     1,
+     35
+    ],
+    [
+     0,
+     26
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     23,
+     4
+    ],
+    [
+     24,
+     3
+    ]
+   ],
+   "keys_per_second": 0.496,
+   "sequences": [
+    [
+     [
+      "fear/0"
+     ],
+     8
+    ],
+    [
+     [
+      "fear/1",
+      "sad/0"
+     ],
+     3
+    ],
+    [
+     [
+      "fear/1"
+     ],
+     3
+    ],
+    [
+     [
+      "fear/2",
+      "sad/1"
+     ],
+     2
+    ],
+    [
+     [
+      "fear/2"
+     ],
+     2
+    ],
+    [
+     [
+      "neutral/0",
+      "fear/2"
+     ],
+     2
+    ],
+    [
+     [
+      "fear/1",
+      "sad/2"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/0",
+      "fear/0",
+      "happy/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     18
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     56
+    ],
+    [
+     "Sadness",
+     10
+    ],
+    [
+     "Determination",
+     3
+    ],
+    [
+     "Anger",
+     3
+    ],
+    [
+     "Disgust",
+     2
+    ],
+    [
+     "Happiness",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_AD_KidStory:N32",
+    "DEN_AttackOnDen_Bard:N4",
+    "DEN_AttackOnDen_Bard:N2",
+    "DEN_AttackOnDen_Bard:N122",
+    "DEN_AttackOnDen_Bard:N152"
+   ]
+  },
+  "happy": {
+   "lines": 96,
+   "variations": [
+    [
+     0,
+     68
+    ],
+    [
+     2,
+     37
+    ],
+    [
+     1,
+     33
+    ],
+    [
+     23,
+     12
+    ]
+   ],
+   "keys_per_second": 0.482,
+   "sequences": [
+    [
+     [
+      "happy/0"
+     ],
+     22
+    ],
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     5
+    ],
+    [
+     [
+      "surprise/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/0",
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/1"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/1",
+      "happy/0",
+      "thinking/2",
+      "thinking/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/0",
+      "thinking/2",
+      "thinking/0",
+      "happy/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     13
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     74
+    ],
+    [
+     "Happiness",
+     9
+    ],
+    [
+     "Sadness",
+     7
+    ],
+    [
+     "Determination",
+     4
+    ],
+    [
+     "Surprise",
+     1
+    ],
+    [
+     "Coyness",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_AD_KidStory:N13",
+    "DEN_AttackOnDen_Bard:N3",
+    "DEN_AttackOnDen_Bard:N176",
+    "DEN_AttackOnDen_Bard:N184",
+    "DEN_AttackOnDen_Bard:N177"
+   ]
+  },
+  "neutral": {
+   "lines": 13,
+   "variations": [
+    [
+     0,
+     2
+    ]
+   ],
+   "keys_per_second": 0.024,
+   "sequences": [
+    [
+     [],
+     11
+    ],
+    [
+     [
+      "neutral/0"
+     ],
+     2
+    ]
+   ],
+   "poses": [],
+   "labels": [
+    [
+     "Default",
+     13
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Dead:N135",
+    "DEN_TieflingBard_Dead:N120",
+    "DEN_TieflingBard_Dead:N102",
+    "DEN_TieflingBard_Dead:N25",
+    "DEN_TieflingBard_Dead:N132"
+   ]
+  },
+  "pain": {
+   "lines": 6,
+   "variations": [
+    [
+     0,
+     3
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "keys_per_second": 0.541,
+   "sequences": [
+    [
+     [
+      "fear/1",
+      "pain/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/2",
+      "sad/2",
+      "pain/2"
+     ],
+     1
+    ],
+    [
+     [
+      "angry/2",
+      "pain/2"
+     ],
+     1
+    ],
+    [
+     [
+      "pain/2",
+      "pain/1",
+      "surprise/2",
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "pain/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "thinking/0",
+      "pain/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     1
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     4
+    ],
+    [
+     "Disgust",
+     1
+    ],
+    [
+     "Surprise",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N3329",
+    "DEN_TieflingBard_Bard:N1425",
+    "DEN_TieflingBard_Bard:N4634",
+    "CAMP_DarkUrge_MurderOfAlfira_CFM_AlfiraArrives:N290",
+    "CAMP_DarkUrge_MurderOfAlfira_CFM_AlfiraArrives:N308"
+   ]
+  },
+  "sad": {
+   "lines": 130,
+   "variations": [
+    [
+     0,
+     102
+    ],
+    [
+     1,
+     42
+    ],
+    [
+     2,
+     28
+    ],
+    [
+     24,
+     10
+    ],
+    [
+     23,
+     2
+    ]
+   ],
+   "keys_per_second": 0.486,
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     49
+    ],
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     10
+    ],
+    [
+     [
+      "sad/0",
+      "thinking/0"
+     ],
+     2
+    ],
+    [
+     [
+      "sad/1",
+      "fear/2"
+     ],
+     2
+    ],
+    [
+     [
+      "fear/0",
+      "sad/0"
+     ],
+     2
+    ],
+    [
+     [
+      "sad/1",
+      "sad/2"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/2",
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "sad/0",
+      "surprise/0",
+      "happy/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     12
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     90
+    ],
+    [
+     "Sadness",
+     29
+    ],
+    [
+     "Determination",
+     4
+    ],
+    [
+     "Disgust",
+     3
+    ],
+    [
+     "Anger",
+     2
+    ],
+    [
+     "Pleading",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_AD_BardDefendsKids:N1",
+    "DEN_AttackOnDen_AD_KidStory:N26",
+    "DEN_AttackOnDen_AD_KidStory:N31",
+    "DEN_AttackOnDen_AD_KidStory:N33",
+    "DEN_AttackOnDen_AD_KidStory:N34"
+   ]
+  },
+  "sleeping": {
+   "lines": 2,
+   "variations": [
+    [
+     0,
+     3
+    ]
+   ],
+   "keys_per_second": 0.427,
+   "sequences": [
+    [
+     [
+      "neutral/0",
+      "sleeping/0",
+      "sad/2",
+      "thinking/2",
+      "neutral/0",
+      "sleeping/0",
+      "sad/1",
+      "neutral/0"
+     ],
+     1
+    ],
+    [
+     [
+      "neutral/0",
+      "confusion/2",
+      "fear/1",
+      "thinking/0",
+      "sleeping/0",
+      "happy/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "labels": [
+    [
+     "Happiness",
+     2
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1207",
+    "DEN_TieflingBard_Bard:N3537"
+   ]
+  },
+  "surprise": {
+   "lines": 63,
+   "variations": [
+    [
+     1,
+     28
+    ],
+    [
+     2,
+     25
+    ],
+    [
+     0,
+     17
+    ]
+   ],
+   "keys_per_second": 0.49,
+   "sequences": [
+    [
+     [
+      "surprise/2"
+     ],
+     4
+    ],
+    [
+     [
+      "thinking/0",
+      "surprise/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/2",
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/1"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/1",
+      "confusion/0"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/1",
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "fear/0",
+      "surprise/0",
+      "angry/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/2",
+      "thinking/0",
+      "angry/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     15
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     57
+    ],
+    [
+     "Surprise",
+     4
+    ],
+    [
+     "Happiness",
+     2
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N1",
+    "DEN_AttackOnDen_Bard:N168",
+    "DEN_AttackOnDen_Bard:N151",
+    "DEN_AttackOnDen_Bard:N141",
+    "DEN_AttackOnDen_Bard:N146"
+   ]
+  },
+  "thinking": {
+   "lines": 63,
+   "variations": [
+    [
+     0,
+     44
+    ],
+    [
+     1,
+     29
+    ],
+    [
+     2,
+     23
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "keys_per_second": 0.578,
+   "sequences": [
+    [
+     [
+      "thinking/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/1",
+      "neutral/0"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/1",
+      "thinking/0",
+      "happy/1"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/0",
+      "thinking/2",
+      "thinking/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/0",
+      "thinking/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "fear/0",
+      "surprise/0",
+      "fear/0",
+      "thinking/2",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/2",
+      "thinking/0"
+     ],
+     1
+    ],
+    [
+     [
+      "thinking/0",
+      "fear/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     10
+    ]
+   ],
+   "labels": [
+    [
+     "Default",
+     44
+    ],
+    [
+     "Surprise",
+     6
+    ],
+    [
+     "Sadness",
+     5
+    ],
+    [
+     "Determination",
+     3
+    ],
+    [
+     "Happiness",
+     2
+    ],
+    [
+     "Disgust",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N160",
+    "DEN_AttackOnDen_Bard:N182",
+    "DEN_AttackOnDen_Bard:N144",
+    "DEN_AttackOnDen_Bard:N136",
+    "DEN_AttackOnDen_Bard:N158"
+   ]
+  }
+ },
+ "remarks": {
+  "краснеет": {
+   "lines": 4,
+   "words": [
+    "blush",
+    "embarrass",
+    "fluster",
+    "bashful",
+    "shy",
+    "sheepish"
+   ],
+   "dominant": [
+    [
+     "happy",
+     4
+    ]
+   ],
+   "faces": [
+    [
+     "happy/0",
+     4.3
+    ],
+    [
+     "happy/2",
+     2.8
+    ],
+    [
+     "sad/0",
+     2.2
+    ],
+    [
+     "happy/1",
+     1.9
+    ],
+    [
+     "surprise/1",
+     1.5
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/1",
+      "surprise/1",
+      "happy/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "animations": [],
+   "examples": [
+    "SCE_AD_Alfira:N26",
+    "HAV_AlfiraTale_AD_WithFlirty:N3",
+    "HAV_AlfiraTale_AD_WithFlirty:N11",
+    "LOW_Elfsong_Alfira:N93"
+   ]
+  },
+  "смеётся": {
+   "lines": 9,
+   "words": [
+    "laugh",
+    "giggl",
+    "chuckl",
+    "snort"
+   ],
+   "dominant": [
+    [
+     "happy",
+     4
+    ],
+    [
+     "confusion",
+     3
+    ],
+    [
+     "thinking",
+     2
+    ]
+   ],
+   "faces": [
+    [
+     "thinking/0",
+     11.2
+    ],
+    [
+     "happy/1",
+     6.7
+    ],
+    [
+     "confusion/1",
+     5.6
+    ],
+    [
+     "happy/2",
+     5.2
+    ],
+    [
+     "confusion/2",
+     4.6
+    ],
+    [
+     "neutral/0",
+     4.3
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "confusion/2",
+      "neutral/0"
+     ],
+     1
+    ],
+    [
+     [
+      "confusion/2",
+      "confusion/1",
+      "angry/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/1",
+      "happy/2",
+      "neutral/0"
+     ],
+     1
+    ],
+    [
+     [
+      "neutral/0",
+      "thinking/0",
+      "neutral/0",
+      "thinking/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "animations": [],
+   "examples": [
+    "DEN_TieflingBard_Bard:N2329",
+    "DEN_TieflingBard_Bard:N2326",
+    "DEN_TieflingBard_Bard:N1889",
+    "DEN_TieflingBard_Bard:N1342",
+    "DEN_TieflingBard_Bard:N1351",
+    "DEN_TieflingBard_Bard:N1059"
+   ]
+  },
+  "улыбается": {
+   "lines": 36,
+   "words": [
+    "smil",
+    "grin",
+    "beam"
+   ],
+   "dominant": [
+    [
+     "happy",
+     16
+    ],
+    [
+     "sad",
+     6
+    ],
+    [
+     "confusion",
+     5
+    ],
+    [
+     "thinking",
+     4
+    ]
+   ],
+   "faces": [
+    [
+     "happy/2",
+     34.8
+    ],
+    [
+     "happy/0",
+     30.0
+    ],
+    [
+     "sad/0",
+     17.3
+    ],
+    [
+     "thinking/0",
+     11.7
+    ],
+    [
+     "thinking/1",
+     9.7
+    ],
+    [
+     "happy/1",
+     9.3
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "happy/0"
+     ],
+     3
+    ],
+    [
+     [
+      "happy/0",
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/0",
+      "happy/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     3
+    ]
+   ],
+   "animations": [
+    [
+     "13405ac3-2cbf-4e32-ab41-a49075992ca0",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N177",
+    "DEN_DruidAttack_AD_BardAndKidAfterAttack:N7",
+    "DEN_DruidAttack_AD_BardAndKidAfterAttack:N9",
+    "DEN_DruidAttack_AD_BardAndKidAfterAttack:N5",
+    "DEN_TieflingBard_Bard:N1929",
+    "DEN_TieflingBard_Bard:N2329"
+   ]
+  },
+  "грустно": {
+   "lines": 92,
+   "words": [
+    "sad",
+    "melanchol",
+    "wistful",
+    "somber",
+    "sombre",
+    "sorrow",
+    "grief",
+    "griev",
+    "mourn"
+   ],
+   "dominant": [
+    [
+     "sad",
+     47
+    ],
+    [
+     "fear",
+     13
+    ],
+    [
+     "happy",
+     10
+    ],
+    [
+     "thinking",
+     8
+    ]
+   ],
+   "faces": [
+    [
+     "sad/0",
+     105.1
+    ],
+    [
+     "sad/1",
+     49.5
+    ],
+    [
+     "sad/2",
+     39.9
+    ],
+    [
+     "fear/0",
+     38.6
+    ],
+    [
+     "fear/1",
+     34.6
+    ],
+    [
+     "thinking/0",
+     28.9
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     10
+    ],
+    [
+     [
+      "fear/0"
+     ],
+     3
+    ],
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     3
+    ],
+    [
+     [
+      "sad/0",
+      "thinking/0"
+     ],
+     2
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     7
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "DEN_AttackOnDen_AD_BardDefendsKids:N1",
+    "DEN_DruidAttack_AD_BardAndKidAfterAttack:N8",
+    "DEN_TieflingBard_AD_ComposingSong:N1",
+    "DEN_TieflingBard_AD_ComposingSong:N5",
+    "DEN_TieflingBard_AD_ComposingSong:N8",
+    "DEN_TieflingBard_AD_ComposingSong:N7"
+   ]
+  },
+  "тихо": {
+   "lines": 13,
+   "words": [
+    "quiet",
+    "soft",
+    "hush",
+    "whisper",
+    "gentl"
+   ],
+   "dominant": [
+    [
+     "happy",
+     6
+    ],
+    [
+     "sad",
+     2
+    ],
+    [
+     "thinking",
+     2
+    ],
+    [
+     "surprise",
+     1
+    ]
+   ],
+   "faces": [
+    [
+     "happy/0",
+     26.4
+    ],
+    [
+     "happy/1",
+     11.6
+    ],
+    [
+     "thinking/0",
+     8.8
+    ],
+    [
+     "sleeping/0",
+     8.2
+    ],
+    [
+     "sad/0",
+     6.9
+    ],
+    [
+     "dead/0",
+     6.2
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "fear/0",
+      "surprise/0",
+      "angry/0"
+     ],
+     1
+    ],
+    [
+     [
+      "fear/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/1",
+      "sleeping/0",
+      "sad/0",
+      "sleeping/0",
+      "fear/0",
+      "sad/24",
+      "sad/1",
+      "confusion/0",
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/0",
+      "thinking/0",
+      "sleeping/0",
+      "neutral/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     2
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N1",
+    "DEN_TieflingBard_AD_FullSong:N26",
+    "DEN_TieflingBard_Bard:N1271",
+    "DEN_TieflingBard_Bard:N1295",
+    "DEN_TieflingBard_Bard:N1331",
+    "DEN_TieflingBard_Bard:N1320"
+   ]
+  },
+  "плачет": {
+   "lines": 17,
+   "words": [
+    "cry",
+    "crying",
+    "tear",
+    "sob"
+   ],
+   "dominant": [
+    [
+     "sad",
+     8
+    ],
+    [
+     "confusion",
+     4
+    ],
+    [
+     "angry",
+     3
+    ],
+    [
+     "thinking",
+     1
+    ]
+   ],
+   "faces": [
+    [
+     "sad/2",
+     14.8
+    ],
+    [
+     "sad/0",
+     6.5
+    ],
+    [
+     "angry/2",
+     5.7
+    ],
+    [
+     "sad/24",
+     5.6
+    ],
+    [
+     "confusion/1",
+     5.2
+    ],
+    [
+     "confusion/2",
+     5.1
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "confusion/2",
+      "neutral/0"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/0",
+      "fear/1"
+     ],
+     1
+    ],
+    [
+     [
+      "sad/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     2
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N158",
+    "DEN_TieflingBard_AD_Dejected:N3",
+    "DEN_TieflingBard_AD_Dejected:N1",
+    "DEN_TieflingBard_AD_Dejected:N2",
+    "DEN_TieflingBard_Bard:N3977",
+    "DEN_TieflingBard_Bard:N2329"
+   ]
+  },
+  "испуг": {
+   "lines": 44,
+   "words": [
+    "scared",
+    "afraid",
+    "fear",
+    "frighten",
+    "nervous",
+    "anxious",
+    "panic",
+    "terrified",
+    "worried"
+   ],
+   "dominant": [
+    [
+     "sad",
+     14
+    ],
+    [
+     "fear",
+     11
+    ],
+    [
+     "surprise",
+     8
+    ],
+    [
+     "happy",
+     4
+    ]
+   ],
+   "faces": [
+    [
+     "sad/0",
+     45.3
+    ],
+    [
+     "fear/1",
+     32.8
+    ],
+    [
+     "surprise/2",
+     26.8
+    ],
+    [
+     "fear/2",
+     19.8
+    ],
+    [
+     "happy/0",
+     18.8
+    ],
+    [
+     "thinking/0",
+     13.4
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     10
+    ],
+    [
+     [
+      "thinking/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "neutral/0",
+      "fear/2"
+     ],
+     2
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     11
+    ]
+   ],
+   "animations": [
+    [
+     "89019982-860c-38b8-fe29-707d39ce2fda",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_AttackOnDen_AD_BardDefendsKids:N1",
+    "DEN_AttackOnDen_Bard:N1",
+    "DEN_AttackOnDen_Bard:N146",
+    "DEN_AttackOnDen_Bard:N177",
+    "DEN_TieflingBard_AD_LookingForInstrument:N2",
+    "DEN_TieflingBard_AD_LookingForInstrument:N3"
+   ]
+  },
+  "злится": {
+   "lines": 41,
+   "words": [
+    "angry",
+    "anger",
+    "annoy",
+    "irritat",
+    "frustrat",
+    "furious",
+    "hostile",
+    "indignant"
+   ],
+   "dominant": [
+    [
+     "sad",
+     12
+    ],
+    [
+     "angry",
+     9
+    ],
+    [
+     "fear",
+     6
+    ],
+    [
+     "confusion",
+     4
+    ]
+   ],
+   "faces": [
+    [
+     "sad/0",
+     16.9
+    ],
+    [
+     "angry/2",
+     15.5
+    ],
+    [
+     "angry/0",
+     14.9
+    ],
+    [
+     "sad/1",
+     14.2
+    ],
+    [
+     "fear/1",
+     13.4
+    ],
+    [
+     "sad/2",
+     12.1
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     4
+    ],
+    [
+     [
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "sad/0",
+      "thinking/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/0",
+      "happy/1",
+      "pain/24",
+      "pain/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     8
+    ]
+   ],
+   "animations": [
+    [
+     "34d69caf-9837-8288-c059-bde208186801",
+     1
+    ],
+    [
+     "d47d576f-e72f-dec4-e21e-4bb2be87c403",
+     1
+    ],
+    [
+     "e9ca7a17-38b6-5930-a6c8-cf59e2467c2c",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_AD_ComposingSong:N6",
+    "DEN_TieflingBard_AD_ComposingSong:N4",
+    "DEN_TieflingBard_AD_ComposingSong:N9",
+    "DEN_TieflingBard_AD_ComposingSong:N3",
+    "DEN_TieflingBard_Bard:N1649",
+    "DEN_TieflingBard_Bard:N1838"
+   ]
+  },
+  "думает": {
+   "lines": 20,
+   "words": [
+    "think",
+    "ponder",
+    "consider",
+    "thought",
+    "reflect",
+    "musing",
+    "hesitat"
+   ],
+   "dominant": [
+    [
+     "sad",
+     5
+    ],
+    [
+     "happy",
+     4
+    ],
+    [
+     "fear",
+     4
+    ],
+    [
+     "confusion",
+     3
+    ]
+   ],
+   "faces": [
+    [
+     "happy/0",
+     11.0
+    ],
+    [
+     "sad/1",
+     10.6
+    ],
+    [
+     "happy/1",
+     9.4
+    ],
+    [
+     "surprise/2",
+     9.1
+    ],
+    [
+     "sad/0",
+     8.7
+    ],
+    [
+     "surprise/0",
+     7.5
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     2
+    ],
+    [
+     [
+      "fear/0",
+      "surprise/0",
+      "fear/0",
+      "thinking/2",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/2",
+      "fear/0",
+      "surprise/2",
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/0",
+      "happy/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     6
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N144",
+    "DEN_AttackOnDen_Bard:N147",
+    "DEN_AttackOnDen_Bard:N138",
+    "DEN_TieflingBard_AD_ComposingSong:N6",
+    "DEN_TieflingBard_Bard:N700",
+    "DEN_TieflingBard_Bard:N1043"
+   ]
+  },
+  "удивлена": {
+   "lines": 28,
+   "words": [
+    "surprise",
+    "shock",
+    "taken aback",
+    "startl",
+    "astonish"
+   ],
+   "dominant": [
+    [
+     "fear",
+     8
+    ],
+    [
+     "thinking",
+     7
+    ],
+    [
+     "confusion",
+     5
+    ],
+    [
+     "surprise",
+     4
+    ]
+   ],
+   "faces": [
+    [
+     "fear/2",
+     13.4
+    ],
+    [
+     "thinking/1",
+     13.0
+    ],
+    [
+     "confusion/1",
+     12.8
+    ],
+    [
+     "thinking/0",
+     11.4
+    ],
+    [
+     "neutral/0",
+     8.7
+    ],
+    [
+     "surprise/2",
+     7.9
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "neutral/0",
+      "fear/2"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/1",
+      "surprise/2",
+      "angry/2",
+      "sad/2"
+     ],
+     1
+    ],
+    [
+     [
+      "confusion/2",
+      "confusion/1",
+      "angry/0"
+     ],
+     1
+    ],
+    [
+     [
+      "fear/0",
+      "thinking/1",
+      "surprise/0",
+      "confusion/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     5
+    ]
+   ],
+   "animations": [
+    [
+     "e9ca7a17-38b6-5930-a6c8-cf59e2467c2c",
+     1
+    ],
+    [
+     "13405ac3-2cbf-4e32-ab41-a49075992ca0",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1418",
+    "DEN_TieflingBard_Bard:N2326",
+    "DEN_TieflingBard_Bard:N1043",
+    "DEN_TieflingBard_Bard:N1662",
+    "DEN_TieflingBard_Bard:N1063",
+    "DEN_TieflingBard_Bard:N1425"
+   ]
+  },
+  "нежно": {
+   "lines": 30,
+   "words": [
+    "tender",
+    "warm",
+    "fond",
+    "affection",
+    "sweet",
+    "grateful",
+    "touched"
+   ],
+   "dominant": [
+    [
+     "happy",
+     12
+    ],
+    [
+     "surprise",
+     6
+    ],
+    [
+     "confusion",
+     4
+    ],
+    [
+     "fear",
+     3
+    ]
+   ],
+   "faces": [
+    [
+     "happy/2",
+     30.1
+    ],
+    [
+     "happy/1",
+     24.3
+    ],
+    [
+     "surprise/1",
+     20.8
+    ],
+    [
+     "happy/0",
+     14.3
+    ],
+    [
+     "happy/23",
+     10.5
+    ],
+    [
+     "confusion/2",
+     10.0
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "happy/0",
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/1",
+      "happy/2"
+     ],
+     2
+    ],
+    [
+     [
+      "confusion/1",
+      "confusion/2",
+      "neutral/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     3
+    ]
+   ],
+   "animations": [
+    [
+     "8b35c8aa-dc04-b3af-7075-ca03c8f0e9ef",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1027",
+    "DEN_TieflingBard_Bard:N1889",
+    "DEN_TieflingBard_Bard:N1215",
+    "DEN_TieflingBard_Bard:N1351",
+    "DEN_TieflingBard_Bard:N2541",
+    "DEN_TieflingBard_Bard:N1663"
+   ]
+  },
+  "дразнит": {
+   "lines": 17,
+   "words": [
+    "tease",
+    "teasing",
+    "playful",
+    "flirt",
+    "cheek",
+    "mischiev",
+    "coy",
+    "wink"
+   ],
+   "dominant": [
+    [
+     "happy",
+     8
+    ],
+    [
+     "confusion",
+     5
+    ],
+    [
+     "thinking",
+     2
+    ],
+    [
+     "surprise",
+     1
+    ]
+   ],
+   "faces": [
+    [
+     "happy/2",
+     16.8
+    ],
+    [
+     "confusion/2",
+     12.5
+    ],
+    [
+     "surprise/1",
+     12.1
+    ],
+    [
+     "happy/1",
+     11.8
+    ],
+    [
+     "happy/0",
+     11.2
+    ],
+    [
+     "thinking/1",
+     9.9
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "happy/0",
+      "thinking/1",
+      "happy/2"
+     ],
+     1
+    ],
+    [
+     [
+      "fear/0",
+      "sad/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "disgust/1",
+      "thinking/2",
+      "surprise/1"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "animations": [],
+   "examples": [
+    "DEN_TieflingBard_Bard:N1311",
+    "CAMP_GoblinHuntCelebration_AD_Bard_Flirty:N3",
+    "CAMP_GoblinHuntCelebration_AD_Bard_Flirty:N25",
+    "SCE_Alfira:N249",
+    "SCE_Alfira:N80",
+    "SCE_Alfira:N247"
+   ]
+  },
+  "гордо": {
+   "lines": 1,
+   "words": [
+    "proud",
+    "pride",
+    "confident",
+    "triumph"
+   ],
+   "dominant": [
+    [
+     "happy",
+     1
+    ]
+   ],
+   "faces": [
+    [
+     "happy/2",
+     6.6
+    ],
+    [
+     "happy/23",
+     2.4
+    ],
+    [
+     "happy/1",
+     0.5
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "happy/1",
+      "happy/2",
+      "happy/23"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "animations": [],
+   "examples": [
+    "LOW_Elfsong_Alfira:N98"
+   ]
+  },
+  "восторг": {
+   "lines": 26,
+   "words": [
+    "excit",
+    "thrill",
+    "delight",
+    "enthusias",
+    "eager",
+    "overjoy",
+    "ecstatic"
+   ],
+   "dominant": [
+    [
+     "happy",
+     11
+    ],
+    [
+     "surprise",
+     8
+    ],
+    [
+     "sad",
+     2
+    ],
+    [
+     "confusion",
+     2
+    ]
+   ],
+   "faces": [
+    [
+     "surprise/1",
+     21.8
+    ],
+    [
+     "happy/0",
+     20.7
+    ],
+    [
+     "happy/2",
+     20.3
+    ],
+    [
+     "happy/1",
+     11.6
+    ],
+    [
+     "confusion/2",
+     10.2
+    ],
+    [
+     "surprise/2",
+     8.5
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "happy/0"
+     ],
+     3
+    ],
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "surprise/1",
+      "happy/0",
+      "thinking/2",
+      "thinking/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "surprise/0",
+      "neutral/0",
+      "confusion/2",
+      "happy/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     10
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "DEN_AttackOnDen_Bard:N176",
+    "DEN_TieflingBard_Bard:N1917",
+    "DEN_TieflingBard_Bard:N1107",
+    "DEN_TieflingBard_Bard:N1063",
+    "DEN_TieflingBard_Bard:N1313",
+    "DEN_TieflingBard_Bard:N3688"
+   ]
+  },
+  "устала": {
+   "lines": 6,
+   "words": [
+    "tired",
+    "exhaust",
+    "weary",
+    "sleepy",
+    "yawn"
+   ],
+   "dominant": [
+    [
+     "sad",
+     2
+    ],
+    [
+     "confusion",
+     2
+    ],
+    [
+     "happy",
+     1
+    ],
+    [
+     "fear",
+     1
+    ]
+   ],
+   "faces": [
+    [
+     "sad/0",
+     9.3
+    ],
+    [
+     "sad/1",
+     5.8
+    ],
+    [
+     "happy/0",
+     5.1
+    ],
+    [
+     "fear/1",
+     5.0
+    ],
+    [
+     "confusion/1",
+     2.7
+    ],
+    [
+     "confusion/2",
+     2.6
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "happy/0",
+      "sad/0",
+      "fear/0",
+      "happy/0"
+     ],
+     1
+    ],
+    [
+     [
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "fear/1",
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "confusion/0",
+      "sad/1",
+      "confusion/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     1
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "HAV_AlfiraTale_AD_WithFlirty:N4",
+    "CAMP_Bard_AD:N67",
+    "CAMP_DarkUrge_MurderOfAlfira_CFM_AlfiraArrives:N362",
+    "CAMP_DarkUrge_MurderOfAlfira_CFM_AlfiraArrives:N319",
+    "CAMP_DarkUrge_MurderOfAlfira_CFM_AlfiraArrives:N213",
+    "DEN_Bard_InParty:N13"
+   ]
+  },
+  "вздыхает": {
+   "lines": 2,
+   "words": [
+    "sigh"
+   ],
+   "dominant": [
+    [
+     "sad",
+     1
+    ],
+    [
+     "thinking",
+     1
+    ]
+   ],
+   "faces": [
+    [
+     "sad/0",
+     3.3
+    ],
+    [
+     "thinking/0",
+     1.6
+    ],
+    [
+     "thinking/2",
+     1.5
+    ],
+    [
+     "thinking/1",
+     0.6
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     1
+    ],
+    [
+     [
+      "thinking/1",
+      "thinking/0",
+      "thinking/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [],
+   "animations": [],
+   "examples": [
+    "SCE_AD_Alfira:N14",
+    "SCE_Alfira:N233"
+   ]
+  },
+  "поёт": {
+   "lines": 27,
+   "words": [
+    "sings",
+    "singing",
+    "song",
+    "hums",
+    "humming"
+   ],
+   "dominant": [
+    [
+     "happy",
+     7
+    ],
+    [
+     "sad",
+     7
+    ],
+    [
+     "fear",
+     5
+    ],
+    [
+     "thinking",
+     3
+    ]
+   ],
+   "faces": [
+    [
+     "happy/0",
+     22.5
+    ],
+    [
+     "sad/0",
+     17.4
+    ],
+    [
+     "sleeping/0",
+     15.7
+    ],
+    [
+     "fear/0",
+     15.4
+    ],
+    [
+     "neutral/0",
+     13.8
+    ],
+    [
+     "thinking/1",
+     11.6
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "sad/0"
+     ],
+     4
+    ],
+    [
+     [
+      "fear/0"
+     ],
+     3
+    ],
+    [
+     [
+      "sad/0",
+      "happy/0"
+     ],
+     2
+    ],
+    [
+     [
+      "happy/0"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     4
+    ]
+   ],
+   "animations": [],
+   "examples": [
+    "DEN_TieflingBard_AD_ComposingSong:N1",
+    "DEN_TieflingBard_AD_ComposingSong:N5",
+    "DEN_TieflingBard_AD_ComposingSong:N8",
+    "DEN_TieflingBard_AD_ComposingSong:N2",
+    "DEN_TieflingBard_AD_Dejected:N3",
+    "DEN_TieflingBard_AD_Dejected:N1"
+   ]
+  },
+  "играет на лютне": {
+   "lines": 68,
+   "words": [
+    "lute",
+    "strum",
+    "pluck"
+   ],
+   "dominant": [
+    [
+     "happy",
+     13
+    ],
+    [
+     "thinking",
+     12
+    ],
+    [
+     "sad",
+     9
+    ],
+    [
+     "fear",
+     9
+    ]
+   ],
+   "faces": [
+    [
+     "happy/1",
+     32.5
+    ],
+    [
+     "thinking/0",
+     26.3
+    ],
+    [
+     "neutral/0",
+     24.9
+    ],
+    [
+     "happy/0",
+     24.6
+    ],
+    [
+     "thinking/1",
+     22.8
+    ],
+    [
+     "fear/2",
+     19.8
+    ]
+   ],
+   "sequences": [
+    [
+     [
+      "angry/0",
+      "confusion/0"
+     ],
+     2
+    ],
+    [
+     [
+      "angry/2"
+     ],
+     2
+    ],
+    [
+     [
+      "thinking/0"
+     ],
+     1
+    ],
+    [
+     [
+      "happy/0",
+      "happy/1",
+      "pain/24",
+      "pain/2"
+     ],
+     1
+    ]
+   ],
+   "poses": [
+    [
+     "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+     10
+    ]
+   ],
+   "animations": [
+    [
+     "d47d576f-e72f-dec4-e21e-4bb2be87c403",
+     3
+    ],
+    [
+     "e9ca7a17-38b6-5930-a6c8-cf59e2467c2c",
+     2
+    ],
+    [
+     "34d69caf-9837-8288-c059-bde208186801",
+     1
+    ],
+    [
+     "89019982-860c-38b8-fe29-707d39ce2fda",
+     1
+    ]
+   ],
+   "examples": [
+    "DEN_TieflingBard_AD_InstrumentBroken:N1",
+    "DEN_TieflingBard_Bard:N1649",
+    "DEN_TieflingBard_Bard:N1665",
+    "DEN_TieflingBard_Bard:N1668",
+    "DEN_TieflingBard_Bard:N1669",
+    "DEN_TieflingBard_Bard:N1271"
+   ]
+  }
+ },
+ "poses_standing": [
+  [
+   "88f49c59-3a8c-49d7-b3e8-ed731abaafeb",
+   88
+  ]
+ ],
+ "gestures": {
+  "d47d576f-e72f-dec4-e21e-4bb2be87c403": {
+   "name": "",
+   "uses": 3,
+   "slot": "",
+   "length": 4.24,
+   "rate": "",
+   "root_motion": false,
+   "emotions": [
+    [
+     "angry",
+     2
+    ],
+    [
+     "pain",
+     1
+    ]
+   ],
+   "dialogs": [
+    "DEN_TieflingBard_Bard"
+   ]
+  },
+  "e9ca7a17-38b6-5930-a6c8-cf59e2467c2c": {
+   "name": "",
+   "uses": 2,
+   "slot": "",
+   "length": 1.47,
+   "rate": "",
+   "root_motion": true,
+   "emotions": [
+    [
+     "thinking",
+     1
+    ],
+    [
+     "fear",
+     1
+    ]
+   ],
+   "dialogs": [
+    "DEN_TieflingBard_Bard"
+   ]
+  },
+  "34d69caf-9837-8288-c059-bde208186801": {
+   "name": "",
+   "uses": 1,
+   "slot": "",
+   "length": 10.28,
+   "rate": "",
+   "root_motion": true,
+   "emotions": [
+    [
+     "fear",
+     1
+    ]
+   ],
+   "dialogs": [
+    "DEN_TieflingBard_Bard"
+   ]
+  },
+  "8b35c8aa-dc04-b3af-7075-ca03c8f0e9ef": {
+   "name": "",
+   "uses": 1,
+   "slot": "",
+   "length": 6.57,
+   "rate": "",
+   "root_motion": false,
+   "emotions": [
+    [
+     "surprise",
+     1
+    ]
+   ],
+   "dialogs": [
+    "DEN_TieflingBard_Bard"
+   ]
+  },
+  "89019982-860c-38b8-fe29-707d39ce2fda": {
+   "name": "",
+   "uses": 1,
+   "slot": "",
+   "length": 2.79,
+   "rate": "",
+   "root_motion": false,
+   "emotions": [
+    [
+     "fear",
+     1
+    ]
+   ],
+   "dialogs": [
+    "DEN_TieflingBard_Bard"
+   ]
+  },
+  "13405ac3-2cbf-4e32-ab41-a49075992ca0": {
+   "name": "CINE_WeightShift_StandL_01",
+   "uses": 1,
+   "slot": "",
+   "length": 3.64,
+   "rate": "0.9",
+   "root_motion": true,
+   "emotions": [
+    [
+     "confusion",
+     1
+    ]
+   ],
+   "dialogs": [
+    "HAV_AlfiraTale_ReunionWithFlirty"
+   ]
+  }
+ },
+ "cinematic_animations": [
+  [
+   "f2db558d-ce68-45ed-aea6-38f8374a547e",
+   6
+  ],
+  [
+   "7d346acc-46ed-462b-9e51-71c60b419824",
+   2
+  ],
+  [
+   "e9ca7a17-38b6-5930-a6c8-cf59e2467c2c",
+   2
+  ],
+  [
+   "942a46cc-ae36-42eb-8731-640f3b7a183d",
+   2
+  ],
+  [
+   "fafc6da7-1d4e-7a79-c240-2d2894e7ff1f",
+   2
+  ],
+  [
+   "1c15bc0f-39cd-4109-a99c-d7de608e2e40",
+   2
+  ],
+  [
+   "8732bd80-90a7-4ffa-947f-026803f3f24e",
+   1
+  ],
+  [
+   "4253f698-00c8-48fc-8060-aa8dbabe77fb",
+   1
+  ],
+  [
+   "576fe8e9-ed63-4b84-800f-b1afc63c87d6",
+   1
+  ],
+  [
+   "1981a2b8-a541-148d-d915-89452d4bc108",
+   1
+  ],
+  [
+   "7dfe2416-edcc-708c-076e-d49f4b878530",
+   1
+  ],
+  [
+   "bd1a0ecf-57b0-4bf6-be25-42b66aa2276b",
+   1
+  ],
+  [
+   "66f61635-0b4e-4e44-aa41-5ca92548dcd9",
+   1
+  ],
+  [
+   "13405ac3-2cbf-4e32-ab41-a49075992ca0",
+   1
+  ]
+ ],
+ "pose_names": {
+  "88f49c59-3a8c-49d7-b3e8-ed731abaafeb": "DIAG_Pose_Stand_R_Forward_01"
+ }
+}

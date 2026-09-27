@@ -12,17 +12,27 @@
 * текстовая реплика (say) — фаза строится по шаблонной фазе основы (позы, взгляды,
   оружие, физика, эмоции «зрителей»), голос без звука длиной по объёму текста, эмоции из
   сценария, план камеры по shot;
-* ремарка рассказчика (narrate) — как текстовая, но голос у актёра рассказчика (Speaker −666).
+* ремарка рассказчика (narrate) — как текстовая, но голос у актёра рассказчика (Speaker −666);
+* кат-узел (cinematic) — копия всей фазы узла TagCinematic ванильного диалога (поцелуй, объятие): TLAnimation,
+  TLTransform, TLSwitchStageEvent, TLShot, звуки, эмоции, взгляды. Сцена основы (стадии, свои камеры) переходит
+  в наш таймлайн целиком при копии основы, актёры и камеры переводятся на наших.
 Фразы героя (варианты ответа) фаз не имеют — как в игре.
+
+Лицо Альфиры в текстовых репликах и ремарках — её собственное, по каталогу её реплик у Larian (style.py,
+alfira_style.json). Сидя у костра (Scene.seated / block(seated=…)) — позы DIAG_Pose_SitGround_* (SEATED).
+В сцене на троих шаблонная фаза своя у каждого говорящего, планы — из неё (как у Larian).
+Длина фазы текстовой реплики — phase_duration(): здесь же — точка для длины по аудио (голос, docs/VOICE.md).
 """
 from __future__ import annotations
 
 import copy
 import uuid
+from collections import Counter
 import xml.etree.ElementTree as et
 from decimal import Decimal
 
 from dsl import ALFIRA, OTHER, PLAYER, emotion_keys, render
+from style import STYLE
 
 # Длительность фразы без озвучки: как быстро читается субтитр (символов в секунду) + запас.
 READ_CPS = 14.0
@@ -44,6 +54,31 @@ SHARED_SCENE = "Public/Shared/Timeline/Scenes/Default/bnz_standing_Px1_Shipping.
 NARRATOR_ACTOR = "a346318f-15b3-49ad-ab97-ddf8283dc339"   # актёр рассказчика у Larian (vanilla.NARRATOR_SPEAKER)
 KEYED = ("TLEmotionEvent", "TLLookAtEvent", "TLAttitudeEvent")
 TC = './region[@id="TimelineContent"]/node[@id="TimelineContent"]/children'
+
+# Позы «сидя на земле» — атрибуты диалога игры (Public/Shared/Animation/Attitudes.lsf, имена — ShortNames.lsx).
+# Так сидят спутник и герой в лагерных сценах Larian поверх обычной сцены bnz_standing_Px1: переход — DIAG_T_Pose
+# («без перехода»), поза держится всю фазу (CAMP_GalesLastNightAlive_SD_ROM, CAMP_DaisyCourseCorrection_AvD,
+# CAMP_DarkUrge_SparedIsobel_SD). Сводка — docs/research/alfira-staging.md §4.
+T_POSE = "375d49d9-707a-42fb-a7f5-7bccba35a6ea"              # DIAG_T_Pose
+SIT = {
+    "HandsDn": "d2c93757-6617-4459-a1b5-1d1f6f59f734",       # DIAG_Pose_SitGround_HandsDn_01
+    "CrossLegs": "7b952786-db29-406b-9670-e26ffc712cbf",     # DIAG_Pose_SitGround_CrossLegs_01
+    "2KneesUp": "d892fccc-a5af-47ab-bd61-499c3e34c5e1",      # DIAG_Pose_SitGround_2KneesUp_01
+    "LKneeUp": "23704a3d-3541-4c8d-924f-b50f569e3586",       # DIAG_Pose_SitGround_LKneeUp_01
+    "RKneeUp": "066dd6ba-f9c0-4b72-bd65-3512af843db9",       # DIAG_Pose_SitGround_RKneeUp_01
+}
+# Scene.seated / block(seated=…): ключ → (поза Альфиры, поза героя); None — стоит, как в основе.
+SEATED = {
+    "fire": ("HandsDn", "CrossLegs"),       # у костра: спутник и герой как Гейл и герой (CAMP_GalesLastNightAlive_SD_ROM)
+    "knees": ("2KneesUp", "CrossLegs"),     # колени к груди (глава 1, «подтягивает колени к груди»)
+    "knee": ("RKneeUp", "LKneeUp"),         # колено вверх (CAMP_DaisyCourseCorrection_AvD: RKneeUp / LKneeUp у героя)
+}
+
+
+def text_duration(line) -> Decimal:
+    """Длина фазы реплики без озвучки: по объёму текста (READ_CPS), от MIN до MAX_TEXT_PHASE."""
+    chars = max(len(render(line.en)), len(render(line.ru)))
+    return D(min(MAX_TEXT_PHASE, max(MIN_TEXT_PHASE, chars / READ_CPS + TAIL)))
 
 
 def D(v) -> Decimal:
@@ -91,7 +126,9 @@ def keys_of(comp):
 class TimelineView:
     """Роли актёров и камеры одного таймлайна (нашего или ванильного)."""
 
-    def __init__(self, tl, dialog, alfira_template, player_speaker, other_template=""):
+    def __init__(self, tl, dialog, alfira_template, player_speaker, other_template="", alfira_as=""):
+        """alfira_as — спикер чужого диалога, которого у нас играет Альфира (основа с другим спутником: поцелуй
+        Шэдоухарт). Актёры спикеров, которых у нас нет (зрители), в role не попадают."""
         self.tl = tl
         self.root = tl.xml
         speakers = {}
@@ -104,7 +141,7 @@ class TimelineView:
         actors = tl.get_timeline_actors()
         for idx, actor in speakers.items():
             val = actors.get(actor)
-            if idx < len(listed) and listed[idx] == alfira_template and ALFIRA not in self.actor:
+            if idx < len(listed) and listed[idx] == (alfira_as or alfira_template) and ALFIRA not in self.actor:
                 self.actor[ALFIRA] = actor
             elif other_template and idx < len(listed) and listed[idx] == other_template and OTHER not in self.actor:
                 self.actor[OTHER] = actor
@@ -128,8 +165,9 @@ class TimelineView:
 
 class Stager:
     def __init__(self, lib, tl, dialog, base_tl, base_dialog, alfira_template, player_speaker, uid, other_template="",
-                 base_scene_file=""):
+                 base_scene_file="", alfira_base="", base_name=""):
         self.lib = lib
+        self.base_name = base_name
         self.base_scene_file = base_scene_file   # _Scene.lsf основы: из неё — общая сцена с камерами
         self.tl = tl
         self.dialog = dialog
@@ -138,24 +176,42 @@ class Stager:
         self.player_speaker = player_speaker
         self.other_template = other_template
         self.me = TimelineView(tl, dialog, alfira_template, player_speaker, other_template)
-        self.base = TimelineView(base_tl, base_dialog, alfira_template, player_speaker, other_template)
-        self.template = self._pick_template()
+        self.base = TimelineView(base_tl, base_dialog, alfira_template, player_speaker, other_template, alfira_base)
+        self.templates = {}                 # роль говорящего → шаблонная фаза основы (_pick_template)
         self.sources = {}                   # имя диалога → (TimelineView, dialog_object)
+        # Точка для голоса: uuid узла → длина аудио реплики, с. Если задана, фаза текстовой реплики — по ней
+        # (phase_duration). Заполняет сборка, когда у новых реплик появится голос (docs/VOICE.md).
+        self.voice_durations = {}
         self.shared_cams = self._shared_cameras()
         self.added_cams = []
         self.report = []                    # (узел, откуда фаза, длительность) для документации
 
     # --- подготовка ---
 
-    def _pick_template(self):
-        """Шаблон для текстовых реплик: первая фаза основы с одним голосом Альфиры."""
+    def template(self, role=ALFIRA):
+        if role not in self.templates:
+            self.templates[role] = self._pick_template(role)
+        return self.templates[role]
+
+    def _pick_template(self, role):
+        """Шаблон для текстовых реплик говорящего role: первая фаза основы с одним его голосом, где никто не
+        ходит (без TLAnimation/TLTransform персонажей: шаги и повороты входа в сцену повторялись бы на каждой
+        реплике); если таких нет — первая фаза с одним его голосом. В сцене на троих у Лакриссы своя шаблонная
+        фаза: взгляды слушателей и планы — на неё, как у Larian."""
         tl = self.base.tl
+        first = None
         for i in range(tl.get_number_of_phases()):
             comps = self.base.phase_components(i)
             voices = [c for c in comps if attr(c, "Type") == "TLVoice"]
-            if len(voices) == 1 and actor_of(voices[0]) == self.base.actor[ALFIRA]:
+            if len(voices) != 1 or actor_of(voices[0]) != self.base.actor.get(role):
+                continue
+            first = i if first is None else first
+            if not any(attr(c, "Type") in ("TLAnimation", "TLTransform") and actor_of(c) in self.base.role
+                       for c in comps):
                 return i
-        raise RuntimeError("в основе нет фазы с одной репликой Альфиры")
+        if first is None:
+            raise RuntimeError(f"в основе нет фазы с одной репликой {'Альфиры' if role == ALFIRA else 'третьего'}")
+        return first
 
     def _shared_cameras(self):
         """Камеры общих сцен: bnz_standing_Px1 и общая сцена, от которой наследует сцена основы (у сцены
@@ -208,7 +264,7 @@ class Stager:
                     emo.append((max(D(0), t), int(e or 1), int(attr(k, "Variation", 0) or 0)))
         return v, sorted(emo) or [(D(0), 1, 0)]
 
-    def _voiced_from_ad(self, node_uuid, src_name, src_node):
+    def _voiced_from_ad(self, node_uuid, src_name, src_node, seat=""):
         """Её озвученная реплика из AD (у AD нет сцены и камер): голос, длина по голосу, её эмоции из AD,
         остальное — шаблонная фаза основы и стандартный план."""
         v, emo = self.voice_window(src_name, src_node)
@@ -216,13 +272,15 @@ class Stager:
         dur = vdur + D(TAIL)
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
-        self._template_parts(start, dur, phase, {(ALFIRA, "TLEmotionEvent")})
+        self._template_parts(start, dur, phase, {(ALFIRA, "TLEmotionEvent")} | (self._seated_skip() if seat else set()))
+        if seat:
+            self._seat(seat, dur, phase)
         self._voice(node_uuid, start, start + vdur, phase, self.me.actor[ALFIRA], proto=v)
         keys = [self.tl.create_emotion_key(float(t), code, variation=var) for t, code, var in emo]
         self.tl.create_tl_actor_node("TLEmotionEvent", self.me.actor[ALFIRA], "0", dur, keys,
                                      node_uuid=self.uid(f"tl/{phase}/emo"), is_snapped_to_end=True)
         self._shot(self.named_camera("alfira"), start, start + dur, phase, "main", True)
-        self.report.append((node_uuid, f"{src_name} (AD, голос)", float(dur)))
+        self.report.append((node_uuid, f"{src_name} (AD, голос)" + (f", сидя ({seat})" if seat else ""), float(dur)))
 
     # --- камеры ---
 
@@ -318,9 +376,9 @@ class Stager:
         et.SubElement(cc, "attribute", {"id": "Object", "type": "guid", "value": cam})
         self.tl.insert_new_tl_node(e)
 
-    def _template_parts(self, start, dur, phase, skip_roles_types):
+    def _template_parts(self, start, dur, phase, skip_roles_types, role=ALFIRA):
         """Компоненты шаблонной фазы основы, растянутые на новую фазу (первый ключ в начале)."""
-        comps = self.base.phase_components(self.template)
+        comps = self.base.phase_components(self.template(role))
         ws = min(fattr(c, "StartTime") for c in comps)
         we = max(fattr(c, "EndTime") for c in comps)
         for c in comps:
@@ -363,37 +421,98 @@ class Stager:
             set_attr(e.find('./children/node[@id="Actor"]'), "UUID", speaker_actor, "guid")
         self.tl.insert_new_tl_node(e)
 
-    def narrator_phase(self, node_uuid, line):
+    def narrator_phase(self, node_uuid, line, seat=""):
         """Фаза ремарки рассказчика: как текстовая, но TLVoice у актёра-рассказчика (Speaker −666).
 
         Актёра рассказчика в таймлайне основы нет — добавляется один раз, как у Larian
         (DEN_TieflingBard_Bard: тот же uuid, ActorTypeId narrator). Лицо и камера — на Альфире.
         """
         self.tl.create_narrator_timeline_actor_data()
-        self.text_phase(node_uuid, line, speaker_actor=NARRATOR_ACTOR)
+        self.text_phase(node_uuid, line, speaker_actor=NARRATOR_ACTOR, seat=seat)
 
-    def text_phase(self, node_uuid, line, speaker_actor=None):
+    def phase_duration(self, node_uuid, line):
+        """Длина фазы текстовой реплики или ремарки.
+
+        Точка для голоса: когда у новой реплики будет аудио, его длина (с) кладётся в voice_durations[uuid узла] —
+        фаза станет длиной голоса + TAIL, как у озвученных реплик игры; ключи эмоций и планы растянутся по ней.
+        Без аудио — по объёму текста (text_duration)."""
+        v = self.voice_durations.get(node_uuid)
+        return D(v) + D(TAIL) if v else text_duration(line)
+
+    def text_phase(self, node_uuid, line, speaker_actor=None, seat=""):
         """Фаза текстовой реплики Альфиры или третьего участника сцены (line.speaker == OTHER), или
-        ремарки рассказчика (speaker_actor). Эмоции из сценария — на лице говорящего (у ремарки — Альфиры)."""
-        chars = max(len(render(line.en)), len(render(line.ru)))
-        dur = D(min(MAX_TEXT_PHASE, max(MIN_TEXT_PHASE, chars / READ_CPS + TAIL)))
+        ремарки рассказчика (speaker_actor). Эмоции из сценария — на лице говорящего (у ремарки — Альфиры);
+        у Альфиры — её собственные вариации и ход ключей (style.py)."""
+        dur = self.phase_duration(node_uuid, line)
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
         face = OTHER if line.speaker == OTHER and not speaker_actor else ALFIRA
-        self._template_parts(start, dur, phase, {(face, "TLEmotionEvent")})
+        role = face if self.other_template else ALFIRA
+        skip = {(face, "TLEmotionEvent")} | (self._seated_skip() if seat else set())
+        self._template_parts(start, dur, phase, skip, role=role)
         self._voice(node_uuid, start, start + dur, phase, speaker_actor or self.me.actor[face])
-        keys = [self.tl.create_emotion_key(t, code, variation=var) for t, code, var in emotion_keys(line.emo, float(dur))]
+        if face == ALFIRA:
+            emo = STYLE.keys(line, float(dur), node_uuid)
+        else:
+            emo = emotion_keys(line.emo, float(dur))
+        keys = [self.tl.create_emotion_key(t, code, variation=var) for t, code, var in emo]
         self.tl.create_tl_actor_node("TLEmotionEvent", self.me.actor[face], "0", dur, keys,
                                      node_uuid=self.uid(f"tl/{phase}/emo"), is_snapped_to_end=True)
-        self._shot(self.named_camera(line.shot), start, start + dur, phase, "main", True)
-        self.report.append((node_uuid, "ремарка" if speaker_actor else ("текст (3-й)" if face == OTHER else "текст"),
-                            float(dur)))
+        if seat:
+            self._seat(seat, dur, phase)
+        if not (self.other_template and line.shot_default and self._template_shots(role, start, dur, phase)):
+            self._shot(self.named_camera(line.shot), start, start + dur, phase, "main", True)
+        self.report.append((node_uuid, ("ремарка" if speaker_actor else ("текст (3-й)" if face == OTHER else "текст"))
+                            + (f", сидя ({seat})" if seat else ""), float(dur)))
 
-    def voiced_phase(self, node_uuid, src_name, src_node, fallback_shot="alfira"):
-        """Фаза озвученной реплики: окно вокруг её TLVoice в ванильном таймлайне."""
+    # --- сидя у костра ---
+
+    def _seated_skip(self):
+        return {(ALFIRA, "TLAttitudeEvent"), (PLAYER, "TLAttitudeEvent")}
+
+    def _seat(self, seat, dur, phase):
+        """Позы сидя на всю фазу: один ключ в начале, переход DIAG_T_Pose (как у Larian в лагерных сценах)."""
+        if seat not in SEATED:
+            raise KeyError(f"поза {seat!r} не описана в staging.SEATED; есть {sorted(SEATED)}")
+        for role, pose in zip((ALFIRA, PLAYER), SEATED[seat]):
+            if pose is None:
+                continue
+            key = self.tl.create_attitude_key(0, SIT[pose], T_POSE)
+            self.tl.create_tl_actor_node("TLAttitudeEvent", self.me.actor[role], "0", dur, [key],
+                                         node_uuid=self.uid(f"tl/{phase}/seat/{role}"), is_snapped_to_end=True)
+
+    # --- сцена на троих: планы Larian из шаблонной фазы говорящего ---
+
+    def _template_shots(self, role, start, dur, phase):
+        """Планы шаблонной фазы основы (у сцены на троих — свои камеры Larian), по времени — в долях фазы.
+        False — если ни одну камеру не удалось перевести (тогда план по shot)."""
+        i = self.template(role)
+        comps = self.base.phase_components(i)
+        ph = self.base.tl.get_timeline_phase(i)
+        ws, wd = D(ph.start), D(ph.duration)
+        shots = []
+        for c in sorted((c for c in comps if attr(c, "Type") == "TLShot"), key=lambda c: fattr(c, "StartTime")):
+            cc = c.find('./children/node[@id="CameraContainer"]')
+            src = attr(cc, "Object") if cc is not None else None
+            cam = self.camera(self.base.cam_info[src]) if src in self.base.cam_info else None
+            if cam is not None:
+                shots.append(((fattr(c, "StartTime") - ws) / wd, cam))
+        if not shots:
+            return False
+        for n, (frac, cam) in enumerate(shots):
+            s = D(0) if n == 0 else D(frac * dur)
+            e = dur if n == len(shots) - 1 else D(shots[n + 1][0] * dur)
+            if e - s < D("0.3"):
+                continue
+            self._shot(cam, start + s, start + e, phase, f"t{n}", n == len(shots) - 1)
+        return True
+
+    def voiced_phase(self, node_uuid, src_name, src_node, fallback_shot="alfira", seat=""):
+        """Фаза озвученной реплики: окно вокруг её TLVoice в ванильном таймлайне. seat — сидя (SEATED):
+        позы из ванильной фазы не берутся, вместо них — позы сидя."""
         view, d = self.source(src_name)
         if d is None:
-            return self._voiced_from_ad(node_uuid, src_name, src_node)
+            return self._voiced_from_ad(node_uuid, src_name, src_node, seat)
         tl = view.tl
         voices = [c for c in tl.all_effect_components if attr(c, "Type") == "TLVoice"
                   and src_node in (attr(c, "DialogNodeId"), attr(c, "ReferenceId"))]
@@ -411,13 +530,13 @@ class Stager:
         dur = we - ws
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
-        have = set()
+        have = set(self._seated_skip()) if seat else set()
         for c in comps:
             typ = attr(c, "Type")
             if typ == "TLVoice" or typ == "TLShot":
                 continue
             role = view.role.get(actor_of(c))
-            if role is None or typ not in KEYED:
+            if role is None or typ not in KEYED or (role, typ) in have:
                 continue
             if fattr(c, "EndTime") <= ws or fattr(c, "StartTime") >= we:
                 continue
@@ -428,6 +547,8 @@ class Stager:
                 self.tl.insert_new_tl_node(new)
                 have.add((role, typ))
         self._template_parts(start, dur, phase, have)
+        if seat:
+            self._seat(seat, dur, phase)
         self._voice(node_uuid, start, start + (fattr(v, "EndTime") - ws), phase, self.me.actor[ALFIRA], proto=v)
         shots = []
         for c in comps:
@@ -448,4 +569,83 @@ class Stager:
                 continue
             self._shot(cam or default, start + t, start + e, phase, f"s{i}", i == len(shots) - 1)
             t = e
-        self.report.append((node_uuid, f"{src_name} фаза {pidx}", float(dur)))
+        self.report.append((node_uuid, f"{src_name} фаза {pidx}" + (f", сидя ({seat})" if seat else ""), float(dur)))
+
+    # --- кат-узлы: поцелуй, объятие (STAGE4.md §13) ---
+
+    def cine_source(self, name):
+        """TimelineView ванильного диалога с кат-фазами. Альфиры среди его спикеров нет — её играет спикер 0
+        (у ShadowHeart_InParty2_Nested_ShadowheartKiss это Шэдоухарт); у основы сцены — Scene.alfira_base."""
+        if not name or name == self.base_name:
+            return self.base
+        key = ("cine", name)
+        if key not in self.sources:
+            d = self.lib.assets.get_dialog_object(name)
+            t = self.lib.assets.get_timeline_object(name)
+            sp = d.get_speakers()
+            alfira_as = "" if self.alfira_template in sp else sp[0]
+            self.sources[key] = TimelineView(t, d, self.alfira_template, self.player_speaker, alfira_as=alfira_as)
+        return self.sources[key]
+
+    def cinematic_phase(self, node_uuid, src_name, src_node):
+        """Фаза кат-узла (TagCinematic): копия ВСЕХ компонентов фазы узла src_node ванильного диалога.
+
+        TLAnimation, TLTransform, TLSwitchStageEvent, TLShot, TLSoundEvent, TLShowArmor, TLPhysics, эмоции, позы,
+        взгляды — как у Larian, со сдвигом времени на начало нашей фазы. Актёры переводятся по ролям (спикер,
+        который у нас Альфира, → её актёр; герой → герой), камеры — на наши с той же камерой и привязкой, пинатсы
+        (массовка отряда) и камеры одной и той же сцены — как есть. Компоненты актёров, которых у нас нет
+        (зрители-спутники основы), не переносятся. Стадии (TLStages) и свои камеры сцены действуют, если
+        источник — основа сцены: её _Scene копируется в наш таймлайн целиком."""
+        view = self.cine_source(src_name)
+        tl = view.tl
+        pidx = tl.get_timeline_phase_index(src_node)
+        if pidx is None:
+            raise RuntimeError(f"{src_name or self.base_name}: нет фазы для узла {src_node}")
+        ph = tl.get_timeline_phase(pidx)
+        comps = view.phase_components(pidx)
+        dur = D(ph.duration)
+        phase = self.tl.create_new_phase(node_uuid, dur)
+        start = self.tl.get_phase_start_time(phase)
+        shift = start - D(ph.start)
+        same = view is self.base
+        idmap = {view.actor[r]: self.me.actor[r] for r in view.actor if r in self.me.actor}
+        ours = set(self.tl.get_timeline_actors())
+        for a in view.peanuts:
+            if a in ours:
+                idmap[a] = a
+        for cam, key in view.cam_info.items():
+            if same and cam in ours:
+                idmap[cam] = cam
+            else:
+                mapped = self.camera(key)
+                if mapped is not None:
+                    idmap[cam] = mapped
+        dropped = Counter()
+        for c in comps:
+            typ = attr(c, "Type")
+            a = actor_of(c)
+            if a is not None and a not in idmap:
+                dropped[typ] += 1
+                continue
+            if typ == "TLShot":
+                cc = c.find('./children/node[@id="CameraContainer"]')
+                if cc is None or attr(cc, "Object") not in idmap:
+                    dropped[typ] += 1
+                    continue
+            new = copy.deepcopy(c)
+            set_attr(new, "ID", self.uid(f"tl/{phase}/cine/{attr(c, 'ID')}"), "guid")
+            if phase > 0:
+                set_attr(new, "PhaseIndex", phase, "int64")
+            else:
+                del_attr(new, "PhaseIndex")
+            for e in new.iter("node"):
+                if e is new or e.get("id") == "Key":
+                    for name in (("StartTime", "EndTime") if e is new else ("Time",)):
+                        v = attr(e, name)
+                        set_attr(e, name, (D(v) if v is not None else D(0)) + shift, "float")
+            for at in new.iter("attribute"):
+                if at.get("type") == "guid" and at.get("value") in idmap:
+                    at.set("value", idmap[at.get("value")])
+            self.tl.insert_new_tl_node(new)
+        self.report.append((node_uuid, f"{src_name or self.base_name} кат-фаза {pidx}"
+                            + (f" (не перенесено: {dict(dropped)})" if dropped else ""), float(dur)))

@@ -206,6 +206,22 @@ PROC_ORI_SetupCamp((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 1
 
 //END_REGION
 
+//REGION Debug: Larian kiss staging trial (docs/STAGE4.md section 13)
+// Script Extender console: Osi.PROC_ALFSV_Debug_KissCinematic() shows the "[Trial] Kiss her" option in her party talk,
+// Osi.PROC_ALFSV_Debug_KissCinematicOff() hides it again. The regular kiss answers are not affected.
+
+PROC
+PROC_ALFSV_Debug_KissCinematic()
+THEN
+SetFlag((FLAG)ALFSV_Debug_KissCinematic_a2228400-6f9c-58a7-9c83-19277a2a4884, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+
+PROC
+PROC_ALFSV_Debug_KissCinematicOff()
+THEN
+ClearFlag((FLAG)ALFSV_Debug_KissCinematic_a2228400-6f9c-58a7-9c83-19277a2a4884, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+
+//END_REGION
+
 //REGION Keep our in-party dialog
 
 // Act1_ORI_DarkUrge.txt: PROC_GLO_PartyMembers_MakeNPCHook(Alfira) sets DEN_Bard_InParty in every game.

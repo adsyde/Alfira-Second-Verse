@@ -27,6 +27,7 @@ SCENE = Scene(
     # по длине её голоса, без постановки сцены — staging.py, voiced_phase)
     voice_from=["DEN_TieflingBard_Bard", "SCE_Alfira", "SCE_AD_Alfira"],
     chapter=CH,
+    seated="knee",          # «Она сидит, прижав лютню к груди» — вся глава сидя у костра (staging.SEATED)
     status="согласовано 2026-09-26",
 )
 S = SCENE
