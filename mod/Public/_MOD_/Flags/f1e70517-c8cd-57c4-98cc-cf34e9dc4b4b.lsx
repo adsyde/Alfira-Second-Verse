@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="f1e70517-c8cd-57c4-98cc-cf34e9dc4b4b" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Talk_NoticedLakrissa" />
+			<attribute id="Description" type="LSString" value="L3: the hero noticed she likes Lakrissa" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

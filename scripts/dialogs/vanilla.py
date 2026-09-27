@@ -106,6 +106,7 @@ class DC:
     """Классы сложности (Shared/Public/Shared/DifficultyClasses/DifficultyClasses.lsx)."""
     Act1_Easy = "31e92da6-bac9-46f7-af99-5f33d98fd4f0"     # 7
     Act1_Medium = "fa621d38-6f83-4e42-a55c-6aa651a75d46"   # 10
+    Act1_Challenging = "5e7ff0e9-6c80-459c-a636-3a3e8417a61a"   # 12
 
 
 class NESTED:

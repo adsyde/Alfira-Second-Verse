@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="07f5d5f9-68c4-5b2b-9ce6-d05ae6d7e6ac" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Talk_VictorySong" />
+			<attribute id="Description" type="LSString" value="S1: she will write Lihala's song about the day of victory" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

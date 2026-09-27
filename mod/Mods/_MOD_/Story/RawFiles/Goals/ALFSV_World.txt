@@ -103,6 +103,24 @@ DB_ALFSV_PlaceTrigger((TRIGGER)S_END_MorphicPool_SUB_5a646d13-e9bb-42f0-84e6-1f8
 DB_ALFSV_Place("AstralPlane", (DIALOGRESOURCE)ALFSV_AD_Place_AstralPlane_5aaca661-be95-5a40-bf72-b8d296d2b4ed);
 DB_ALFSV_PlaceTrigger((TRIGGER)S_END_AstralPrism_SUB_adf44e33-ae27-4186-aff7-84d61dbedcae, "AstralPlane");
 DB_ALFSV_PlaceTrigger((TRIGGER)S_INT_AstralPlane_SUB_98791ae8-8cac-489f-8451-9f1a3d85cb19, "AstralPlane");
+DB_ALFSV_Place("Talk_K01_Gnolls", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K01_Gnolls_2b1fa4fa-6a79-5df7-87c3-5781d8647792);
+DB_ALFSV_PlaceFlag((FLAG)PLA_ConflictedFlind_Knows_Gnolls_c353a7d3-7561-05dc-c725-32e363ce6bf3, "Talk_K01_Gnolls");
+DB_ALFSV_Place("Talk_K02_Hyena", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K02_Hyena_8690dfc8-1b8f-53ac-808c-76482eed32ed);
+DB_ALFSV_Place("Talk_K03_DeadGnolls", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K03_DeadGnolls_1901f3d9-8ee6-5b24-b16e-2d7a9b82f68f);
+DB_ALFSV_PlaceFlag((FLAG)PLA_KarlachRecruitmentTollhouse_Knows_GnollsDead_9dab2061-e12d-435e-99f0-d9dbe075813d, "Talk_K03_DeadGnolls");
+DB_ALFSV_Place("Talk_K04_Gruel", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K04_Gruel_7ed874db-bc11-58ca-9541-05d91b1be073);
+DB_ALFSV_Place("Talk_K05_Ritual", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K05_Ritual_b02f20c3-b1ea-52b4-b675-49ef5142cfd2);
+DB_ALFSV_Place("Talk_K06_KidsGame", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K06_KidsGame_ed3b21c3-c06c-52b2-b1bd-060c289df48b);
+DB_ALFSV_Place("Talk_K07_HoleBook", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K07_HoleBook_9fc379f3-9616-57e2-b513-c9d2196666d8);
+DB_ALFSV_Place("Talk_K08_DangerousBook", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K08_DangerousBook_8f55a5e5-8577-5bcb-b6ff-69995acd7fa5);
+DB_ALFSV_Place("Talk_K09_GoblinGate", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K09_GoblinGate_91508b6d-3a5f-5c17-b3b1-5674b55699e0);
+DB_ALFSV_PlaceFlag((FLAG)GLO_GoblinHunt_Quest_CampEntered_58d47a99-0e37-4fe8-a5ff-d47f069a3886, "Talk_K09_GoblinGate");
+DB_ALFSV_Place("Talk_K10_Volo", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K10_Volo_6b53435d-987d-50ce-89cb-022c522e4297);
+DB_ALFSV_Place("Talk_K11_Drums", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K11_Drums_d5ad14cc-8425-55cb-bb4f-f9baec4340a7);
+DB_ALFSV_Place("Talk_K12_Poems", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K12_Poems_2a2451fc-19cb-552f-a584-ea98fbd9c6cb);
+DB_ALFSV_Place("Talk_K13_Lathander", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K13_Lathander_b22b8a3c-bb4a-5c4a-bb44-8ce55e944fdf);
+DB_ALFSV_Place("Talk_K14_GithYouth", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K14_GithYouth_1b2921f3-65dd-5bf8-ae20-ccdce8925bfc);
+DB_ALFSV_Place("Talk_K15_Underdark", (DIALOGRESOURCE)ALFSV_AD_Place_Talk_K15_Underdark_278aa989-3845-5876-b89a-aaa7621f7064);
 DB_ALFSV_TravelAD((DIALOGRESOURCE)ALFSV_AD_Travel_b3006aa9-fc6d-5023-b11a-7d72b6b8602c);
 
 //END_REGION

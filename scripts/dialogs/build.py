@@ -43,15 +43,18 @@ from dsl import ACT_LEVELS, ALFIRA, OTHER, PLAYER, Flag, FlagRef, Line, Option, 
 from staging import Stager  # noqa: E402
 import ads  # noqa: E402
 import reactions as act_reactions  # noqa: E402
+import talks  # noqa: E402
 from vanilla import ALFIRA_ORIGIN, ALFIRA_TEMPLATE, APPROVAL_SP1, NARRATOR_SPEAKER, PLAYER_SPEAKER, F  # noqa: E402
 
 enable_utf8_stdout()
 
 # Сцены: вербовка, разговор в отряде и все главы разговоров scenes/chNN_*.py (подхватываются сами).
-SCENES = ["recruitment", "inparty"] + sorted(p.stem for p in (HERE / "scenes").glob("ch[0-9][0-9]_*.py"))
+SCENES = ["recruitment", "inparty"] + sorted(p.stem for p in (HERE / "scenes").glob("ch[0-9][0-9]_*.py")) + [
+    "events", "local"]      # разговоры акта 1 по событиям и по месту («!», сцены перед диалогами NPC) — talks.py
 CHAPTERS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Chapters.txt"
 WORLD_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_World.txt"
 REACTIONS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Reactions.txt"
+TALKS_GOAL = "Mods/_MOD_/Story/RawFiles/Goals/ALFSV_Talks.txt"
 # Женские формы обращения к героине: отдельный файл <имя>_to_F.xml рядом с русским (как
 # russian_to_F.loca у игры). Проверить в игре; если игра не различает — выключить.
 FEMALE_VARIANTS = True
@@ -105,6 +108,7 @@ class Compiler:
         self.voices = {}         # handle → (диалог, узел, версия)
         self.seat = {}           # узел → поза сидя (staging.SEATED) или "" — стоя
         self.seat_ctx = scene.seated
+        self.meta = []           # (handle, ключ узла, Line) новых реплик — для списка озвучки (voice_lines.json)
 
     def uid(self, key):
         return self.ids.uid(f"{self.s.name}/{key}")
@@ -146,6 +150,7 @@ class Compiler:
             _, _, version = self.voices[line.handle]
             self.vanilla_handles.add(line.handle)
             return self.b.text_content(line.handle, version, self.uid(f"{key}/line"))
+        self.meta.append((self.ids.handle(f"{self.s.name}/{key}"), key, line))
         return self.text(key, line.en, line.ru, key, narrator=line.narrator)
 
     # --- узлы ---
@@ -470,7 +475,8 @@ class Compiler:
         base_d = lib.assets.get_dialog_object(s.base)
         self.stager = st = Stager(lib, tl, self.d, base_tl, base_d, ALFIRA_TEMPLATE, PLAYER_SPEAKER,
                                   lambda k: self.uid(k), other_template=s.other,
-                                  base_scene_file=self.base_scene_file(), alfira_base=s.alfira_base, base_name=s.base)
+                                  base_scene_file=self.base_scene_file(), alfira_base=s.alfira_base, base_name=s.base,
+                                  other_base=s.other_base)
         for nid, line in self.npc:
             seat = self.seat.get(nid, "")
             if line.cinematic:
@@ -721,8 +727,10 @@ def load_scenes():
 
 def load_world():
     """Реплики на местах (scenes/places.py) и фразы в пути (scenes/travel.py)."""
-    from scenes.places import PLACES
+    from scenes.places import PLACES as WORLD_PLACES
+    from scenes.local import PLACES as TALK_PLACES     # К1–К15 (design/dialogs/12_act1_local.md)
     from scenes.travel import TRAVEL
+    PLACES = WORLD_PLACES + TALK_PLACES
     keys = [p.key for p in PLACES]
     if len(keys) != len(set(keys)):
         sys.exit(f"Повторяются ключи мест: {sorted(k for k in keys if keys.count(k) > 1)}")
@@ -936,8 +944,10 @@ def generate(dump=False):
                                   encoding="utf-8", newline="\n")
     # реакции на поступки (акт 1) — свой goal (scripts/dialogs/reactions.py)
     (src / REACTIONS_GOAL).write_text(act_reactions.goal(ids), encoding="utf-8", newline="\n")
+    # разговоры акта 1 по событиям и по месту — свой goal (scripts/dialogs/talks.py)
+    (src / TALKS_GOAL).write_text(talks.goal(ids), encoding="utf-8", newline="\n")
     from scenes.recruitment import ROMANCE as romance_flag        # флаг только из Osiris: файл нужен всё равно
-    osiris_only = [romance_flag] + list(act_reactions.FLAGS.values()) + OSIRIS_FLAGS + [r.flag for s in chapters for r in s.chapter.story + s.chapter.story_any
+    osiris_only = [romance_flag] + list(act_reactions.FLAGS.values()) + list(talks.FLAGS) + OSIRIS_FLAGS + [r.flag for s in chapters for r in s.chapter.story + s.chapter.story_any
                                                    if isinstance(r, FlagRef)]
     # флаги глав есть в goal глав всегда, а в диалогах Available — только у глав со входом в отряде
     osiris_only += [f for s in chapters for f in (s.chapter.available_flag, s.chapter.done_flag)]
@@ -972,11 +982,26 @@ def generate(dump=False):
     out = resolve(cfg["paths"]["build"]) / "dialogs"
     out.mkdir(parents=True, exist_ok=True)
     (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "voice_lines.json").write_text(json.dumps(voice_lines(results), ensure_ascii=False, indent=1), encoding="utf-8")
     for name, m in manifest["scenes"].items():
         print(f"  {name}: узлов {m['nodes']}, фаз {m['phases']}")
     print(f"  текстов {len(loca_en)} (женских вариантов {len(loca_ru_f)}), озвученных реплик игры {len(vanilla)}, "
           f"реакций {len(reactions)}, новых флагов {len(flags)}")
     return manifest
+
+
+def voice_lines(results):
+    """Новые реплики (не реплики героя) для озвучки: handle, сцена, узел, говорящий, EN/RU, лицо и ремарка.
+    Ремарки рассказчика — с говорящим «Narrator» (их не озвучивают)."""
+    out = []
+    for c in results:
+        for h, key, ln in c.meta:
+            who = "Narrator" if ln.narrator else ("Alfira" if ln.speaker == ALFIRA else (c.s.other_name or c.s.other))
+            out.append({"handle": h, "scene": c.s.name, "kind": c.s.kind, "block": key, "speaker": who,
+                        "speaker_uuid": "" if ln.narrator else c.speaker_uuid.get(ln.speaker, ""),
+                        "en": render(ln.en), "ru": render(ln.ru), "ru_f": render(ln.ru, True) if has_gender(ln.ru) else "",
+                        "emo": ln.emo if isinstance(ln.emo, str) else json.dumps(ln.emo), "note": ln.note})
+    return out
 
 
 def dump_scene(c, cfg):

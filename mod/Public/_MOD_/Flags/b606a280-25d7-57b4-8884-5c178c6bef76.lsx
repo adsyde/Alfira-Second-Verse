@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="b606a280-25d7-57b4-8884-5c178c6bef76" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Talk_SingForTheRoom" />
+			<attribute id="Description" type="LSString" value="L8: 'Sing for the room you're in'" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>

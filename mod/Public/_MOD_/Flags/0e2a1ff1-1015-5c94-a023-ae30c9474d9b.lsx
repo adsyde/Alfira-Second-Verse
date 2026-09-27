@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="0e2a1ff1-1015-5c94-a023-ae30c9474d9b" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Talk_NotAGuest" />
+			<attribute id="Description" type="LSString" value="S3: 'You're not a guest any more. You've got a party.'" />
+			<attribute id="Usage" type="uint8" value="4" />
+		</node>
+	</region>
+</save>
