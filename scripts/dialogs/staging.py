@@ -22,7 +22,7 @@ import uuid
 import xml.etree.ElementTree as et
 from decimal import Decimal
 
-from dsl import ALFIRA, PLAYER, emotion_keys, render
+from dsl import ALFIRA, OTHER, PLAYER, emotion_keys, render
 
 # Длительность фразы без озвучки: как быстро читается субтитр (символов в секунду) + запас.
 READ_CPS = 14.0
@@ -36,6 +36,9 @@ CAMERAS = {
     "alfira": ("2fad736c-047d-4964-a8d6-0f1d8fb085b1", PLAYER, ALFIRA),        # из-за плеча героя на неё
     "alfira_close": ("62dc4211-3d45-4e20-b6bc-62e18087b085", ALFIRA, ALFIRA),  # крупный план
     "player": ("788e3996-fcf7-4113-9dc0-e4b971935c06", ALFIRA, PLAYER),        # на героя
+    # третий участник сцены (Scene.other): те же камеры, привязанные к нему
+    "other": ("2fad736c-047d-4964-a8d6-0f1d8fb085b1", PLAYER, OTHER),          # из-за плеча героя на него
+    "other_close": ("62dc4211-3d45-4e20-b6bc-62e18087b085", OTHER, OTHER),     # крупный план
 }
 SHARED_SCENE = "Public/Shared/Timeline/Scenes/Default/bnz_standing_Px1_Shipping.lsf"
 NARRATOR_ACTOR = "a346318f-15b3-49ad-ab97-ddf8283dc339"   # актёр рассказчика у Larian (vanilla.NARRATOR_SPEAKER)
@@ -88,7 +91,7 @@ def keys_of(comp):
 class TimelineView:
     """Роли актёров и камеры одного таймлайна (нашего или ванильного)."""
 
-    def __init__(self, tl, dialog, alfira_template, player_speaker):
+    def __init__(self, tl, dialog, alfira_template, player_speaker, other_template=""):
         self.tl = tl
         self.root = tl.xml
         speakers = {}
@@ -96,17 +99,20 @@ class TimelineView:
             if attr(s, "MapKey") is not None and attr(s, "MapValue") is not None:
                 speakers[int(attr(s, "MapKey"))] = attr(s, "MapValue")
         listed = dialog.get_speakers()
-        self.role = {}                      # actor uuid → ALFIRA | PLAYER
-        self.actor = {}                     # ALFIRA | PLAYER → actor uuid
+        self.role = {}                      # actor uuid → ALFIRA | PLAYER | OTHER
+        self.actor = {}                     # ALFIRA | PLAYER | OTHER → actor uuid
         actors = tl.get_timeline_actors()
         for idx, actor in speakers.items():
             val = actors.get(actor)
             if idx < len(listed) and listed[idx] == alfira_template and ALFIRA not in self.actor:
                 self.actor[ALFIRA] = actor
+            elif other_template and idx < len(listed) and listed[idx] == other_template and OTHER not in self.actor:
+                self.actor[OTHER] = actor
             elif val is not None and attr(val, "IsPlayer") == "True" and PLAYER not in self.actor:
                 self.actor[PLAYER] = actor
-        if len(self.actor) != 2:
-            raise RuntimeError(f"{tl.filename}: не нашёл актёров Альфиры и героя ({self.actor})")
+        if ALFIRA not in self.actor or PLAYER not in self.actor or (other_template and OTHER not in self.actor):
+            raise RuntimeError(f"{tl.filename}: не нашёл актёров Альфиры, героя"
+                               f"{' и третьего участника' if other_template else ''} ({self.actor})")
         self.role = {v: k for k, v in self.actor.items()}
         self.peanuts = set(tl.get_timeline_actors("peanut"))
         self.cams = {}                      # (camera, attach role, look role) → scenecam actor uuid
@@ -121,15 +127,18 @@ class TimelineView:
 
 
 class Stager:
-    def __init__(self, lib, tl, dialog, base_tl, base_dialog, alfira_template, player_speaker, uid):
+    def __init__(self, lib, tl, dialog, base_tl, base_dialog, alfira_template, player_speaker, uid, other_template="",
+                 base_scene_file=""):
         self.lib = lib
+        self.base_scene_file = base_scene_file   # _Scene.lsf основы: из неё — общая сцена с камерами
         self.tl = tl
         self.dialog = dialog
         self.uid = uid                      # uid(key) → детерминированный UUID
         self.alfira_template = alfira_template
         self.player_speaker = player_speaker
-        self.me = TimelineView(tl, dialog, alfira_template, player_speaker)
-        self.base = TimelineView(base_tl, base_dialog, alfira_template, player_speaker)
+        self.other_template = other_template
+        self.me = TimelineView(tl, dialog, alfira_template, player_speaker, other_template)
+        self.base = TimelineView(base_tl, base_dialog, alfira_template, player_speaker, other_template)
         self.template = self._pick_template()
         self.sources = {}                   # имя диалога → (TimelineView, dialog_object)
         self.shared_cams = self._shared_cameras()
@@ -149,9 +158,22 @@ class Stager:
         raise RuntimeError("в основе нет фазы с одной репликой Альфиры")
 
     def _shared_cameras(self):
-        f = self.lib.game_file(SHARED_SCENE)
-        top = f.root_node.find('./region[@id="TLScene"]/node[@id="TLScene"]')
-        return {attr(c, "MapKey") for c in top.findall('./children/node[@id="TLCameras"]/children/node')}
+        """Камеры общих сцен: bnz_standing_Px1 и общая сцена, от которой наследует сцена основы (у сцены
+        на троих это bnz_standing_Px2 — в ней те же камеры subject1/player и ещё камеры subject2)."""
+        files = [SHARED_SCENE]
+        if self.base_scene_file:
+            sc = self.lib.game_file(self.base_scene_file)
+            top = sc.root_node.find('./region[@id="TLScene"]/node[@id="TLScene"]')
+            for inh in top.findall('./children/node[@id="TLInheritedScenes"]/children/node'):
+                path = attr(inh, "Object") or ""
+                if "/Scenes/Default/bnz_" in path:
+                    files.append(path[:-4] + ".lsf" if path.endswith(".lsx") else path)
+        out = set()
+        for fn in dict.fromkeys(files):
+            f = self.lib.game_file(fn)
+            top = f.root_node.find('./region[@id="TLScene"]/node[@id="TLScene"]')
+            out |= {attr(c, "MapKey") for c in top.findall('./children/node[@id="TLCameras"]/children/node')}
+        return out
 
     def source(self, name):
         """(TimelineView, dialog) ванильного диалога-источника; у AD (один спикер, без героя) — (timeline, None)."""
@@ -161,7 +183,8 @@ class Stager:
             if self.alfira_template in d.get_speakers() and len(d.get_speakers()) == 1:
                 self.sources[name] = (t, None)
             else:
-                self.sources[name] = (TimelineView(t, d, self.alfira_template, self.player_speaker), d)
+                other = self.other_template if self.other_template in d.get_speakers() else ""
+                self.sources[name] = (TimelineView(t, d, self.alfira_template, self.player_speaker, other), d)
         return self.sources[name]
 
     def voice_window(self, src_name, src_node):
@@ -273,7 +296,8 @@ class Stager:
                     tv = attr(k, tgt)
                     if tv is not None:
                         role = src_view.role.get(tv)
-                        if role is None:   # смотрела на того, кого в нашей сцене нет — на собеседника
+                        if role is None or role not in self.me.actor:
+                            # смотрела на того, кого в нашей сцене нет — на собеседника
                             role = PLAYER if src_view.role.get(attr(comp.find('./children/node[@id="Actor"]'), "UUID")) == ALFIRA else ALFIRA
                         set_attr(k, tgt, self.me.actor[role], "guid")
         return new
@@ -343,18 +367,21 @@ class Stager:
         self.text_phase(node_uuid, line, speaker_actor=NARRATOR_ACTOR)
 
     def text_phase(self, node_uuid, line, speaker_actor=None):
-        """Фаза текстовой реплики Альфиры (или ремарки рассказчика — speaker_actor)."""
+        """Фаза текстовой реплики Альфиры или третьего участника сцены (line.speaker == OTHER), или
+        ремарки рассказчика (speaker_actor). Эмоции из сценария — на лице говорящего (у ремарки — Альфиры)."""
         chars = max(len(render(line.en)), len(render(line.ru)))
         dur = D(min(MAX_TEXT_PHASE, max(MIN_TEXT_PHASE, chars / READ_CPS + TAIL)))
         phase = self.tl.create_new_phase(node_uuid, dur)
         start = self.tl.get_phase_start_time(phase)
-        self._template_parts(start, dur, phase, {(ALFIRA, "TLEmotionEvent")})
-        self._voice(node_uuid, start, start + dur, phase, speaker_actor or self.me.actor[ALFIRA])
+        face = OTHER if line.speaker == OTHER and not speaker_actor else ALFIRA
+        self._template_parts(start, dur, phase, {(face, "TLEmotionEvent")})
+        self._voice(node_uuid, start, start + dur, phase, speaker_actor or self.me.actor[face])
         keys = [self.tl.create_emotion_key(t, code, variation=var) for t, code, var in emotion_keys(line.emo, float(dur))]
-        self.tl.create_tl_actor_node("TLEmotionEvent", self.me.actor[ALFIRA], "0", dur, keys,
+        self.tl.create_tl_actor_node("TLEmotionEvent", self.me.actor[face], "0", dur, keys,
                                      node_uuid=self.uid(f"tl/{phase}/emo"), is_snapped_to_end=True)
         self._shot(self.named_camera(line.shot), start, start + dur, phase, "main", True)
-        self.report.append((node_uuid, "ремарка" if speaker_actor else "текст", float(dur)))
+        self.report.append((node_uuid, "ремарка" if speaker_actor else ("текст (3-й)" if face == OTHER else "текст"),
+                            float(dur)))
 
     def voiced_phase(self, node_uuid, src_name, src_node, fallback_shot="alfira"):
         """Фаза озвученной реплики: окно вокруг её TLVoice в ванильном таймлайне."""

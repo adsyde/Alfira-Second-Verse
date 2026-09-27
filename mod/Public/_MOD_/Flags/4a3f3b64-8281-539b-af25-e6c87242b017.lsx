@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="5" revision="0" build="0" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="Flags">
+		<node id="Flags">
+			<attribute id="UUID" type="guid" value="4a3f3b64-8281-539b-af25-e6c87242b017" />
+			<attribute id="Name" type="FixedString" value="ALFSV_Celebration_LakrissaHere" />
+			<attribute id="Description" type="LSString" value="Lakrissa is at the celebration (not defeated, as in PROC_CAMP_GoblinHuntCelebration_SetupTieflings)" />
+			<attribute id="Usage" type="uint8" value="5" />
+		</node>
+	</region>
+</save>

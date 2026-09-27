@@ -15,16 +15,17 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-ALFIRA = 0   # индексы спикеров во всех наших диалогах (как в ванильном DEN_Bard_InParty)
-PLAYER = 1
+ALFIRA = 0   # логические спикеры сцены; build переводит их в номера слотов основы (Scene.base)
+PLAYER = 1   # у основ на двоих (DEN_Bard_InParty и т. п.) это и есть слоты 0 и 1
+OTHER = 2    # третий участник сцены (Scene.other), например Лакрисса; реплики — say(..., speaker=OTHER)
 
 # Эмоции таймлайна. Числа — из Public/Shared/Animation/Emotions.lsf (узел EmotionToAnimSet);
 # build.py сверяет таблицу с файлом игры при каждой сборке.
 EMOTIONS = {"neutral": 1, "happy": 2, "thinking": 4, "angry": 8, "fear": 16, "sad": 32,
             "surprise": 64, "disgust": 128, "sleeping": 256, "dead": 512, "confusion": 1024, "pain": 2048}
 
-# Планы камеры для текстовых реплик (см. staging.py: CAMERAS).
-SHOTS = ("alfira", "alfira_close", "player")
+# Планы камеры для текстовых реплик (см. staging.py: CAMERAS). other* — на третьего участника сцены.
+SHOTS = ("alfira", "alfira_close", "player", "other", "other_close")
 
 
 # --- флаги и условия ------------------------------------------------------------------------
@@ -87,15 +88,21 @@ class Line:
     approve: int = 0
     note: str = ""                       # для людей: ремарка из сценария
     narrator: bool = False               # ремарка рассказчика (narrate)
+    speaker: int = ALFIRA                # кто говорит: ALFIRA или OTHER (третий участник сцены)
 
 
-def say(en: str, ru: str, *, emo="neutral", shot="alfira", set=(), approve=0, note="") -> Line:
+def say(en: str, ru: str, *, emo="neutral", shot=None, set=(), approve=0, note="", speaker=ALFIRA) -> Line:
     """Новая текстовая реплика. В ru можно писать {мужской|женский} род обращения к герою.
 
     *слово* превращается в курсив игры (<i>слово</i>). Ремарки в текст не пишутся — их роль
-    играет emo.
+    играет emo. speaker=OTHER — реплика третьего участника сцены (Scene.other), без голоса:
+    emo — его лицо, план камеры по умолчанию — на него.
     """
-    return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note)
+    if speaker not in (ALFIRA, OTHER):
+        raise ValueError("say(): говорит Альфира (ALFIRA) или третий участник сцены (OTHER)")
+    if shot is None:
+        shot = "other" if speaker == OTHER else "alfira"
+    return Line(en=en, ru=ru, emo=emo, shot=shot, set=list(set), approve=approve, note=note, speaker=speaker)
 
 
 def voice(handle: str, *, set=(), approve=0, note="") -> Line:
@@ -213,25 +220,53 @@ class Block:
 
 # --- главы разговоров (этап 4) -----------------------------------------------------------------
 
+@dataclass(frozen=True)
+class Osi:
+    """Условие сюжета на языке Osiris — для того, что игра не хранит флагом (например, запись журнала).
+
+    Текст подставляется в условие правила как есть: osi('QuestUpdateIsUnlocked(NULL_…, "HAG_HagSpawn",
+    "SavedMayrina", 1)', "Майрина спасена"). Имена и типы проверяет check_story.py.
+    """
+    condition: str
+    note: str = ""
+
+
+def osi(condition: str, note: str = "") -> Osi:
+    return Osi(condition, note)
+
+
+# Акты для chapter(act=N): уровни, на которых идёт акт (DB_CurrentLevel). Акт 1 — WLD_Main_A (1a:
+# Роща, Подземье…) и CRE_Main_A (1b: Горный перевал, Ясли) — так их делит игра (GLO_Pixie.txt,
+# GLO_MonkAmulet.txt: позиции S_GLO_PixieAsylumPos_Act1 и _Act1b). Акт 2 — SCL_Main_A.
+ACT_LEVELS = {1: ("WLD_Main_A", "CRE_Main_A"), 2: ("SCL_Main_A",)}
+
+
 @dataclass
 class Chapter:
     """Глава разговора с Альфирой (design/APPROVAL.md §4). Объявляется в файле сцены главы.
 
     Жизнь главы — два глобальных флага мода, их uuid выдаёт build:
       ALFSV_ChapterNN_Available — ставит Osiris (goal ALFSV_Chapters, генерируется), когда глава
-                                  открылась: предыдущая глава сыграна, выполнены условия story и
-                                  (если after_rest) только что был долгий отдых;
+                                  открылась (условия — scripts/dialogs/README.md, «Очередь глав»);
       ALFSV_ChapterNN_Done      — ставит сама сцена главы (set=[CH.done]) там, где глава считается
                                   сыгранной. До этого глава предлагается при каждом разговоре.
+    Глава «ждёт», пока она Available и не Done: тогда новые главы не открываются.
     В разговоре в отряде вход в главу — корень без текста с условиями Available, !Done, when и
     порогом одобрения, дальше — вложенный диалог главы (как ShadowHeart_InParty2 → *_Nested_*Chapter).
+    hub=False — входа в разговоре в отряде нет: диалог главы запускает свой Osiris (глава-событие,
+    например праздник).
     """
     number: int
     title: str
     after_rest: bool = True              # открывается только после долгого отдыха (иначе — сразу)
-    story: list = field(default_factory=list)   # глобальные флаги: проверяет Osiris при открытии
+    story: list = field(default_factory=list)   # все условия сюжета: глобальные флаги или osi(...)
     when: list = field(default_factory=list)    # условия входа при каждом разговоре (флаги диалога)
     approval: int | None = None          # мин. одобрение собеседника на входе (Approval_AtLeast_N_For_Sp1)
+    optional: bool = False               # необязательная: без выполненного story очередь не держит
+    story_any: list = field(default_factory=list)  # хотя бы одно из условий (флаги или osi(...))
+    act: int | None = None               # открывается и ждёт только в этом акте (ACT_LEVELS)
+    expire: bool = False                 # снят флаг из story, а глава не сыграна — перестаёт ждать
+    hub: bool = True                     # вход в разговоре в отряде (False — диалог запускает Osiris)
 
     @property
     def available_flag(self) -> Flag:
@@ -248,12 +283,26 @@ class Chapter:
         return self.done_flag.on
 
 
-def chapter(number: int, title: str, *, after_rest=True, story=(), when=(), approval=None) -> Chapter:
-    """Объявление главы: номер (порядок), название, условия открытия и входа. См. Chapter."""
-    for r in story:
+def chapter(number: int, title: str, *, after_rest=True, story=(), when=(), approval=None, optional=False,
+            story_any=(), act=None, expire=False, hub=True) -> Chapter:
+    """Объявление главы: номер (порядок), название, условия открытия и входа. См. Chapter и README."""
+    for r in list(story) + list(story_any):
+        if isinstance(r, Osi):
+            continue
         if not isinstance(r, FlagRef) or r.flag.kind != "Global":
-            raise ValueError(f"глава {number}: в story только глобальные флаги (F.X.on / F.X.off), получено {r!r}")
-    return Chapter(number, title, after_rest, list(story), list(when), approval)
+            raise ValueError(f"глава {number}: в story только глобальные флаги (F.X.on / F.X.off) или osi(...), "
+                             f"получено {r!r}")
+    if act is not None and act not in ACT_LEVELS:
+        raise ValueError(f"глава {number}: акт {act} не описан в dsl.ACT_LEVELS")
+    if act is not None and not optional:
+        # обязательная глава, которая не открылась в своём акте, навсегда держала бы очередь
+        raise ValueError(f"глава {number}: ограничить актом можно только необязательную главу (optional=True)")
+    if expire and not optional:
+        raise ValueError(f"глава {number}: expire — только у необязательной главы")
+    if expire and not any(isinstance(r, FlagRef) and r.value for r in story):
+        raise ValueError(f"глава {number}: expire без флага в story ничего не делает")
+    return Chapter(number, title, after_rest, list(story), list(when), approval, optional, list(story_any), act,
+                   expire, hub)
 
 
 @dataclass
@@ -266,6 +315,8 @@ class Scene:
     nested: list = field(default_factory=list)       # ID вложенных диалогов (childResources банка)
     status: str = ""
     chapter: Chapter | None = None                   # сцена — глава разговора (вложенный диалог)
+    other: str = ""                                  # uuid третьего участника (спикер основы), say(speaker=OTHER)
+    other_name: str = ""                             # его имя — для распечаток
     kind: str = "dialog"                             # "ad" — реплика над головой (scripts/dialogs/ads.py)
     category: str = ""                               # категория диалога (у AD — как у Larian, см. ads.py)
     blocks: dict = field(default_factory=dict)

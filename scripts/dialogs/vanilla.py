@@ -10,6 +10,8 @@ PLAYER_SPEAKER = "e0d1ff71-04a8-4340-ae64-9684d846eb83"    # группа спи
 ALFIRA_ORIGIN = "38357c93-b437-4f03-88d0-a67bd4c0e3e9"     # Origin «Alfira» (GustavDev/Origins/Origins.lsx)
 # рассказчик: speaker -666 в диалоге, актёр таймлайна с этим uuid (как в DEN_TieflingBard_Bard)
 NARRATOR_SPEAKER = "a346318f-15b3-49ad-ab97-ddf8283dc339"
+# Лакрисса (S_DEN_Tiefling_010): третий участник сцены «Лакрисса замечает героя» на празднике
+LAKRISSA = "23129d6c-8d39-4a4c-a4f6-cfc6637b597c"
 
 
 class F:
@@ -37,6 +39,17 @@ class F:
     CampNight = Flag("GLO_CAMP_State_NightMode", "Global", "fb53edc2-9a89-4ad2-af83-20b5fe425cdd")
     # Астарион в лагере и он спутник, а не аватар (DB_OriginCampFlags, GLO_CampNights.txt «Camp Flags»)
     AstarionCompanionInCamp = Flag("ASTARIONCOMPANION", "Global", "9fa6b609-3ba0-43ed-a95b-82304f7b8dac")
+    # «Первая крупная победа» акта 1 (глава 3): вожаки гоблинов убиты — все три из DB_GOB_GoblinLeaders
+    # (Act1_GOB_GoblinHunt.txt, PROC_GLO_DefeatCounter_AllDefeated("GOB_GoblinHunt_Leaders"));
+    # налёт на Рощу отбит — «Raiders defeated!» (Act1_DEN_AttackOnDen.txt, SetFlag после DebugBreak).
+    # Третья победа — спасена Майрина — это запись журнала HAG_HagSpawn/SavedMayrina, не флаг (см. ch03).
+    GoblinLeadersDead = Flag("GOB_State_LeadersAreDead", "Global", "a1c5b01f-4b7f-47ab-82b0-d24d9c6d8bc6")
+    GroveRaidRepelled = Flag("DEN_AttackOnDen_State_DenVictory", "Global", "71c7f23e-3ff1-c9b8-3ef5-d75fa1b42c8d")
+    # праздник тифлингов (CAMP_GoblinHuntCelebration_Bard): флаги диалога на герое
+    CelebrationHasMetBard = Flag("CAMP_GoblinHuntCelebration_HasMet_Bard", "Dialog", "21639b69-57a6-8baf-165f-5633f74a65ae")
+    RefusedBardSong = Flag("CAMP_GoblinHuntCelebration_Event_RefusedBardSong", "Dialog", "d3939955-5d61-ad2d-d406-1ebc0753c139")
+    # герой обещал Лакриссе выпить с ней (её «Heh. Lakrissa would approve» на празднике)
+    LakrissaPromisedDrink = Flag("DEN_General_TieflingGuard10_PromisedDrink", "Dialog", "f8a1e851-679e-cf93-69ed-148230c22395")
 
 
 # Пороги одобрения для героя-спикера 1: Approval_AtLeast_N_For_Sp1 на спутнике
@@ -61,6 +74,18 @@ class T:
     # герой — Темный Соблазн (GustavDev/Tags; в диалогах игры 327 проверок против 34 у DARK_URGE).
     # Не путать с глобальным флагом лагеря DARKURGE («Соблазн в отряде»).
     REALLY_DARK_URGE = Flag("REALLY_DARK_URGE", "Tag", "cd611d7d-b67d-42b4-a75c-a0c6091ef8a2")
+    # герой-ориджин и раса/класс — варианты героя на празднике (CAMP_GoblinHuntCelebration_Bard)
+    REALLY_ASTARION = Flag("REALLY_ASTARION", "Tag", "ffd08582-7396-4cac-bcd4-8f9cd0fd8ef3")
+    REALLY_SHADOWHEART = Flag("REALLY_SHADOWHEART", "Tag", "642d2aee-e3df-47e3-9f47-bbcd441bb9e0")
+    REALLY_LAEZEL = Flag("REALLY_LAEZEL", "Tag", "b5682d1d-c395-489c-9675-1f9b0c328ea5")
+    REALLY_WYLL = Flag("REALLY_WYLL", "Tag", "5f40def5-d3ec-4698-a367-01a339888956")
+    REALLY_GALE = Flag("REALLY_GALE", "Tag", "9b0354c0-56d9-4723-8034-918ac9abab19")
+    REALLY_KARLACH = Flag("REALLY_KARLACH", "Tag", "1a2f70d6-8ead-4eb5-a824-79ee1971764a")
+    REALLY_TIEFLING = Flag("REALLY_TIEFLING", "Tag", "7bf7207f-7406-49c0-b501-eaaa2bb4efd7")
+    REALLY_DUERGARDWARF = Flag("REALLY_DUERGARDWARF", "Tag", "45b007f7-f4f6-46e2-9480-395a49b87ef3")
+    REALLY_LOLTHDROWELF = Flag("REALLY_LOLTHDROWELF", "Tag", "c71eb8de-74e3-4d70-9826-22da7e2dc607")
+    FIGHTER = Flag("FIGHTER", "Tag", "1ae7017c-4884-4a43-bc4a-742fa0d201c0")
+    BARBARIAN = Flag("BARBARIAN", "Tag", "02913f9a-f696-40cf-acdf-32032afab32c")
 
 
 class DC:

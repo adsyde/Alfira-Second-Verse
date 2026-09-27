@@ -70,6 +70,13 @@ def main():
                     phase_dur[A(p, "DialogNodeId")] = Decimal(A(p, "Duration"))
         num = {}
         lines = [f"# {scene}", "", "Сгенерировано scripts/dialogs/tree.py. 🔊 — голос игры, ✍️ — текст мода.", ""]
+        # слоты спикеров → имена (у сцены на троих порядок — как у основы)
+        slot_name = {"-666": "Рассказчик"}
+        for sp in d.iter("node"):
+            if sp.get("id") == "speaker" and A(sp, "index") is not None:
+                u = (A(sp, "list") or "").split(";")[0]
+                slot_name[A(sp, "index")] = {vanilla.ALFIRA_TEMPLATE: "Альфира",
+                                             vanilla.PLAYER_SPEAKER: "герой"}.get(u) or (gname(u) if u else "герой")
 
         def flags(n, kind):
             out = []
@@ -77,7 +84,7 @@ def main():
                 for f in g.findall('./children/node[@id="flag"]'):
                     u = A(f, "UUID")
                     nm = names.get(u) or gname(u)
-                    who = {"0": "Альфира", "1": "герой"}.get(A(f, "paramval") or "", "")
+                    who = slot_name.get(A(f, "paramval") or "", "")
                     out.append(("" if A(f, "value") == "True" else "!") + nm + (f" [{who}]" if who else ""))
             return out
 
@@ -98,7 +105,9 @@ def main():
                 return
             num[u] = len(num) + 1
             con = A(n, "constructor")
-            who = {"0": "**Альфира**", "1": "**Герой**", "-666": "*Рассказчик*"}.get(A(n, "speaker") or "", "")
+            spk = A(n, "speaker") or ""
+            nm = slot_name.get(spk, "")
+            who = "" if not nm else (f"*{nm}*" if spk == "-666" else f"**{nm[:1].upper() + nm[1:]}**")
             head = f"{pad}- N{num[u]} {con}"
             tx = text(n)
             if tx:
