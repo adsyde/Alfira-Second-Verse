@@ -31,7 +31,7 @@ def main():
             2: (f"({ln['instruct']}){ln['text']}", {"reference_wav_path": ln["ref_wav"], "cfg_value": 2.0}),
             3: (ln["text"], {**ult, "cfg_value": 2.5}),
         }
-        for k in range(1, jobs["variants"] + 1):
+        for k in ln.get("variants") or range(1, jobs["variants"] + 1):
             def gen(path, k=k):
                 torch.manual_seed(2000 + k)
                 text, kw = settings[k]

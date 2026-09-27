@@ -8,8 +8,10 @@ items.json: {"voice_set": [wav её голоса для «центра»], "item
     (среднее по voice_set), sim_ecapa_ref — с референсом, который получила модель;
   - sim_wavlm — то же для WavLM-SV (microsoft/wavlm-base-plus-sv);
   - sim_*_target — с её настоящей репликой того же текста (набор «тот же текст», если задан target);
-  - wer — ошибка распознавания Whisper (large-v3-turbo) против текста реплики, после нормализации.
+  - wer — ошибка распознавания Whisper (large-v3-turbo) против текста реплики, после нормализации;
+    имена мира (items.json → names) подсказываются Whisper и не считаются ошибкой, если записаны похоже.
 """
+import difflib
 import json
 import re
 import sys
@@ -34,7 +36,29 @@ def load16(path):
 def norm(s):
     s = re.sub(r"<[^>]+>", "", s.lower().replace("’", "'"))
     s = re.sub(r"[^a-z0-9' ]+", " ", s)
+    # одинаковые на слух написания не считаются ошибкой
+    s = re.sub(r"\ball right\b", "alright", s)
+    s = re.sub(r"(^| )'?til\b", r"\1till", s)
     return re.sub(r"\s+", " ", s).strip()
+
+
+def fix_names(ref, hyp, names):
+    """Имена мира (Elturel, Lihala…) Whisper пишет как слышит: «El Torell». Если в эталоне есть имя,
+    а в распознанном — похожий кусок из 1–3 слов, кусок заменяется именем: WER мерит речь, а не орфографию."""
+    toks = hyp.split()
+    for name in names:
+        n = norm(name)
+        if n not in ref:
+            continue
+        best, span = 0.0, None
+        for i in range(len(toks)):
+            for j in range(i + 1, min(i + 4, len(toks) + 1)):
+                r = difflib.SequenceMatcher(None, "".join(toks[i:j]), n.replace(" ", "")).ratio()
+                if r > best:
+                    best, span = r, (i, j)
+        if span and best >= 0.6:
+            toks[span[0]:span[1]] = n.split()
+    return " ".join(toks)
 
 
 def main():
@@ -83,9 +107,12 @@ def main():
             t1, t2 = get(it["target"])
             r["sim_ecapa_target"] = float(e1 @ t1)
             r["sim_wavlm_target"] = float(e2 @ t2)
-        hyp = asr.transcribe(load16(it["wav"]), language="en", fp16=DEV == "cuda")["text"]   # массив: без ffmpeg
+        names = items.get("names", [])
+        hyp = asr.transcribe(load16(it["wav"]), language="en", fp16=DEV == "cuda",   # массив: без ffmpeg
+                             initial_prompt=", ".join(names) + "." if names else None)["text"]
         r["asr"] = hyp.strip()
-        r["wer"] = float(jiwer.wer(norm(it["text"]), norm(hyp) or "-"))
+        ref_n = norm(it["text"])
+        r["wer"] = float(jiwer.wer(ref_n, fix_names(ref_n, norm(hyp), names) or "-"))
         res.append(r)
         print(f"{it['key']}: ecapa {r['sim_ecapa']:.3f} wavlm {r['sim_wavlm']:.3f} wer {r['wer']:.2f}", flush=True)
     out.write_text(json.dumps({"self_sim": self_sim, "items": res}, ensure_ascii=False, indent=1), encoding="utf-8")

@@ -22,7 +22,7 @@ def main():
     rec.loaded()
     settings = {1: (0.5, 0.5), 2: (0.7, 0.3), 3: (0.9, 0.3)}
     for ln in jobs["lines"]:
-        for k in range(1, jobs["variants"] + 1):
+        for k in ln.get("variants") or range(1, jobs["variants"] + 1):
             def gen(path, k=k):
                 torch.manual_seed(3000 + k)
                 ex, cfg = settings[k]

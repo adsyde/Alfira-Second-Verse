@@ -18,6 +18,11 @@ import torch  # noqa: E402
 from _common import Recorder, load_jobs  # noqa: E402
 
 
+# Нормализатор IndexTTS раскрывает сокращения («it's» → «it is», «that's» → «that is») — в её речи это
+# слышно как чужая подача. Чисел в наших репликах нет, поэтому нормализация выключена.
+TEXT_NORM = False
+
+
 def main():
     jobs, out = load_jobs()
     rec = Recorder(out, "indextts", "IndexTTS-2.5 (v2.5.0)")
@@ -30,11 +35,11 @@ def main():
         3: lambda ln: {},
     }
     for ln in jobs["lines"]:
-        for k in range(1, jobs["variants"] + 1):
+        for k in ln.get("variants") or range(1, jobs["variants"] + 1):
             def gen(path, ln=ln, k=k):
                 torch.manual_seed(1000 + k)
                 tts.infer(spk_audio_prompt=ln["ref_wav"], text=ln["text"], output_path=str(path), lang="EN",
-                          use_random=False, verbose=False, **settings[k](ln))
+                          use_random=False, verbose=False, text_normalization=TEXT_NORM, **settings[k](ln))
                 return sf.info(str(path)).duration
             rec.item(ln["id"], k, gen)
     rec.save()

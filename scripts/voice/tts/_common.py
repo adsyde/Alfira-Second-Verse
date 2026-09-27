@@ -1,7 +1,8 @@
 """Общее для обёрток моделей (запускаются python-ом venv своей модели, не системным).
 
 Протокол: обёртка получает jobs.json (его пишет compare_models.py) и папку вывода.
-jobs.json: {"lines": [{id, text, ref_wav, ref_text, instruct, emo_vector, tags}], "variants": N}.
+jobs.json: {"lines": [{id, text, ref_wav, ref_text, instruct, emo_vector, tags, variants?}], "variants": N};
+у реплики можно задать свой список вариантов ("variants": [1, 3]) — иначе 1..N.
 Для каждой реплики и варианта k (1..N) пишет <out>/line<id>_v<k>.wav, в конце — <out>/results.json:
 время загрузки, время генерации и длина звука по каждой реплике, пик видеопамяти torch.
 """

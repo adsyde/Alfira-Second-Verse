@@ -36,7 +36,7 @@ def main():
     for ln in jobs["lines"]:
         tagged = f"({ln['tags']}) {ln['text']}" if ln.get("tags") else ln["text"]
         settings = {1: (ln["text"], None, 1.0), 2: (ln["text"], ln["instruct"], 4.0), 3: (tagged, ln["instruct"], 3.0)}
-        for k in range(1, jobs["variants"] + 1):
+        for k in ln.get("variants") or range(1, jobs["variants"] + 1):
             def gen(path, k=k):
                 text, instruction, scale = settings[k]
                 req = {"id": "r", "text": text, "speaker": "S0", "ref_audio_path": ln["ref_wav"], "ref_text": ln["ref_text"]}
