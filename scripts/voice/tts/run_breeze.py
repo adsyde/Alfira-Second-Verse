@@ -6,6 +6,7 @@ compare_models.py. Повторяет infer.py репозитория, но гр
 (laugh), (sigh), (cough). Без инструкции — обычный клон (подача из референса).
 Варианты: v1 — клон без инструкции (cfg 1); v2 — инструкция из сценария (cfg 4);
 v3 — инструкция + звук из сценария в тексте (cfg 3), другой seed.
+У реплики можно задать "custom": {"<k>": {text, instruct, cfg, seed, ref_wav, ref_text}} — переделка по заказу автора.
 """
 import sys
 from pathlib import Path
@@ -38,11 +39,16 @@ def main():
         settings = {1: (ln["text"], None, 1.0), 2: (ln["text"], ln["instruct"], 4.0), 3: (tagged, ln["instruct"], 3.0)}
         for k in ln.get("variants") or range(1, jobs["variants"] + 1):
             def gen(path, k=k):
-                text, instruction, scale = settings[k]
-                req = {"id": "r", "text": text, "speaker": "S0", "ref_audio_path": ln["ref_wav"], "ref_text": ln["ref_text"]}
+                c = (ln.get("custom") or {}).get(str(k))
+                if c:   # переделка: свои текст, инструкция, cfg, seed и образец на вариант
+                    text, instruction, scale = c.get("text", ln["text"]), c.get("instruct"), c.get("cfg", 4.0)
+                    ref_wav, ref_text, seed = c.get("ref_wav", ln["ref_wav"]), c.get("ref_text", ln["ref_text"]), c.get("seed", 4000 + k)
+                else:
+                    text, instruction, scale = settings[k]
+                    ref_wav, ref_text, seed = ln["ref_wav"], ln["ref_text"], 4000 + k
+                req = {"id": "r", "text": text, "speaker": "S0", "ref_audio_path": ref_wav, "ref_text": ref_text}
                 if instruction:
                     req["instruction"] = instruction
-                seed = 4000 + k
                 set_all_seeds(seed)
                 inputs = prepare_inputs(tokenizer, audio_tokenizer, model, [req], get_template(select_template_name(req)),
                                         guidance_scale=scale, guidance_scale_ref=None, guidance_scale_ins=None)

@@ -19,7 +19,12 @@
 длина не по тексту, клиппинг, обрыв в конце, пауза длиннее 2 с (3 с, если в тексте «...»); имена мира
 (NAMES) подсказываются Whisper и не считаются ошибкой. Из остальных по умолчанию выбран
 самый похожий на неё (ECAPA + WavLM к центру её голоса) вариант Breeze; IndexTTS — только если у Breeze брак
-(автор по главам 1–2 выбрал Breeze в 40 репликах из 41). Если брак у всех — выбран лучший из брака, с пометкой.
+(автор по главам 1–2 выбрал Breeze в 40 репликах из 41). Яркие эмоции (VIVID: смех, навеселе, флирт…) — IndexTTS,
+если его похожесть ниже лучшей Breeze не больше чем на VIVID_SIM_GAP (на празднике автор трижды выбрал IndexTTS).
+Если брак у всех — выбран лучший из брака, с пометкой.
+«Переделка» (redo_act1.json): свои образцы, тексты и подача на вариант; группа «Переделка» наверху страницы,
+варианты breeze_rK / indextts_rK:
+  python scripts/voice/voice_act1.py gen _redo && python scripts/voice/voice_act1.py score _redo
 
 Выход:
   voice-work/act1/gen/<группа>/<модель>/line<handle>_v<k>.wav, gpu.csv, run.log; score.json группы;
@@ -72,14 +77,57 @@ def load_lines():
     return json.loads((act / "lines.json").read_text(encoding="utf-8"))
 
 
+REDO = "_redo"   # группа «Переделка»: реплики из redo_act1.json, варианты breeze_rK / indextts_rK
+# эмоции, где автор на празднике выбирал IndexTTS («на живых и пьяных репликах он сильнее»)
+VIVID = {"laugh", "drunk", "excited", "flirty", "teasing", "embarrassed", "tearful"}
+VIVID_SIM_GAP = 0.03   # ★ на IndexTTS, если его похожесть ниже лучшей Breeze не больше чем на столько
+
+
+def redo_spec():
+    p = HERE / "redo_act1.json"
+    return json.loads(p.read_text(encoding="utf-8"))["lines"] if p.exists() else {}
+
+
+def all_lines():
+    """Реплики акта 1 и их копии в группе «Переделка» (со своими вариантами из redo_act1.json)."""
+    lines = load_lines()
+    by = {x["id"]: x for x in lines}
+    out = []
+    for h, spec in redo_spec().items():
+        if h in by:
+            out.append({**by[h], "group": REDO, "group_title": "Переделка", "emotion": spec.get("emotion", by[h]["emotion"]),
+                        "ref_emotion": spec.get("emotion", by[h]["ref_emotion"]), "why": spec["why"], "redo": spec})
+    return out + lines
+
+
 def groups_order(lines):
     return list(dict.fromkeys(x["group"] for x in lines))
 
 
 def model_variants(model, ln):
+    if ln.get("redo"):
+        return sorted(int(k) for k in ln["redo"][model])
     if model == "breeze":
         return [1, 2]
     return [1, 2, 3] if ln["index_variants"] == 3 else [1, 3]
+
+
+def vtag(ln):
+    return "r" if ln.get("redo") else "v"
+
+
+def redo_custom(vw, model, spec):
+    """Параметры вариантов переделки для обёртки модели: пути образцов — абсолютные, текст с экранированием."""
+    out = {}
+    for k, c in spec[model].items():
+        c = dict(c)
+        if "ref" in c:
+            ref = vw / c.pop("ref")
+            c["ref_wav"], c["ref_text"] = str(ref), ref.with_suffix(".txt").read_text(encoding="utf-8").strip()
+        if "emo_ref" in c:
+            c["emo_ref"] = str(vw / c["emo_ref"])
+        out[k] = c
+    return out
 
 
 def wav_ok(path):
@@ -93,7 +141,7 @@ def wav_ok(path):
 
 def cmd_gen(args):
     vw, models, act, gen = act1_paths()
-    lines = load_lines()
+    lines = all_lines()
     refs = {}
     for group in args.groups:
         todo = [x for x in lines if x["group"] == group]
@@ -105,8 +153,13 @@ def cmd_gen(args):
                 refs.setdefault(emo, cm.pick_ref(vw, emo))
                 ks = [k for k in model_variants(model, ln) if not wav_ok(out / f"line{ln['id']}_v{k}.wav")]
                 if ks:
-                    jobs.append({"id": ln["id"], "text": ln["text"], "instruct": ln["instruct"], "emo_vector": ln["emo_vector"],
-                                 "tags": ln["tags"], "variants": ks, **refs[emo]})
+                    job = {"id": ln["id"], "text": ln["text"], "instruct": ln["instruct"], "emo_vector": ln["emo_vector"],
+                           "tags": ln["tags"], "variants": ks, **refs[emo]}
+                    if ln.get("redo"):
+                        base = vw / ln["redo"]["ref"]
+                        job.update(ref_wav=str(base), ref_text=base.with_suffix(".txt").read_text(encoding="utf-8").strip(),
+                                   custom=redo_custom(vw, model, ln["redo"]))
+                    jobs.append(job)
             if not jobs:
                 print(f"{group}/{model}: уже готово")
                 continue
@@ -156,7 +209,7 @@ def audio_checks(path, text):
     return dur, probs
 
 
-def default_pick(cands):
+def default_pick(cands, emotion="", tag="v"):
     """Предотбор ★. Выбор автора по главам 1–2: Breeze 40 из 41 (v1 19, v2 21), IndexTTS 1. Поэтому ★ — у самого
     похожего варианта Breeze без брака; IndexTTS — только если у Breeze брак; брак у всех — лучший из всех."""
     ok = [c for c in cands if not c["reject"]]
@@ -164,12 +217,18 @@ def default_pick(cands):
     if not pool:
         return ""
     c = max(pool, key=lambda c: c["sim"])
-    return f"{c['model']}_v{c['k']}"
+    # яркие эмоции (праздник, смех, флирт): IndexTTS, если похожесть не сильно ниже лучшей Breeze
+    alt = [x for x in ok if x["model"] != PREFERRED]
+    if emotion in VIVID and alt and c["model"] == PREFERRED:
+        a = max(alt, key=lambda x: x["sim"])
+        if a["sim"] >= c["sim"] - VIVID_SIM_GAP:
+            c = a
+    return f"{c['model']}_{tag}{c['k']}"
 
 
 def cmd_score(args):
     vw, models, act, gen = act1_paths()
-    lines = load_lines()
+    lines = all_lines()
     for group in args.groups:
         todo = [x for x in lines if x["group"] == group]
         items = []
@@ -207,7 +266,8 @@ def cmd_score(args):
                               "sim": round(0.5 * m["sim_ecapa"] + 0.5 * m["sim_wavlm"], 4), "sim_ecapa": round(m["sim_ecapa"], 4),
                               "asr": m["asr"], "reject": probs})
             ok = [c for c in cands if not c["reject"]]
-            score[ln["id"]] = {"cands": cands, "default": default_pick(cands), "all_rejected": bool(cands) and not ok}
+            score[ln["id"]] = {"cands": cands, "default": default_pick(cands, ln["emotion"], vtag(ln)),
+                               "all_rejected": bool(cands) and not ok}
         (gen / group / "score.json").write_text(json.dumps(score, ensure_ascii=False, indent=1), encoding="utf-8")
         rej = sum(1 for s in score.values() for c in s["cands"] if c["reject"])
         tot = sum(len(s["cands"]) for s in score.values())
@@ -276,10 +336,27 @@ def variant_how(model, k, ln, ref_name):
     return f"{src}; тембр и эмоция из образца, без отдельной эмоции"
 
 
+def redo_how(model, k, ln):
+    c = ln["redo"][model][str(k)]
+    ref = Path(c.get("ref", ln["redo"]["ref"]))
+    parts = [f"образец {ref.parent.name} ({ref.name[:9]}….wav)"]
+    if c.get("text"):
+        parts.append(f"текст: “{c['text']}”")
+    if model == "breeze":
+        parts.append(f"инструкция: “{c['instruct']}” (cfg {c.get('cfg', 4.0):g})")
+    else:
+        if c.get("emo_ref"):
+            parts.append(f"эмоция из {Path(c['emo_ref']).parent.name} ({Path(c['emo_ref']).name[:9]}…), emo_alpha {c.get('emo_alpha', 0.8):g}")
+        if c.get("emo_vector"):
+            vec = ", ".join(f"{n} {v:g}" for n, v in zip(VEC_NAMES, c["emo_vector"]) if v)
+            parts.append(f"вектор эмоций: {vec}, emo_alpha {c.get('emo_alpha', 1.0):g}")
+    return "; ".join(parts)
+
+
 def cmd_page(_args):
     vw, models, act, gen = act1_paths()
-    lines = load_lines()
-    order = groups_order(lines)
+    lines = all_lines()
+    order = groups_order(lines)     # «Переделка» первой
     titles = {x["group"]: x["group_title"] for x in lines}
     ready = [g for g in order if (gen / g / "score.json").exists()]
     if not ready:
@@ -301,7 +378,7 @@ def cmd_page(_args):
             s = score.get(ln["id"])
             if not s or not s["cands"]:
                 continue
-            s["default"] = default_pick(s["cands"])
+            s["default"] = default_pick(s["cands"], ln["emotion"], vtag(ln))
             total += 1
             emo = ln["ref_emotion"]
             if emo not in ref_rel:
@@ -310,17 +387,21 @@ def cmd_page(_args):
                 norm.append([ref["ref_wav"], str(dst)])
                 ref_rel[emo] = (f"_образцы/{emo}.wav", ref["ref_text"], Path(ref["ref_wav"]).name[:9] + "….wav")
             short = ln["id"][:9]
-            shown = [c for c in s["cands"] if not c["reject"]] if not s["all_rejected"] else s["cands"]
+            # у переделки показываем всё: на обрывках вроде «I - we -» Whisper ошибается чаще модели
+            shown = ([c for c in s["cands"] if not c["reject"]] if not (s["all_rejected"] or ln.get("redo"))
+                     else s["cands"])
             dropped = [c for c in s["cands"] if c["reject"] and c not in shown]
             opts = []
             for c in sorted(shown, key=lambda c: (c["model"], c["k"])):
-                val = f"{c['model']}_v{c['k']}"
+                val = f"{c['model']}_{vtag(ln)}{c['k']}"
                 name = f"{short}_{val}.wav"
                 norm.append([c["wav"], str(PAGE_DIR / folder / name)])
                 chk = " checked" if val == s["default"] else ""
                 warn = f'<div class="warn">{html.escape("; ".join(c["reject"]))}</div>' if c["reject"] else ""
                 star = " ★" if val == s["default"] else ""
                 how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
+                if ln.get("redo"):
+                    how = redo_how(c["model"], c["k"], ln)
                 opts.append(f'<div class="opt"><input type="radio" name="{ln["id"]}" id="{ln["id"]}_{val}" value="{val}"{chk}>'
                             f'<label for="{ln["id"]}_{val}">{TITLE[c["model"]]} v{c["k"]}{star}<br>'
                             f'<small>похожесть {c["sim"]:.3f}, {c["dur"]:.1f} с</small></label>'
@@ -396,15 +477,16 @@ def cmd_pick(args):
             if v == "переделать":
                 redo.add(h)
                 continue
-            m = re.fullmatch(r"(breeze|indextts)_v(\d)", v)
-            src = gen / ln["group"] / m.group(1) / f"line{h}_v{m.group(2)}.wav" if m else None
+            m = re.fullmatch(r"(breeze|indextts)_([vr])(\d)", v)
+            folder = REDO if m and m.group(2) == "r" else ln["group"]      # r — вариант из «Переделки»
+            src = gen / folder / m.group(1) / f"line{h}_v{m.group(3)}.wav" if m else None
             if not src or not wav_ok(src):
                 bad.append(f"{h}={v}: нет файла")
                 continue
             redo.discard(h)
             for hh in ln["handles"]:
                 jobs.append([str(src), str(game / f"{hh}.wav")])
-                chosen.append((hh, m.group(1), int(m.group(2)), ln["group"], h))
+                chosen.append((hh, m.group(1), f"{m.group(2)}{m.group(3)}", ln["group"], h))
     if jobs:
         nj = act / "pick_normalize.json"
         nj.write_text(json.dumps(jobs, ensure_ascii=False), encoding="utf-8")
@@ -424,7 +506,7 @@ def cmd_pick(args):
 
 def cmd_all(args):
     lines = load_lines()
-    for g in groups_order(lines):
+    for g in [x for x in groups_order(lines) if x != REDO]:
         if args.skip_done and (act1_paths()[3] / g / "score.json").exists():
             continue
         cmd_gen(argparse.Namespace(groups=[g], models=list(MODELS)))

@@ -6,6 +6,7 @@
   v1 — голос и эмоция из одного референса (emo_audio_prompt = тот же файл, emo_alpha 0.8);
   v2 — голос из референса, эмоция вектором из сценария (emo_vector);
   v3 — только референс (эмоцию модель берёт из него сама), другой seed.
+У реплики можно задать "custom": {"<k>": {text, ref_wav, emo_ref, emo_alpha, emo_vector, seed}} — переделка.
 """
 import sys
 from pathlib import Path
@@ -37,9 +38,19 @@ def main():
     for ln in jobs["lines"]:
         for k in ln.get("variants") or range(1, jobs["variants"] + 1):
             def gen(path, ln=ln, k=k):
-                torch.manual_seed(1000 + k)
-                tts.infer(spk_audio_prompt=ln["ref_wav"], text=ln["text"], output_path=str(path), lang="EN",
-                          use_random=False, verbose=False, text_normalization=TEXT_NORM, **settings[k](ln))
+                c = (ln.get("custom") or {}).get(str(k))
+                if c:   # переделка: свой образец эмоции / вектор / emo_alpha / текст на вариант
+                    kw = {}
+                    if c.get("emo_ref"):
+                        kw.update(emo_audio_prompt=c["emo_ref"], emo_alpha=c.get("emo_alpha", 0.8))
+                    if c.get("emo_vector"):
+                        kw.update(emo_vector=c["emo_vector"], emo_alpha=c.get("emo_alpha", 1.0))
+                    spk, text, seed = c.get("ref_wav", ln["ref_wav"]), c.get("text", ln["text"]), c.get("seed", 1000 + k)
+                else:
+                    kw, spk, text, seed = settings[k](ln), ln["ref_wav"], ln["text"], 1000 + k
+                torch.manual_seed(seed)
+                tts.infer(spk_audio_prompt=spk, text=text, output_path=str(path), lang="EN",
+                          use_random=False, verbose=False, text_normalization=TEXT_NORM, **kw)
                 return sf.info(str(path)).duration
             rec.item(ln["id"], k, gen)
     rec.save()
