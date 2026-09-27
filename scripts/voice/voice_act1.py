@@ -64,7 +64,8 @@ PAUSE_MAX_ELLIPSIS = 3.0
 # имена мира: подсказка Whisper и терпимость WER к их написанию (tts/metrics.py)
 NAMES = ["Alfira", "Lihala", "Elturel", "Lakrissa", "tiefling", "tieflings", "Baldur's Gate", "Mattis", "Zevlor",
          "Beregost", "Nashkel", "Candlekeep", "Mol", "Arabella", "Karlach", "Astarion", "Shadowheart", "Lae'zel", "Wyll",
-         "Gale", "Halsin", "Volo", "Kagha", "Tav", "Faerûn", "Milil", "Mystra", "Ikaron", "Asharak", "Quil", "Rolan"]
+         "Gale", "Halsin", "Volo", "Kagha", "Tav", "Faerûn", "Milil", "Mystra", "Ikaron", "Asharak", "Quil", "Rolan",
+         "Ravengard", "Duke"]
 
 
 def act1_paths():
@@ -541,9 +542,7 @@ def cmd_page(_args):
                 best_k = run_best.get(even[ln["id"]]["run"])
                 if best_k and any(c["k"] == best_k and not c["reject"] for c in extra_c):
                     s["default"] = f"breeze_e{best_k}"       # ★ на ровный набор: один seed на всю серию
-                picked = current_choice(vw, ln["id"])
-                if picked and any(f"{c['model']}_{c['_tag']}{c['k']}" == picked for c in s["cands"]):
-                    s["default"] = picked      # в блоке и в главе сначала стоит то, что автор уже выбрал
+
             if g == REDO:
                 orig = (gen / ln_group(lines, ln["id"]) / "score.json")
                 if orig.exists():
@@ -552,6 +551,10 @@ def cmd_page(_args):
                         c["_tag"] = "v"
                         c["_old"] = True
                     s = {**s, "cands": s["cands"] + old}
+            # отмечен выбор автора (voice.json, если этот вариант есть в карточке), иначе предотбор ★
+            picked = current_choice(vw, ln["id"]) if g != REDO else ""
+            s = {**s, "checked": picked if picked and any(f"{c['model']}_{c['_tag']}{c['k']}" == picked
+                                                          for c in s["cands"]) else s["default"]}
             total += 1
             emo = ln["ref_emotion"]
             if emo not in ref_rel:
@@ -569,7 +572,7 @@ def cmd_page(_args):
                 val = f"{c['model']}_{c['_tag']}{c['k']}"
                 name = f"{short}_{val}.wav"
                 norm.append([c["wav"], str(PAGE_DIR / folder / name)])
-                chk = " checked" if val == s["default"] else ""
+                chk = " checked" if val == s["checked"] else ""
                 warn = f'<div class="warn">{html.escape("; ".join(c["reject"]))}</div>' if c["reject"] else ""
                 star = " ★" if val == s["default"] else ""
                 how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
