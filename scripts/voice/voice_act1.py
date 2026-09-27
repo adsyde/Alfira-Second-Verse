@@ -90,19 +90,42 @@ HANGOVER_BLOCK = "Похмелье"   # блок наверху страницы
 SPECIAL = {REDO: "r", EVEN: "e"}
 
 
+# Правило автора (выбор all_v7: все реплики похмелья — ровный набор): если одна эмоция идёт в сцене подряд,
+# сразу делается ровный набор — общий образец, одна инструкция, общие seed, и ★ ставится на него.
+# Сцены-главы с этого правила (главы 1–5 автор уже выбрал); места, фразы в пути и беседы — отдельные AD, не сцены.
+EVEN_GROUPS = ("ch06_elturel", "ch07_fear", "ch08_first_kiss", "inparty")
+EVEN_RUN_MIN = 2
+
+
+def even_runs():
+    """[(ключ серии, [реплики])]: все реплики похмелья — одна серия; в EVEN_GROUPS — подряд идущие одной эмоции."""
+    import itertools
+    lines = load_lines()
+    runs = [(f"ch05_morning_after/{EVEN_EMOTION}", [x for x in lines if x["emotion"] == EVEN_EMOTION])]
+    for g in EVEN_GROUPS:
+        grp = [x for x in lines if x["group"] == g]
+        i = 0
+        for emo, it in itertools.groupby(grp, key=lambda x: x["emotion"]):
+            run = list(it)
+            if len(run) >= EVEN_RUN_MIN:
+                runs.append((f"{g}/{emo}/{i}", run))
+            i += len(run)
+    return [r for r in runs if r[1]]
+
+
 def even_spec():
-    """Для каждой реплики похмелья — 2 варианта Breeze: образец «усталость», инструкция похмелья, общие seed."""
+    """Ровный набор: на реплику серии — 2 варианта Breeze с образцом эмоции серии, её инструкцией и общими seed."""
     import list_lines
     vw = act1_paths()[0]
-    lines = [x for x in load_lines() if x["emotion"] == EVEN_EMOTION]
-    if not lines:
-        return {}
-    ref = Path(cm.pick_ref(vw, lines[0]["ref_emotion"])["ref_wav"]).relative_to(vw).as_posix()
-    instr = list_lines.STYLE[EVEN_EMOTION][0]
-    return {x["id"]: {"why": "ровный набор: один образец, одна инструкция, одни seed на все реплики похмелья",
-                      "emotion": EVEN_EMOTION, "ref": ref, "indextts": {},
-                      "breeze": {str(i + 1): {"instruct": instr, "cfg": 4.0, "seed": sd} for i, sd in enumerate(EVEN_SEEDS)}}
-            for x in lines}
+    out = {}
+    for key, run in even_runs():
+        ref = Path(cm.pick_ref(vw, run[0]["ref_emotion"])["ref_wav"]).relative_to(vw).as_posix()
+        instr = list_lines.STYLE[run[0]["emotion"]][0]
+        for x in run:
+            out[x["id"]] = {"why": f"ровный набор серии {key}: один образец, одна инструкция, одни seed",
+                            "emotion": run[0]["emotion"], "ref": ref, "indextts": {}, "run": key, "src_group": x["group"],
+                            "breeze": {str(i + 1): {"instruct": instr, "cfg": 4.0, "seed": sd} for i, sd in enumerate(EVEN_SEEDS)}}
+    return out
 
 
 def redo_spec():
@@ -170,6 +193,8 @@ def cmd_gen(args):
     refs = {}
     for group in args.groups:
         todo = [x for x in lines if x["group"] == group]
+        if group == EVEN and getattr(args, "src_groups", None):
+            todo = [x for x in todo if x["redo"]["src_group"] in args.src_groups]
         for model in args.models:
             out = gen / group / model
             jobs = []
@@ -391,6 +416,20 @@ def accepted_redo(vw, act):
     return out
 
 
+def even_run_best(gen, even):
+    """Ключ серии → seed (1 или 2) с лучшей средней похожестью по репликам серии без брака."""
+    p = gen / EVEN / "score.json"
+    if not p.exists():
+        return {}
+    sc = json.loads(p.read_text(encoding="utf-8"))
+    acc = {}
+    for h, spec in even.items():
+        for c in sc.get(h, {}).get("cands", []):
+            if not c["reject"]:
+                acc.setdefault(spec["run"], {}).setdefault(c["k"], []).append(c["sim"])
+    return {run: max(ks, key=lambda k: (len(ks[k]), sum(ks[k]) / len(ks[k]))) for run, ks in acc.items()}
+
+
 def special_cands(gen, group, h):
     """Варианты реплики h из особой группы (переделка, ровный набор) — с пометками для страницы."""
     p = gen / group / "score.json"
@@ -462,6 +501,8 @@ def cmd_page(_args):
     chapters = [x for x in order if x not in SPECIAL]
     ready = [x for x in ready if x != EVEN]      # ровный набор — не группа, а варианты в карточках похмелья
     mirror = []                                  # (ln, s, folder) для блока «Похмелье»
+    even = even_spec()
+    run_best = even_run_best(gen, even)
     # переделка, которую автор уже принял (в voice.json выбран вариант rK): её карточка — снова в своей главе,
     # принятый вариант — в ней и выбран; «Переделка» на странице — только непринятые
     accepted = accepted_redo(vw, act)
@@ -494,8 +535,12 @@ def cmd_page(_args):
                     if f"{c['model']}_r{c['k']}" == val:
                         s = {**s, "cands": s["cands"] + [{**c, "_tag": "r", "reject": [], "_accepted": True}]}
                 s["default"] = val
-            if g != REDO and ln["emotion"] == EVEN_EMOTION:
-                s = {**s, "cands": s["cands"] + special_cands(gen, EVEN, ln["id"])}
+            if g != REDO and ln["id"] in even:
+                extra_c = special_cands(gen, EVEN, ln["id"])
+                s = {**s, "cands": s["cands"] + extra_c}
+                best_k = run_best.get(even[ln["id"]]["run"])
+                if best_k and any(c["k"] == best_k and not c["reject"] for c in extra_c):
+                    s["default"] = f"breeze_e{best_k}"       # ★ на ровный набор: один seed на всю серию
                 picked = current_choice(vw, ln["id"])
                 if picked and any(f"{c['model']}_{c['_tag']}{c['k']}" == picked for c in s["cands"]):
                     s["default"] = picked      # в блоке и в главе сначала стоит то, что автор уже выбрал
@@ -529,7 +574,7 @@ def cmd_page(_args):
                 star = " ★" if val == s["default"] else ""
                 how = variant_how(c["model"], c["k"], ln, ref_rel[emo][2])
                 if c.get("_special") == EVEN:
-                    how = "ровный набор: " + redo_how(c["model"], c["k"], {**ln, "redo": even_spec()[ln["id"]]})
+                    how = "ровный набор: " + redo_how(c["model"], c["k"], {**ln, "redo": even[ln["id"]]})
                 elif c.get("_accepted"):
                     how = "из переделки: " + redo_how(c["model"], c["k"], {**ln, "redo": redo_spec()[ln["id"]]})
                 elif ln.get("redo") and not c.get("_old"):
@@ -658,7 +703,11 @@ def cmd_all(args):
         if args.skip_done and (act1_paths()[3] / g / "score.json").exists():
             continue
         cmd_gen(argparse.Namespace(groups=[g], models=list(MODELS)))
+        if g in EVEN_GROUPS:
+            cmd_gen(argparse.Namespace(groups=[EVEN], models=["breeze"], src_groups=[g]))
         cmd_score(argparse.Namespace(groups=[g]))
+        if g in EVEN_GROUPS:
+            cmd_score(argparse.Namespace(groups=[EVEN]))
         cmd_page(None)
 
 
