@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="0" revision="9" build="319"/>
+    <region id="DefaultValues">
+        <node id="root">
+            <children>
+                <node id="DefaultValue">
+                    <attribute id="Add" type="LSString" value="Target_ViciousMockery;Target_MinorIllusion"/>
+                    <attribute id="Level" type="int32" value="1"/>
+                    <attribute id="OriginUUID" type="guid" value="38357c93-b437-4f03-88d0-a67bd4c0e3e9"/>
+                    <attribute id="SelectorId" type="LSString" value="BardCantrip"/>
+                    <attribute id="TableUUID" type="guid" value="229c98da-2cd1-4a5e-8051-9d90ec7931e7"/>
+                    <attribute id="UUID" type="guid" value="6166e3b3-6aae-57cf-ae30-e5d35ff6e0ae"/>
+                </node>
+                <node id="DefaultValue">
+                    <attribute id="Add" type="LSString" value="Target_HealingWord;Target_HideousLaughter;Target_DissonantWhispers;Target_Sleep"/>
+                    <attribute id="Level" type="int32" value="1"/>
+                    <attribute id="OriginUUID" type="guid" value="38357c93-b437-4f03-88d0-a67bd4c0e3e9"/>
+                    <attribute id="SelectorId" type="LSString" value="BardSpells"/>
+                    <attribute id="TableUUID" type="guid" value="229c98da-2cd1-4a5e-8051-9d90ec7931e7"/>
+                    <attribute id="UUID" type="guid" value="090b4e80-1fdb-5476-a618-38ff2fbc9dca"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

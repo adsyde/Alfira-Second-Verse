@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="0" revision="9" build="319"/>
+    <region id="DefaultValues">
+        <node id="root">
+            <children>
+                <node id="DefaultValue">
+                    <attribute id="Add" type="LSString" value="ARM_Instrument_Lute"/>
+                    <attribute id="Level" type="int32" value="1"/>
+                    <attribute id="OriginUUID" type="guid" value="38357c93-b437-4f03-88d0-a67bd4c0e3e9"/>
+                    <attribute id="SelectorId" type="LSString" value="BardInstrument"/>
+                    <attribute id="TableUUID" type="guid" value="229c98da-2cd1-4a5e-8051-9d90ec7931e7"/>
+                    <attribute id="UUID" type="guid" value="c72052fd-f494-55ea-9f3f-f9dbeba074fd"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

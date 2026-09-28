@@ -5,7 +5,7 @@
 A Baldur's Gate 3 mod that makes Alfira, the tiefling bard of the Emerald Grove, a full companion,
 written strictly to the game's canon.
 
-**Status:** 0.8.0, act 1 content complete, being tested in a new playthrough. Acts 2–3 in progress.
+**Status:** 0.9.0, act 1 content complete, being tested in a new playthrough. Acts 2–3 in progress.
 Game version: Patch 8 Hotfix 9.
 
 ## What's in it
@@ -24,6 +24,8 @@ Game version: Patch 8 Hotfix 9.
 
 Bard, **College of Lore**. Tiefling (Asmodeus), Entertainer background. She joins at the party's
 level. Class, race and tags come from Larian's own unused `Alfira` origin entry, so no stats are overridden.
+Her level-1 choices (ability scores, skills, cantrips, spells, lute) are set as her origin defaults, the way
+Larian does it for Gale and Shadowheart (0.9.0, not yet tested in game).
 
 ## Requirements and compatibility
 
