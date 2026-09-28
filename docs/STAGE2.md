@@ -114,6 +114,8 @@ Origin «Halsin») и Минтара (`GOB_DrowCommander`, Origin «Minthara»):
 `PROC_CheckFirstTimeRecruited` (один раз). Раз она в `DB_Origins`, `PROC_GLO_DataGetOriginTags`
 ставит ей теги из этой записи.
 
+Выборы 1 уровня (характеристики, навыки, фокусы, заклинания) при вступлении — [STAGE3.md](STAGE3.md) (0.9.0).
+
 Тот же Origin UUID нужен и дальше: реакции одобрения (`Public/*/ApprovalRatings/Reactions/*.lsx`)
 привязаны к спутникам по UUID Origin-записи. Альфира `38357c93-…` уже есть в 4 ванильных
 реакциях. Этим займётся этап 4.

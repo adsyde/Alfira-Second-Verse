@@ -181,6 +181,9 @@ def canon(e):
     return (e.tag, e.get("id"), tuple(sorted(attrs)), tuple(kids))
 
 
+LSX_ONLY_DIRS = ("Reactions", "DefaultValues", "CharacterCreationPresets")
+
+
 def round_trip(path: Path, rep: Report, tmp: Path):
     lsf, back = tmp / (path.stem + ".lsf"), tmp / (path.stem + ".back.lsx")
     divine("-a", "convert-resource", "-s", path, "-d", lsf)
@@ -188,9 +191,10 @@ def round_trip(path: Path, rep: Report, tmp: Path):
     a = [canon(r) for r in load(path).findall("region")]
     b = [canon(r) for r in load(back).findall("region")]
     if a != b:
-        # В LSF имя региона = имя корневого узла. Реакции у игры — region «Reactions» с узлом
-        # «root»: такой файл существует только как lsx и в пак идёт как lsx (у нас так же).
-        if [x[2:] for x in a] == [x[2:] for x in b] and path.parent.name == "Reactions":
+        # В LSF имя региона = имя корневого узла. Реакции, DefaultValues и пресеты характеристик
+        # у игры — region «Reactions» / «DefaultValues» / «AbilityDistributionPresets» с узлом
+        # «root»: такие файлы существуют только как lsx и в пак идут как lsx (у нас так же).
+        if [x[2:] for x in a] == [x[2:] for x in b] and path.parent.name in LSX_ONLY_DIRS:
             rep.note(f"{path.name}: в lsf меняется только имя региона — файл идёт в пак как lsx, как у игры")
         else:
             rep.err(f"круг lsx↔lsf меняет {path.name}")
