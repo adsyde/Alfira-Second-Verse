@@ -58,5 +58,5 @@ Needs Python 3.11+ and [LSLib](https://github.com/Norbyte/lslib). Dialogue stagi
 ## Rights
 
 The project's code and texts belong to the author. Baldur's Gate 3 data, text and audio belong to
-Larian Studios and are not included. This is a non-commercial fan mod under the
+Larian Studios and are not included. This is an unofficial, non-commercial fan mod, not commissioned or sponsored by Larian Studios, under the
 [Larian Fan Content Policy](https://larian.com/fan-content-policy); see [docs/VOICE.md](docs/VOICE.md).

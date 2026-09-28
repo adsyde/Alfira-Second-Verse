@@ -59,5 +59,5 @@ python scripts/install.py                                      # BG3 и BG3 Mod 
 ## Права
 
 Код и тексты проекта принадлежат автору. Данные, тексты и аудио Baldur's Gate 3 принадлежат
-Larian Studios и в репозиторий не входят. Некоммерческий фан-мод по
+Larian Studios и в репозиторий не входят. Неофициальный некоммерческий фан-мод, не заказан и не спонсирован Larian Studios, по
 [Fan Content Policy Larian](https://larian.com/fan-content-policy), см. [docs/VOICE.md](docs/VOICE.md).
