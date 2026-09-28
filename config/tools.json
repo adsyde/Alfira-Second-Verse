@@ -128,6 +128,22 @@
         ],
         "convert": "lsx",
         "_note": "Ресурсы реакций одобрения: какой узел диалога сколько даёт каждому спутнику."
+      },
+      "portraits": {
+        "paks": [
+          "Game.pak",
+          "Shared.pak",
+          "Gustav.pak",
+          "GustavX.pak",
+          "Gustav_Textures.pak",
+          "Patch8_HotFix9.pak"
+        ],
+        "expressions": [
+          "*/GUI/Assets/Portraits/*",
+          "*/GUI/metadata.lsf"
+        ],
+        "convert": "lsx",
+        "_note": "Портреты персонажей (DDS, имя = Icon шаблона + .DDS) и metadata.lsf интерфейса: docs/PORTRAITS.md."
       }
     }
   },
