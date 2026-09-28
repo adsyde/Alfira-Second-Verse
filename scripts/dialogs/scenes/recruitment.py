@@ -33,6 +33,10 @@ MOTIVE_DUTY = new_flag("ALFSV_HeroMotive_Duty", "Object", "Hero's motive for the
 MOTIVE_MODESTY = new_flag("ALFSV_HeroMotive_Modesty", "Object", "Hero's motive for the song: wrong place, right time")
 MOTIVE_HONESTY = new_flag("ALFSV_HeroMotive_Honesty", "Object", "Hero's motive for the song: the tadpole, honesty")
 MOTIVE_PROFIT = new_flag("ALFSV_HeroMotive_Profit", "Object", "Hero's motive for the song: who said it's free")
+# Только Osiris (ALFSV_Companion.txt, docs/STAGE3.md §7): бесплатный респек при первом вступлении уже открыт.
+FREE_RESPEC_DONE = new_flag("ALFSV_FreeRespec_Done", "Object",
+                            "Alfira's one free respec at her first joining has been opened (ALFSV_Companion.txt)")
+OSIRIS_FLAGS = [FREE_RESPEC_DONE]
 
 JOIN = Join(
     nested=NESTED.SwapRecruitment,
