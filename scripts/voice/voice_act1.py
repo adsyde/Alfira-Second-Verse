@@ -9,6 +9,7 @@
   python scripts/voice/voice_act1.py page                    # страница по всему, что оценено
   python scripts/voice/voice_act1.py all                     # все группы по очереди: gen → score → page
   python scripts/voice/voice_act1.py pick voice-work/act1/picks/ch01-02.txt   # выбор автора → voice-work/game/
+  python scripts/voice/voice_act1.py check [--mark]         # чей голос в каждом файле (ECAPA), отчёт speaker_check.md
 
 На реплику: Breeze — 2 варианта (v1 клон по образцу эмоции, v2 то же + инструкция подачи, cfg 4;
 у похмелья инструкция «hungover, groggy» поверх образца «усталость»); IndexTTS — 2 (v1 эмоция из
@@ -417,6 +418,7 @@ main{max-width:980px;margin:0 auto;padding:8px 16px 80px}h2{margin:28px 0 8px;fo
 .emo{display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:1px 10px;margin-right:8px;font-size:15px;font-weight:700}
 .remark{font-style:italic;margin:2px 0 6px;color:var(--ink)}
 .spk{display:inline-block;background:var(--ink);color:var(--bg);border-radius:6px;padding:1px 10px;margin-right:6px;font-size:15px;font-weight:700}
+.spk.npc{background:#1f6f8b;color:#fff}.npcline{border-left:6px solid #1f6f8b}
 h3{margin:18px 0 4px;font-size:16px}.hid{font-size:11px;color:var(--mute);margin-top:6px}
 .opt{display:grid;grid-template-columns:22px 170px 1fr;gap:8px;align-items:start;padding:6px;border-radius:6px;border-top:1px solid var(--line)}
 .opt:has(input:checked){background:var(--pick)}.opt label{font-size:14px;font-weight:600}.opt audio{width:100%;height:32px}
@@ -685,14 +687,17 @@ def cmd_page(_args):
             remark = " · ".join(x for x in [f"ремарка: {ln['note']}" if ln["note"] else "ремарки нет",
                                             f"лицо: {ln['emo']}", f"эмоция {basis}"] if x)
             refemo = EMO_RU.get(ln["ref_emotion"], ln["ref_emotion"])
-            who = f'<span class="spk">{html.escape(ln["speaker_name"])}</span>' if ln.get("speaker_name") else ""
+            name = ln.get("speaker_name") or "Альфира"
+            npc = ln.get("speaker_key", "alfira") != "alfira"
+            who = f'<span class="spk{" npc" if npc else ""}">{html.escape(name)}</span>'
             head = (f'<div class="en">{who}<span class="emo">{html.escape(EMO_RU.get(ln["emotion"], ln["emotion"]))}</span>'
                     f'{html.escape(ln["text"])}</div>'
                     f'<div class="remark">{html.escape(remark)}</div>'
                     f'<div class="ru">{html.escape(re.sub(r"<[^>]+>", "", ln["ru"]))}</div>'
-                    f'<div class="ref">её образец «{html.escape(refemo)}» ({rn}): <audio controls preload="none" src="{rel(rp)}"></audio> '
+                    f'<div class="ref">образец голоса: {html.escape(name)}, «{html.escape(refemo)}» ({rn}): '
+                    f'<audio controls preload="none" src="{rel(rp)}"></audio> '
                     f'«{html.escape(rt[:90])}»</div>')
-            body.append(f'<div class="line" data-handle="{ln["id"]}">{head}{allrej}{render_opts(ln["id"], opts)}{drop}'
+            body.append(f'<div class="line{" npcline" if npc else ""}" data-handle="{ln["id"]}">{head}{allrej}{render_opts(ln["id"], opts)}{drop}'
                         f'<div class="hid">{ln["id"]}{extra}</div></div>')
             if g != REDO and ln["emotion"] == EVEN_EMOTION:
                 mirror.append((ln, head, opts))
@@ -720,7 +725,7 @@ def cmd_page(_args):
 <header><h1>Голос Альфиры · акт 1</h1><button onclick="copyChoice()">Скопировать выбор</button>
 <button class="ghost" onclick="resetAll()">Сбросить к предотбору</button><span id="msg" class="meta"></span><nav>{''.join(nav)}</nav></header>
 <main><p class="meta">{total} реплик. Модели: Breeze TTS 2 и IndexTTS-2.5, без дообучения. По умолчанию выбран предотбор ★:
-самый похожий на её голос вариант без брака (брак — ошибки распознавания Whisper, обрывы, длина не по тексту). «Её образец» —
+самый похожий на её голос вариант без брака (брак — ошибки распознавания Whisper, обрывы, длина не по тексту). «Образец голоса» —
 её реплика из игры, по которой модель взяла эмоцию и тембр. Выбор запоминается в браузере; «Скопировать выбор» даёт строки
 <code>handle=вариант</code> — их нужно вставить в чат.</p>{note}
 <textarea id="out" readonly></textarea>
@@ -734,7 +739,8 @@ def cmd_pick(args):
 
     Файл — выбранный вариант, приведённый к 48 кГц моно 16 бит (tts/normalize.py): такой берёт game_voice.py.
     Одинаковый текст в разных сценах — один звук на все его handle. «переделать» — в voice-work/act1/redo.txt.
-    voice-work/game/voice.json: handle → файл, длина, модель, вариант, группа (для build_pak --voice clone)."""
+    voice-work/game/voice.json: handle → файл, длина, модель, вариант, группа, speaker_uuid (чей голос: банк VoiceMeta
+    и FaceFX-актёр — по говорящему; для build_pak --voice clone)."""
     vw, models, act, gen = act1_paths()
     lines = {x["id"]: x for x in load_lines()}
     game = vw / GAME_DIR_NAME
@@ -775,13 +781,78 @@ def cmd_pick(args):
         with wave.open(str(game / f"{hh}.wav")) as w:
             length = w.getnframes() / w.getframerate()
         meta[hh] = {"file": f"{hh}.wav", "seconds": round(length, 3), "model": model, "variant": k, "group": group,
-                    "text_handle": h}
+                    "text_handle": h, "speaker_uuid": lines[h].get("speaker_uuid", ALFIRA_UUID)}
+    for hh, m in meta.items():            # записи старых выборов — без поля говорящего
+        m.setdefault("speaker_uuid", lines.get(m.get("text_handle", hh), {}).get("speaker_uuid", ALFIRA_UUID))
     meta_p.write_text(json.dumps(dict(sorted(meta.items())), ensure_ascii=False, indent=1), encoding="utf-8")
     redo_p.write_text("\n".join(sorted(redo)) + ("\n" if redo else ""), encoding="utf-8")
     print(f"выбрано {len({c[4] for c in chosen})} реплик → {len(chosen)} handle в {game}; переделать: {len(redo)}; "
           f"всего в voice.json: {len(meta)}")
     for b in bad:
         print("  !", b)
+
+
+SPEAKER_MIN_SIM = 0.45     # ниже — «не похож на свой голос»
+
+
+def cmd_check(args):
+    """Чей голос в каждом сгенерированном варианте и в каждом выбранном файле voice-work/game/.
+
+    ECAPA-эмбеддинг файла сравнивается с центрами голосов Альфиры, Ашарака, Лакриссы и Даммона (их чистые
+    реплики игры). Ошибка — ближе к чужому голосу, чем к своему, или похожесть на свой < SPEAKER_MIN_SIM.
+    Выбранные файлы с ошибкой (--mark) уходят в voice-work/act1/redo.txt и убираются из voice.json.
+    Отчёт: voice-work/act1/speaker_check.md и .json."""
+    vw, models, act, gen = act1_paths()
+    lines = all_lines()
+    base = {x["id"]: x for x in lines if not x.get("redo")}
+    key_of = {u: v[0] for u, v in SPEAKERS.items()}
+    voices = {v[0]: speaker_voice_set(vw, {"speaker_key": v[0], "speaker_uuid": u}, 40) for u, v in SPEAKERS.items()}
+    items = []
+    for ln in lines:
+        spk = ln.get("speaker_key", "alfira")
+        for model in MODELS:
+            for k in model_variants(model, ln):
+                w = gen / ln["group"] / model / f"line{ln['id']}_v{k}.wav"
+                if wav_ok(w):
+                    items.append({"key": f"{ln['group']}|{ln['id']}|{model}_{vtag(ln)}{k}", "wav": str(w), "speaker": spk})
+    meta_p = vw / GAME_DIR_NAME / "voice.json"
+    meta = json.loads(meta_p.read_text(encoding="utf-8")) if meta_p.exists() else {}
+    for hh, m in meta.items():
+        w = vw / GAME_DIR_NAME / m["file"]
+        if wav_ok(w):
+            items.append({"key": f"game|{hh}|{m['model']}_{m['variant']}", "wav": str(w),
+                          "speaker": key_of.get(m.get("speaker_uuid", ALFIRA_UUID), "alfira")})
+    ij, oj = act / "speaker_check_items.json", act / "speaker_check.json"
+    ij.write_text(json.dumps({"voices": voices, "items": items, "cache": str(vw / "cache" / "metrics")}, ensure_ascii=False),
+                  encoding="utf-8")
+    subprocess.run([str(models / cm.METRICS_PY), str(cm.TTS / "speaker_check.py"), str(ij), str(oj)], env=cm.model_env(vw),
+                   check=True)
+    res = json.loads(oj.read_text(encoding="utf-8"))["items"]
+    bad = [r for r in res if r["nearest"] != r["speaker"] or r["sims"][r["speaker"]] < SPEAKER_MIN_SIM]
+    wrong = [r for r in bad if r["nearest"] != r["speaker"]]
+    game_bad = [r for r in bad if r["key"].startswith("game|")]
+    rows = ["# Проверка голоса (ECAPA к центрам голосов)", "",
+            f"Файлов: {len(res)}; ближе к чужому голосу: {len(wrong)}; похожесть на свой < {SPEAKER_MIN_SIM}: "
+            f"{len(bad) - len(wrong)}; из них выбранных (voice-work/game): {len(game_bad)}.", "",
+            "| файл | должен быть | ближе всего | " + " | ".join(voices) + " |", "|---|---|---|" + "---|" * len(voices)]
+    for r in sorted(bad, key=lambda r: r["key"]):
+        g, h, v = r["key"].split("|")
+        txt = base.get(h, {}).get("text", "")[:40]
+        rows.append(f"| {g} {h[:9]} {v} «{txt}» | {r['speaker']} | {r['nearest']} | "
+                    + " | ".join(f"{r['sims'][n]:.2f}" for n in voices) + " |")
+    (act / "speaker_check.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+    print(rows[2])
+    if args.mark and game_bad:
+        redo_p = act / "redo.txt"
+        redo = set(redo_p.read_text(encoding="utf-8").split()) if redo_p.exists() else set()
+        for r in game_bad:
+            hh = r["key"].split("|")[1]
+            redo.add(meta[hh].get("text_handle", hh))
+            meta.pop(hh, None)
+        meta_p.write_text(json.dumps(dict(sorted(meta.items())), ensure_ascii=False, indent=1), encoding="utf-8")
+        redo_p.write_text("\n".join(sorted(redo)) + "\n", encoding="utf-8")
+        print(f"выбранных с чужим/непохожим голосом: {len(game_bad)} → redo.txt, убраны из voice.json")
+    print(f"→ {act / 'speaker_check.md'}")
 
 
 def cmd_all(args):
@@ -809,10 +880,12 @@ def main():
     sub.add_parser("page")
     a = sub.add_parser("all")
     a.add_argument("--skip-done", action="store_true", default=True)
+    c = sub.add_parser("check")
+    c.add_argument("--mark", action="store_true", help="выбранные файлы с чужим голосом → redo.txt, убрать из voice.json")
     k = sub.add_parser("pick")
     k.add_argument("files", nargs="+", help="файлы с выбором автора: строки handle=вариант")
     args = ap.parse_args()
-    {"gen": cmd_gen, "score": cmd_score, "page": cmd_page, "all": cmd_all, "pick": cmd_pick}[args.cmd](args)
+    {"gen": cmd_gen, "score": cmd_score, "page": cmd_page, "all": cmd_all, "pick": cmd_pick, "check": cmd_check}[args.cmd](args)
 
 
 if __name__ == "__main__":
