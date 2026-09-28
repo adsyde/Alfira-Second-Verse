@@ -1,64 +1,62 @@
 # Alfira: Second Verse
 
-«Альфира: Второй куплет».
+[Русская версия](README.ru.md)
 
-Мод для Baldur's Gate 3: Альфира, тифлинг-бард из Изумрудной рощи, становится
-полноценной спутницей. У неё будут вербовка, лагерь, одобрение, личные
-разговоры, реплики в мире, романтика и своя цепочка квестов. Персонаж строго по
-канону игры, а её бард играбелен на «Доблести».
+A Baldur's Gate 3 mod that makes Alfira, the tiefling bard of the Emerald Grove, a full companion,
+written strictly to the game's canon.
 
-Мод самостоятельный: «Alfira Joins The Party» и другие моды про Альфиру ему не
-нужны. Внешность из Alfira Redux совместима.
+**Status:** 0.8.0, act 1 content complete, being tested in a new playthrough. Acts 2–3 in progress.
+Game version: Patch 8 Hotfix 9.
 
-**Статус:** 0.5.0 — вербовка, одобрение, главы разговоров 1–2, реплики на местах (акты 1–3) и
-фразы в пути; собрано, ждёт проверки в игре ([docs/STAGE5.md](docs/STAGE5.md)). Как описываются
-сцены, главы, места и фразы в пути — [scripts/dialogs/README.md](scripts/dialogs/README.md).
-План — [docs/ROADMAP.md](docs/ROADMAP.md).
+## What's in it
 
-Игра: Patch 8 Hotfix 9.
+- **Recruitment** after her song in the Grove; party, camp, tent, dismiss and return, level-up.
+- **Approval**, 17 reactions to your act 1 choices.
+- **Camp chapters 1–8**: long campfire conversations that unlock one per long rest.
+- **Talks with a “!” marker** after events and at places (Zevlor's map, the gnolls, the Tollhouse,
+  Volo among the goblins and more), plus short scenes before the dialogues of Asharak, Lakrissa and Dammon.
+- **Overhead lines** at 41 locations in acts 1–3, on the road, and banter with the party.
+- **Romance** with a first kiss; hugs and kisses from the party menu. Open to a hero of any gender.
+- **Tiefling celebration** with Alfira as a companion, including a three-way scene with Lakrissa.
+- Staging built from her own Larian scenes: facial emotions, poses, seated campfire talks.
 
-## Устройство репозитория
+## Class
 
-| Путь | Что там | В git |
-|------|---------|-------|
-| `docs/` | план, архитектура, правила текста, голос, исследования | да |
-| `docs/research/` | как устроены спутники в игре, канон Альфиры, инструменты сообщества | да |
-| `design/` | сценарии: диалоги, беседы, квесты, сцены | да |
-| `mod/` | исходники мода в раскладке пака (`_MOD_` = папка мода) | да |
-| `scripts/` | инструменты | да |
-| `config/tools.json` | общий конфиг, UUID мода, наборы распаковки | да |
-| `config/tools.local.json` | пути на этой машине (Divine, игра, vgmstream) | нет |
-| `game-data/` | распакованные данные игры | нет (права Larian) |
-| `reports/dialogs/` | распечатки диалогов игры | нет (текст Larian) |
-| `voice-work/` | аудио, датасеты, модели | нет |
-| `build/`, `dist/` | сборка | нет |
+Bard, **College of Lore**. Tiefling (Asmodeus), Entertainer background. She joins at the party's
+level. Class, race and tags come from Larian's own unused `Alfira` origin entry, so no stats are overridden.
 
-## Быстрый старт
+## Requirements and compatibility
 
-Нужны Python 3.11+ и [LSLib](https://github.com/Norbyte/lslib) (Divine.exe).
+- **No dependencies.** Script Extender is not required (only for the debug commands).
+- **Alfira Redux** (appearance): compatible. Load this mod after it.
+- **Alfira Joins The Party**: not compatible. Do not enable both.
+- **Bhaal's Forgotten Son**: compatible.
+- Launch the game with DX11 if Vulkan is unstable on your machine.
+
+## Voice
+
+The public build has no cloned voices. Her original voiced lines from the game play as usual,
+and new lines are text only. The author's personal build uses an AI voice clone and is not published
+(Larian Fan Content Policy §4.5).
+
+## For developers
+
+Mod sources, scenarios and tools are in this repository. Game data, dialogue dumps and audio are
+kept local and are not committed. Plan: [docs/ROADMAP.md](docs/ROADMAP.md).
+Workflow rules: [CLAUDE.md](CLAUDE.md).
 
 ```bash
-cp config/tools.local.example.json config/tools.local.json   # поправить пути
-python scripts/unpack_game.py goals loca flags dialogs-alfira  # данные игры → game-data/
-python scripts/dialog_dump.py DEN_TieflingBard_Bard            # диалог как читаемый сценарий
-python scripts/build_pak.py                                    # mod/ → dist/AlfiraSecondVerse.pak
-python scripts/install.py                                      # в игру (игра и BG3MM закрыты)
+cp config/tools.local.example.json config/tools.local.json   # set local paths
+python scripts/unpack_game.py goals loca flags dialogs-alfira  # game data → game-data/
+python scripts/build_pak.py                                    # → dist/AlfiraSecondVerse.pak
+python scripts/install.py                                      # BG3 and BG3 Mod Manager closed
 ```
 
-## Инструменты
+Needs Python 3.11+ and [LSLib](https://github.com/Norbyte/lslib). Dialogue staging uses
+[bg3moddinglib](https://github.com/0x1amy0urdad/Guidance) (MIT).
 
-| Скрипт | Назначение |
-|--------|------------|
-| `unpack_game.py` | достаёт из паков игры наборы файлов (сценарии Osiris, диалоги, флаги, статы, шаблоны, loca); `.loca` → `.xml`, `.lsf` → `.lsx` |
-| `gamedb.py` | справочник: текст реплики по handle (EN/RU), имя флага или объекта по GUID |
-| `dialog_dump.py` | диалог `.lsj` → Markdown: кто говорит, EN + официальный RU, флаги, броски, постановка; `--all-alfira` — все её диалоги |
-| `build_pak.py` | сборка пака: подстановка папки мода, `.lsx → .lsf`, `meta.lsx`, проверки раскладки |
-| `install.py` | копирует пак в Mods и прописывает в порядок загрузки (modsettings + BG3 Mod Manager) |
-| `voice/extract_voice.py` | каталог всех озвученных реплик Альфиры (handle, текст, длительность) и их аудио |
+## Rights
 
-## Лицензия и права
-
-Код и тексты проекта принадлежат автору. Данные, тексты и аудио Baldur's Gate 3
-принадлежат Larian Studios и в репозиторий не входят. Мод следует
-[Fan Content Policy Larian](https://larian.com/fan-content-policy): в
-публикуемой версии нет клонированного голоса актрисы (см. [docs/VOICE.md](docs/VOICE.md)).
+The project's code and texts belong to the author. Baldur's Gate 3 data, text and audio belong to
+Larian Studios and are not included. This is a non-commercial fan mod under the
+[Larian Fan Content Policy](https://larian.com/fan-content-policy); see [docs/VOICE.md](docs/VOICE.md).
