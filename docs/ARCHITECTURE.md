@@ -51,6 +51,8 @@ NPC спутниками через те же базы Osiris, что и у ор
 - Реакции на поступки (акт 1) — goal `ALFSV_Reactions.txt`, генерирует `scripts/dialogs/reactions.py`: только
   слушает флаги и события игры (`FlagSet`, `PROC_State_Changed` Рощи, `StatusApplied`), ванильные диалоги не
   меняются; убийство тифлингов — ванильный механизм `DB_CompanionCaredFaction`, как у Уилла ([STAGE4.md §11](STAGE4.md#11-реакции-на-поступки-акт-1)).
+- Портрет в отряде — её ванильный `Icon` (152×152 DDS из игры), с Alfira Redux — его текстура под тем же
+  именем. Своего портрета мод не поставляет ([PORTRAITS.md](PORTRAITS.md)).
 
 ## Соглашения
 
