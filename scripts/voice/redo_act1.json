@@ -99,7 +99,7 @@
       }
     },
     "h67494125g6522g5f52g944ag0dac08dbcc5d": {
-      "why": "глава 6, ответ на «мой отец был в Элтуриэле» (Уилл): тихо узнаёт имя, вспоминает, давит горе; медленно, низко, пауза между словами; Ravengard — [ˈreɪvənɡɑːrd]; вторая переделка (all_v10): r4–r6",
+      "why": "глава 6, ответ на «мой отец был в Элтуриэле» (Уилл): тихо узнаёт имя, вспоминает, давит горе; медленно, низко, пауза между словами; Ravengard — [ˈreɪvənɡɑːrd]; вторая переделка (all_v10): r4–r6; третья переделка (после проверки голоса): r7–r9, только её образцы",
       "emotion": "sad",
       "ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
       "breeze": {
@@ -139,6 +139,26 @@
           "cfg": 4.0,
           "seed": 4203,
           "ref": "refs/sad/hdee1259ega676g4a38gbc44g8cbe0861cbe3.wav"
+        },
+        "7": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 4.0,
+          "seed": 4301
+        },
+        "8": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued",
+          "cfg": 4.0,
+          "seed": 4302,
+          "ref": "refs/neutral/h899e51e9g7d92g483fgad58g40703ad00d43.wav"
+        },
+        "9": {
+          "text": "The Duke. ... Ravengard.",
+          "instruct": "quiet, slow, recognizing a name, heavy with memory, subdued, low voice",
+          "cfg": 3.0,
+          "seed": 4303,
+          "ref": "refs/sad/h99129163gc8f7g4551g8691gc7041ff9d28d.wav"
         }
       },
       "indextts": {
@@ -194,6 +214,131 @@
           "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
           "emo_alpha": 0.9,
           "seed": 1203
+        },
+        "7": {
+          "text": "The Duke. ... Ravengard.",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.8,
+          "seed": 1301
+        },
+        "8": {
+          "text": "The Duke. ... Ravengard.",
+          "ref": "refs/neutral/h899e51e9g7d92g483fgad58g40703ad00d43.wav",
+          "emo_ref": "refs/sad/h20a7ec75gd341g4c28gab29g3cf70a169d78.wav",
+          "emo_alpha": 0.8,
+          "seed": 1302
+        },
+        "9": {
+          "text": "The Duke. ... Ravengard.",
+          "ref": "refs/neutral/h899e51e9g7d92g483fgad58g40703ad00d43.wav",
+          "emo_vector": [
+            0,
+            0,
+            0.3,
+            0,
+            0,
+            0.5,
+            0,
+            0.4
+          ],
+          "emo_alpha": 0.8,
+          "seed": 1303
+        }
+      }
+    },
+    "hb26a7acegdc0ag589bgb765gb2748a6226ac": {
+      "why": "места: хватается за руку героя — испуг, короткий вдох, потом смущённое облегчение; делает вид, что это ремешок",
+      "emotion": "fear",
+      "ref": "refs/surprise/hc737842egf5deg4067g8af7g3b1372d39ed8.wav",
+      "breeze": {
+        "1": {
+          "text": "...Loose strap.",
+          "instruct": "startled, a short sharp intake of breath, then embarrassed relief, pretending it's nothing",
+          "cfg": 4.0
+        },
+        "2": {
+          "text": "Ah - ...Loose strap.",
+          "instruct": "startled, a short sharp intake of breath, then embarrassed relief, pretending it's nothing",
+          "cfg": 4.0,
+          "ref": "refs/embarrassed/he19f9f1fgc50dg403cga547g6394c0780a89.wav"
+        },
+        "3": {
+          "text": "(sigh) ...Loose strap.",
+          "instruct": "startled, a short sharp intake of breath, then embarrassed relief, pretending it's nothing",
+          "cfg": 3.0,
+          "seed": 4107,
+          "ref": "refs/fear/h19ffea35g7ba2g48a2gbe12gcb81986216bd.wav"
+        }
+      },
+      "indextts": {
+        "1": {
+          "text": "...Loose strap.",
+          "emo_ref": "refs/fear/h19ffea35g7ba2g48a2gbe12gcb81986216bd.wav",
+          "emo_alpha": 0.7
+        },
+        "2": {
+          "text": "Ah - ...Loose strap.",
+          "emo_ref": "refs/embarrassed/he19f9f1fgc50dg403cga547g6394c0780a89.wav",
+          "emo_alpha": 0.9
+        },
+        "3": {
+          "text": "...Loose strap.",
+          "emo_vector": [
+            0.2,
+            0,
+            0,
+            0.4,
+            0,
+            0,
+            0.4,
+            0
+          ],
+          "emo_alpha": 0.9
+        }
+      }
+    },
+    "h52961316gd7f2g510dg929cgf304a0674e67": {
+      "why": "Ашарак: первая половина — жёстко, устало, бывалый наставник, не крик; «Stand straighter…» — ворчливо-добродушно, детям",
+      "emotion": "neutral",
+      "ref": "refs_asharak/neutral/h79f13237gb87bg4a46g8292ge5695f1c3fbf.wav",
+      "breeze": {
+        "1": {
+          "instruct": "first half stern and weary, a seasoned drill instructor, not shouting; second half gruff but good-natured, talking to children",
+          "cfg": 4.0
+        },
+        "2": {
+          "instruct": "first half stern and weary, a seasoned drill instructor, not shouting; second half gruff but good-natured, talking to children",
+          "cfg": 4.0,
+          "ref": "refs_asharak/tired/h37960171g2d1ag431cgb59fg62641b9bf71a.wav"
+        },
+        "3": {
+          "instruct": "first half stern and weary, a seasoned drill instructor, not shouting; second half gruff but good-natured, talking to children",
+          "cfg": 3.0,
+          "seed": 4107,
+          "ref": "refs_asharak/sad/hef1536f4g8d25g4082g9bb1g39514a870262.wav"
+        }
+      },
+      "indextts": {
+        "1": {
+          "emo_ref": "refs_asharak/neutral/h79f13237gb87bg4a46g8292ge5695f1c3fbf.wav",
+          "emo_alpha": 0.7
+        },
+        "2": {
+          "emo_ref": "refs_asharak/sad/hef1536f4g8d25g4082g9bb1g39514a870262.wav",
+          "emo_alpha": 0.8
+        },
+        "3": {
+          "emo_vector": [
+            0.1,
+            0.2,
+            0,
+            0,
+            0,
+            0.3,
+            0,
+            0.5
+          ],
+          "emo_alpha": 0.8
         }
       }
     }
