@@ -116,6 +116,213 @@ SetFaction(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (FACTION)Companion14
 
 //END_REGION
 
+//REGION Free respec at the first joining (docs/STAGE3.md section 7)
+// Level 1 is filled from her build (DefaultValues, 0.9.0); RequestInitialLevel (PROC_CheckFirstTimeRecruited)
+// lets the engine pick levels 2..N. If she comes above level 1, the author picks them himself: the Withers
+// respec window (Respec.txt: StartRespec after his dialog) opens once, for free, when she first is in the party
+// and free (after the recruitment dialog). The vanilla launcher is used (__PROC.txt, PROC_TryLaunchRespec:
+// DB_InCharacterRespec, relaunch after a savegame load). Vanilla recruitment is not touched.
+
+// Only at the first recruitment: RequestInitialLevel is still to come (the same test as the vanilla one)
+PROC
+PROC_ALFSV_MakeCompanion()
+AND
+NOT DB_OnlyOncePerPlayer((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "Recruitment_Respec")
+AND
+GetFlag((FLAG)ALFSV_FreeRespec_Done_7737711a-9006-58de-b3ec-480c403f68ca, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0)
+THEN
+DB_ALFSV_Respec_Pending(1);
+
+// In the party (PROC_GLO_PartyMembers_Add: PROC_CheckFirstTimeRecruited, then this hook; the add runs after
+// DialogEnded). Sent to camp instead: the check waits for her first joining from camp.
+PROC
+PROC_GLO_PartyMembers_AddHook((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (CHARACTER)_Player)
+AND
+DB_ALFSV_Respec_Pending(1)
+AND
+DB_ALFSV_Respec_Tries(_N)
+THEN
+NOT DB_ALFSV_Respec_Tries(_N);
+
+PROC
+PROC_GLO_PartyMembers_AddHook((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, (CHARACTER)_Player)
+AND
+DB_ALFSV_Respec_Pending(1)
+THEN
+DB_ALFSV_Respec_Tries(0);
+RealtimeObjectTimerLaunch(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_Respec_Check", 1000);
+
+IF
+ObjectTimerFinished((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_Respec_Check")
+AND
+DB_ALFSV_Respec_Pending(1)
+AND
+DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+GetLevel(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Level)
+THEN
+PROC_ALFSV_Respec_Check(_Level);
+
+// Above level 1 and free (not in a dialog, not in combat): open it
+PROC
+PROC_ALFSV_Respec_Check((INTEGER)_Level)
+AND
+_Level > 1
+AND
+QRY_SpeakerIsAvailable(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+NOT DB_ALFSV_Respec_Pending(1);
+SetFlag((FLAG)ALFSV_FreeRespec_Done_7737711a-9006-58de-b3ec-480c403f68ca, S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 0);
+PROC_TryLaunchRespec(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec");
+
+// Busy: wait
+PROC
+PROC_ALFSV_Respec_Check((INTEGER)_Level)
+AND
+_Level > 1
+AND
+NOT QRY_SpeakerIsAvailable(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+RealtimeObjectTimerLaunch(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_Respec_Check", 2000);
+
+// Still level 1 while the party is higher: RequestInitialLevel has not been applied yet - wait (15 s at most)
+PROC
+PROC_ALFSV_Respec_Check((INTEGER)_Level)
+AND
+_Level <= 1
+AND
+QRY_ALFSV_Respec_PartyAboveLevel1()
+AND
+DB_ALFSV_Respec_Tries(_N)
+AND
+_N < 15
+AND
+IntegerSum(_N, 1, _Next)
+THEN
+NOT DB_ALFSV_Respec_Tries(_N);
+DB_ALFSV_Respec_Tries(_Next);
+RealtimeObjectTimerLaunch(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_Respec_Check", 1000);
+
+// Level 1 with a level-1 party (or she never got aligned): nothing to respec, the rule is over
+PROC
+PROC_ALFSV_Respec_Check((INTEGER)_Level)
+AND
+_Level <= 1
+AND
+NOT QRY_ALFSV_Respec_PartyAboveLevel1()
+THEN
+PROC_ALFSV_Respec_Drop();
+
+PROC
+PROC_ALFSV_Respec_Check((INTEGER)_Level)
+AND
+_Level <= 1
+AND
+DB_ALFSV_Respec_Tries(_N)
+AND
+_N >= 15
+THEN
+PROC_ALFSV_Respec_Drop();
+
+PROC
+PROC_ALFSV_Respec_Drop()
+AND
+DB_ALFSV_Respec_Tries(_N)
+THEN
+NOT DB_ALFSV_Respec_Tries(_N);
+
+PROC
+PROC_ALFSV_Respec_Drop()
+THEN
+NOT DB_ALFSV_Respec_Pending(1);
+
+QRY
+QRY_ALFSV_Respec_PartyAboveLevel1()
+AND
+DB_Players(_Player)
+AND
+_Player != S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c
+AND
+GetLevel(_Player, _Level)
+AND
+_Level > 1
+THEN
+DB_NOOP(1);
+
+// The window itself: what Withers does after his dialog (Respec.txt), without the payment flag of his dialog
+// (GEN_TransferNPCPayment_4). Jergal's gold is remembered for the refund check below.
+PROC
+PROC_LaunchRespec((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec")
+AND
+DB_ALFSV_Respec_JergalGold(_Gold)
+THEN
+NOT DB_ALFSV_Respec_JergalGold(_Gold);
+
+PROC
+PROC_LaunchRespec((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec")
+AND
+GetGold(S_GLO_JergalAvatar_0133f2ad-e121-4590-b5f0-a79413919805, _Gold)
+THEN
+DB_ALFSV_Respec_JergalGold(_Gold);
+
+PROC
+PROC_LaunchRespec((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec")
+THEN
+StartRespec(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
+
+IF
+RespecCompleted(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_InCharacterRespec(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec")
+THEN
+PROC_FinishedRespecing(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec");
+PROC_ALFSV_Respec_ForgetJergalGold();
+
+// Cancelled: she keeps the engine's choices. Respec.txt refunds Withers' price on every RespecCancelled
+// (PROC_Respec_Refund: 100 gold from Jergal if he has them) - she paid nothing, so take it back afterwards.
+IF
+RespecCancelled(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+AND
+DB_InCharacterRespec(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec")
+THEN
+PROC_FinishedRespecing(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec");
+RealtimeObjectTimerLaunch(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_Respec_Refund", 500);
+
+IF
+ObjectTimerFinished((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_Respec_Refund")
+THEN
+PROC_ALFSV_Respec_UndoRefund();
+
+PROC
+PROC_ALFSV_Respec_UndoRefund()
+AND
+DB_ALFSV_Respec_JergalGold(_Was)
+AND
+GetGold(S_GLO_JergalAvatar_0133f2ad-e121-4590-b5f0-a79413919805, _Now)
+AND
+_Now < _Was
+AND
+IntegerSubtract(_Was, _Now, _Diff)
+AND
+IntegerProduct(_Diff, -1, _Minus)
+THEN
+AddGold(S_GLO_JergalAvatar_0133f2ad-e121-4590-b5f0-a79413919805, _Diff);
+AddGold(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Minus);
+
+PROC
+PROC_ALFSV_Respec_UndoRefund()
+THEN
+PROC_ALFSV_Respec_ForgetJergalGold();
+
+PROC
+PROC_ALFSV_Respec_ForgetJergalGold()
+AND
+DB_ALFSV_Respec_JergalGold(_Gold)
+THEN
+NOT DB_ALFSV_Respec_JergalGold(_Gold);
+
+//END_REGION
+
 //REGION Recruitment dialog (Act 1, after the song)
 
 QRY
@@ -207,6 +414,22 @@ THEN
 PROC_CheckFirstTimeRecruited((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c);
 RegisterAsCompanion(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, _Host);
 PROC_ORI_SetupCamp((CHARACTER)S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, 1);
+
+//END_REGION
+
+//REGION Debug free respec (no conditions, the once-flag is not touched): TextEvent "alfsv_respec" or Osi.PROC_ALFSV_Debug_Respec()
+
+IF
+TextEvent("alfsv_respec")
+THEN
+PROC_ALFSV_Debug_Respec();
+
+PROC
+PROC_ALFSV_Debug_Respec()
+AND
+DB_Players(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c)
+THEN
+PROC_TryLaunchRespec(S_DEN_Bard_4a405fba-3000-4c63-97e5-a8001ebb883c, "ALFSV_FreeRespec");
 
 //END_REGION
 
