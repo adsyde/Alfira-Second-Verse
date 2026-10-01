@@ -1,6 +1,6 @@
 # Следующая сессия
 
-Каждый этап — в новой сессии Claude Code, чтобы не переполнять контекст.
+Каждый этап — в новом чате ChatGPT / Codex, чтобы не переполнять контекст.
 Ниже промпт для следующей. Открыть сессию в `C:\Users\AdSyDe\Repo\Games\BG3\AlfiraCompanion`
 и вставить блок целиком.
 
@@ -13,7 +13,7 @@
 голос Альфиры (клон) и её постановка (эмоции, анимации). Цель — максимально похожий голос
 с живой интонацией и эмоциями и постановка на уровне сцен Larian.
 
-Сначала прочитай: CLAUDE.md, docs/ROADMAP.md, docs/NEXT_SESSION.md (раздел «Состояние» и «План
+Сначала прочитай: AGENTS.md, docs/ROADMAP.md, docs/NEXT_SESSION.md (раздел «Состояние» и «План
 автора»), docs/VOICE.md, docs/STAGING.md, docs/STAGE4.md (§13 — план анимаций поцелуя),
 scripts/dialogs/README.md, scripts/voice/, docs/research/alfira-canon.md §3 и §8.
 
